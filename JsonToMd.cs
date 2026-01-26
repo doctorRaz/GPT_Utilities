@@ -6,20 +6,20 @@ using System.Collections.Generic;
 
 namespace JsonToMarkdown
 {
-    class Parser
+   public class JsonToMd
     {
         //static void Main_(string[] args)
-        static void JsonToMd(string[] args)
+       public static void JsonToMdParser(string fileJson,string folderOut)
         {
-            if (args.Length < 2)
-            {
-                Console.WriteLine("Usage: gpt2md <conversations.json> <outputFolder>");
-                return;
-            }
+            //if (args.Length < 2)
+            //{
+            //    Console.WriteLine("Usage: gpt2md <conversations.fileJson> <outputFolder>");
+            //    return;
+            //}
 
-            Directory.CreateDirectory(args[1]);
+            //Directory.CreateDirectory(args[1]);
 
-            using var fs = File.OpenRead(args[0]);
+            using var fs = File.OpenRead(fileJson);
             using var doc = JsonDocument.Parse(fs);
 
             foreach (var convo in doc.RootElement.EnumerateArray())
@@ -99,7 +99,7 @@ namespace JsonToMarkdown
 
                 string datePrefix = DateStr(ctime > 0 ? ctime : utime);
                 string safeTitle = SafeName(title);
-                string path = Path.Combine(args[1], $"{datePrefix}_{safeTitle}.md");
+                string path = Path.Combine(folderOut, $"{datePrefix}_{safeTitle}.md");
 
                 int msgCount = chain.Count;
                 string url = $"https://chat.openai.com/c/{id}";

@@ -1,150 +1,100 @@
-﻿using System;
+﻿using JsonToMarkdown;
+using System;
 using System.IO;
 
-namespace JsonToMarkdown
+class Program
 {
-    class Program
+    static int Main(string[] args)
     {
-        static int Main(string[] args)
+        if (HasHelp(args)) { Help(); return 0; }
+
+        var (input, output) = ParseArgs(args);
+
+        if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(output))
+            if (!Prompt(out input, out output)) return 0;
+
+        if (!Validate(input, output)) return 1;
+
+        Console.WriteLine($"OK\nInput: {input}\nOutput: {output}");
+        // TODO: основная логика
+
+        JsonToMd.JsonToMdParser(input, output);
+        return 0;
+    }
+
+    static (string? input, string? output) ParseArgs(string[] a)
+    {
+        string? i = null, o = null;
+
+        for (int n = 0; n < a.Length; n++)
         {
-            if (HasHelp(args))
+            switch (a[n])
             {
-                PrintHelp();
-                return 0;
-            }
-
-            string inputFile;
-            string outputDir;
-
-            if (args.Length >= 2)
-            {
-                inputFile = args[0];
-                outputDir = args[1];
-            }
-            else
-            {
-                if (!PromptLoop(out inputFile, out outputDir))
-                    return 0;
-            }
-
-            if (!Validate(inputFile, outputDir))
-                return 1;
-
-            Console.WriteLine("Входной файл: " + inputFile);
-            Console.WriteLine("Каталог результата: " + outputDir);
-
-            // TODO: Основная логика обработки
-            return 0;
-        }
-
-        static bool PromptLoop(out string inputFile, out string outputDir)
-        {
-            inputFile = "";
-            outputDir = "";
-
-            while (true)
-            {
-                Console.WriteLine("Введите путь к входному JSON (ESC — выход):");
-
-                var input = ReadLineOrEsc();
-                if (input == null)
-                    return false;
-
-                Console.WriteLine("Введите путь к каталогу результата (ESC — выход):");
-
-                var output = ReadLineOrEsc();
-                if (output == null)
-                    return false;
-
-                if (Validate(input, output))
-                {
-                    inputFile = input;
-                    outputDir = output;
-                    return true;
-                }
-
-                Console.WriteLine("Ошибка. Повторите ввод.\n");
+                case "--input": case "-i": i = Next(a, ref n); break;
+                case "--out": case "-o": o = Next(a, ref n); break;
+                default:
+                    if (i == null) i = a[n];
+                    else if (o == null) o = a[n];
+                    break;
             }
         }
+        return (i, o);
+    }
 
-        static string? ReadLineOrEsc()
+    static string? Next(string[] a, ref int n) =>
+        n + 1 < a.Length ? a[++n] : null;
+
+    static bool Prompt(out string input, out string output)
+    {
+        input = output = "";
+        while (true)
         {
-            var buffer = "";
+            Console.Write("Input JSON (ESC = exit): ");
+            var i = ReadEsc(); if (i == null) return false;
 
-            while (true)
-            {
-                var key = Console.ReadKey(intercept: true);
+            Console.Write("Output folder (ESC = exit): ");
+            var o = ReadEsc(); if (o == null) return false;
 
-                if (key.Key == ConsoleKey.Escape)
-                {
-                    Console.WriteLine("\nВыход.");
-                    return null;
-                }
-
-                if (key.Key == ConsoleKey.Enter)
-                {
-                    Console.WriteLine();
-                    return buffer.Trim();
-                }
-
-                if (key.Key == ConsoleKey.Backspace && buffer.Length > 0)
-                {
-                    buffer = buffer[..^1];
-                    Console.Write("\b \b");
-                }
-                else if (!char.IsControl(key.KeyChar))
-                {
-                    buffer += key.KeyChar;
-                    Console.Write(key.KeyChar);
-                }
-            }
-        }
-
-        static bool Validate(string inputFile, string outputDir)
-        {
-            if (!File.Exists(inputFile))
-            {
-                Console.WriteLine($"Файл не найден: {inputFile}");
-                return false;
-            }
-
-            if (!Directory.Exists(outputDir))
-            {
-                Console.WriteLine($"Каталог не найден, создаем: {outputDir}");
-                Directory.CreateDirectory(outputDir);
-            }
-
-            return true;
-        }
-
-        static bool HasHelp(string[] args)
-        {
-            foreach (var a in args)
-            {
-                if (a == "-h" || a == "--help" || a == "/?")
-                    return true;
-            }
-            return false;
-        }
-
-        static void PrintHelp()
-        {
-            Console.WriteLine(@"
-Использование:
-  MyTool.exe <input.json> <output_folder>
-
-Если аргументы не заданы — программа запросит их интерактивно.
-
-Аргументы:
-  input.json       Путь к входному файлу
-  output_folder    Каталог результата
-
-Опции:
-  -h, --help, /?    Показать справку
-
-Пример:
-  MyTool.exe conversations.json output
-");
+            if (Validate(i, o)) { input = i; output = o; return true; }
+            Console.WriteLine("Ошибка. Повтор.\n");
         }
     }
+
+    static string? ReadEsc()
+    {
+        var s = "";
+        while (true)
+        {
+            var k = Console.ReadKey(true);
+            if (k.Key == ConsoleKey.Escape) { Console.WriteLine(); return null; }
+            if (k.Key == ConsoleKey.Enter) { Console.WriteLine(); return s.Trim(); }
+            if (k.Key == ConsoleKey.Backspace && s.Length > 0)
+            { s = s[..^1]; Console.Write("\b \b"); }
+            else if (!char.IsControl(k.KeyChar))
+            { s += k.KeyChar; Console.Write(k.KeyChar); }
+        }
+    }
+
+    static bool Validate(string input, string output)
+    {
+        if (!File.Exists(input)) { Console.WriteLine($"Файл не найден: {input}"); return false; }
+        if (!Directory.Exists(output)) Directory.CreateDirectory(output);
+        return true;
+    }
+
+    static bool HasHelp(string[] a)
+        => Array.Exists(a, x => x is "-h" or "--help" or "/?");
+
+    static void Help() => Console.WriteLine(@"
+Usage:
+  MyTool.exe <input.json> <output_folder>
+  MyTool.exe --input file.json --out folder
+
+Options:
+  -i, --input     Input JSON path
+  -o, --out       Output folder
+  -h, --help      Show help
+
+If args missing → interactive mode (ESC to exit)
+");
 }

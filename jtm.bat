@@ -1,0 +1,1 @@
+"d:\@Developers\Programmers\!NET\!JsonToMarkdown\bin\Debug\JsonToMarkdown.exe" -i "d:\@Developers\Programmers\!NET\!SpecSPDS\SpecSPDS.wiki\GPT\conversations.json" -o "c:\TEMP\0dptg5uy.dab"
