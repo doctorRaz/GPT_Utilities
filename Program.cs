@@ -7,7 +7,7 @@ using System.Net;
 
 class ProgramGPT
 {
-    static void Main(string[] args)
+    static void Main0(string[] args)
     {
         if (args.Length < 2)
         {           
