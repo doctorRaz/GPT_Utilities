@@ -1,12 +1,9 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using System.Collections.Generic;
 
-namespace JsonToMarkdown
+namespace GPTJson2Md
 {
-   public class JsonToMd
+   public class JsonTo2Md
     {
         //static void Main_(string[] args)
        public static void JsonToMdParser(string fileJson,string folderOut)
