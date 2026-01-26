@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace JsonToMarkdown
 {
-    class Program_
+    class Parser
     {
         //static void Main_(string[] args)
         static void JsonToMd(string[] args)
