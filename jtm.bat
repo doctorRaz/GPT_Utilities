@@ -1,1 +1,0 @@
-"d:\@Developers\Programmers\!NET\!GPTJsonMd\bin\Release\GPTJson2Md.exe" -i "d:\@Developers\Programmers\!NET\!SpecSPDS\SpecSPDS.wiki\GPT\conversations.json" -o "d:\@Developers\Programmers\!NET\!SpecSPDS\SpecSPDS.wiki\GPT\out"
