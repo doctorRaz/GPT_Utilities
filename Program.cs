@@ -52,7 +52,15 @@ class ProgramGPT
                 if (obj.TryGetProperty("message", out var m) && m.ValueKind != JsonValueKind.Null)
                 {
                     string role = m.GetProperty("author").GetProperty("role").GetString();
-                    double? msgTime = m.TryGetProperty("create_time", out var mt) ? mt.GetDouble() : null;
+                    //double? msgTime = m.TryGetProperty("create_time", out var mt) ? mt.GetDouble() :  null;
+                    double? msgTime = null;
+
+                    if (m.TryGetProperty("create_time", out var mt) &&
+                        mt.ValueKind == JsonValueKind.Number)
+                    {
+                        msgTime = mt.GetDouble();
+                    }
+
 
                     string content = "";
                     if (m.TryGetProperty("content", out var c) &&
