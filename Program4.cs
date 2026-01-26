@@ -41,9 +41,18 @@ class Program4
 
                 if (obj.TryGetProperty("message", out var m) && m.ValueKind != JsonValueKind.Null)
                 {
-                    string role = m.TryGetProperty("author", out var a) &&
+                    string? role = m.TryGetProperty("author", out var a) &&
                                   a.TryGetProperty("role", out var r) &&
                                   r.ValueKind == JsonValueKind.String ? r.GetString() : "unknown";
+
+                    if(role=="user")
+                    {
+                        role = "👤 User";
+                    }
+                    else if(role=="assistant")
+                    {
+                        role = "🤖 Assistant";
+                    }
 
                     double? mt = m.TryGetProperty("create_time", out var t) && t.ValueKind == JsonValueKind.Number ? t.GetDouble() : null;
 
@@ -111,7 +120,8 @@ class Program4
                 foreach (var m in chain)
                 {
                     string time = m.Time.HasValue ? Iso(m.Time.Value) : "unknown";
-                    w.WriteLine($"## {m.Role.ToUpper()} — {time}\n");
+                    w.WriteLine($"## {m.Role/*.ToUpper()*/}");
+                    w.WriteLine($"Date: {time}\n");
                     w.WriteLine(EscapeSmart(m.Content.Trim()));
                     w.WriteLine();
                 }
