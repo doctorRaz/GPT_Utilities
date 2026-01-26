@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JsonToMarkdown": {
+      "commandName": "Project",
+      "commandLineArgs": "conversations.json\r\nout"
+    }
+  }
+}
