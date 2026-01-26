@@ -1,21 +1,15 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Text.Json;
 
 namespace GPTJson2Md
 {
-   public class JsonTo2Md
+    public class JsonTo2Md
     {
-        //static void Main_(string[] args)
-       public static void JsonToMdParser(string fileJson,string folderOut)
+        public static void Json2MdParser(string fileJson, string folderOut)
         {
-            //if (args.Length < 2)
-            //{
-            //    Console.WriteLine("Usage: gpt2md <conversations.fileJson> <outputFolder>");
-            //    return;
-            //}
-
-            //Directory.CreateDirectory(args[1]);
-
             int countFiiles = 0;
 
             using var fs = File.OpenRead(fileJson);
@@ -123,7 +117,7 @@ namespace GPTJson2Md
                     foreach (var m in chain)
                     {
                         string time = m.Time.HasValue ? Iso(m.Time.Value) : "unknown";
-                        w.WriteLine($"## {m.Role/*.ToUpper()*/}");
+                        w.WriteLine($"## {m.Role}");
                         w.WriteLine($"Date: {time}\n");
                         w.WriteLine(EscapeSmart(m.Content.Trim()));
 
@@ -141,7 +135,7 @@ namespace GPTJson2Md
                 if (last.HasValue)
                     File.SetLastWriteTime(path, FromUnix(last.Value));
 
-                countFiiles ++;
+                countFiiles++;
                 Console.WriteLine($"Saved: {path}");
             }
             Console.WriteLine($"Total saved: {countFiiles} files");

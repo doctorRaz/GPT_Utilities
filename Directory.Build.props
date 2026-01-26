@@ -18,6 +18,6 @@
 		<Trademark>doctorRaz $(StartYear)-$(CurrentYear)</Trademark>
 		<AssemblyTitle>GPTJson2Md</AssemblyTitle>
 		<NeutralLanguage>ru-RU</NeutralLanguage>
-		<RepositoryUrl>https://github.com/doctorRaz/SpecSPDS</RepositoryUrl>
+		<RepositoryUrl>https://github.com/doctorRaz/GPTJsonMd</RepositoryUrl>
 	</PropertyGroup>
 </Project>

@@ -1,4 +1,7 @@
-﻿namespace GPTJson2Md
+﻿using System;
+using System.IO;
+
+namespace GPTJson2Md
 {
     class Program
     {
@@ -16,7 +19,7 @@
 
             Console.WriteLine($"OK\nInput: {input}\nOutput: {output}");
 
-            JsonTo2Md.JsonToMdParser(input, output);
+            JsonTo2Md.Json2MdParser(input, output);
 
             Console.ReadKey();
             return 0;
