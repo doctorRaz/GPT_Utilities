@@ -48,15 +48,15 @@ class ProgramGPT
                 string nodeId = item.Name;
                 var obj = item.Value;
 
-                string parent = obj.TryGetProperty("parent", out var p) && p.ValueKind != JsonValueKind.Null
+                string? parent = obj.TryGetProperty("parent", out var p) && p.ValueKind != JsonValueKind.Null
                     ? p.GetString()
                     : null;
 
-                Message msg = null;
+                Message? msg = null;
 
                 if (obj.TryGetProperty("message", out var m) && m.ValueKind != JsonValueKind.Null)
                 {
-                    string role = m.GetProperty("author").GetProperty("role").GetString();
+                    string? role = m.GetProperty("author").GetProperty("role").GetString();
                     //double? msgTime = m.TryGetProperty("create_time", out var mt) ? mt.GetDouble() :  null;
                     double? msgTime = null;
 

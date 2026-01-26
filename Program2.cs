@@ -4,14 +4,15 @@ using System.Text;
 using System.Text.Json;
 using System.Collections.Generic;
 
+// https://forum.obsidian.md/t/sorting-files-by-date-dd-mm-yyyy-dataview/48762
 class Program2
 {
     /// <summary>
     /// Defines the entry point of the application.<br/>
-    /// совсем без экранирования <>
+    /// заработал экран
     /// </summary>
     /// <param name="args">The arguments.</param>
-    static void Main(string[] args)
+    static void Main2(string[] args)
     {
         if (args.Length < 2)
         {
@@ -46,7 +47,7 @@ class Program2
                 string nodeId = item.Name;
                 var obj = item.Value;
 
-                string parent = obj.TryGetProperty("parent", out var p) && p.ValueKind == JsonValueKind.String
+                string? parent = obj.TryGetProperty("parent", out var p) && p.ValueKind == JsonValueKind.String
                     ? p.GetString()
                     : null;
 

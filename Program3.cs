@@ -11,7 +11,7 @@ class Program3
     /// коряво экранирует
     /// </summary>
     /// <param name="args">The arguments.</param>
-    static void Main3(string[] args)
+    static void Main(string[] args)
     {
         if (args.Length < 2)
         {
@@ -115,9 +115,9 @@ class Program3
                     ? UnixToIso(msg.CreateTime.Value)
                     : "unknown";
 
-                writer.WriteLine($"## {msg.Role.ToUpper()} — {time}");
+                writer.WriteLine($"## {msg.Role/*.ToUpper()*/} — {time}");
                 writer.WriteLine();
-                writer.WriteLine(EscapeTextExceptCode(msg.Content.Trim()));
+                writer.WriteLine(/*EscapeTextExceptCode*/EscapeSmart(msg.Content.Trim()));
                 writer.WriteLine();
             }
 
@@ -204,6 +204,83 @@ class Program3
 
     static string EscapeYaml(string text)
         => text?.Replace("\"", "\\\"") ?? "";
+
+    //еще версия от бота
+    static string EscapeSmart(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        var sb = new StringBuilder();
+        bool inCodeBlock = false;
+        bool inInlineCode = false;
+        bool inSingleQuotes = false;
+
+        using var reader = new StringReader(text);
+        string line;
+
+        while ((line = reader.ReadLine()) != null)
+        {
+            // Code block toggle ```
+            if (line.TrimStart().StartsWith("```"))
+            {
+                inCodeBlock = !inCodeBlock;
+                sb.AppendLine(line);
+                continue;
+            }
+
+            if (inCodeBlock)
+            {
+                sb.AppendLine(line);
+                continue;
+            }
+
+            var lineSb = new StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+
+                // inline code `
+                if (c == '`')
+                {
+                    inInlineCode = !inInlineCode;
+                    lineSb.Append(c);
+                    continue;
+                }
+
+                // single quotes '
+                if (c == '\'')
+                {
+                    inSingleQuotes = !inSingleQuotes;
+                    lineSb.Append(c);
+                    continue;
+                }
+
+                // if protected zones — copy raw
+                if (inInlineCode || inSingleQuotes)
+                {
+                    lineSb.Append(c);
+                    continue;
+                }
+
+                // escape only in normal text
+                if (c == '<')
+                    lineSb.Append("&lt;");
+                else if (c == '>')
+                    lineSb.Append("&gt;");
+                else if (c == '&')
+                    lineSb.Append("&amp;");
+                else
+                    lineSb.Append(c);
+            }
+
+            sb.AppendLine(lineSb.ToString());
+        }
+
+        return sb.ToString();
+    }
+
 
     // Экранируем < > & только вне code blocks
     static string EscapeTextExceptCode(string text)
