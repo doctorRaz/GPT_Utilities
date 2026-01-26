@@ -6,7 +6,8 @@ class Program
 {
     static int Main(string[] args)
     {
-        if (HasHelp(args)) { Help(); return 0; }
+        if (args.Length == 0) Help();
+        else if (HasHelp(args)) { Help(); return 0; }
 
         var (input, output) = ParseArgs(args);
 
@@ -16,9 +17,10 @@ class Program
         if (!Validate(input, output)) return 1;
 
         Console.WriteLine($"OK\nInput: {input}\nOutput: {output}");
-        // TODO: основная логика
-
+        
         JsonToMd.JsonToMdParser(input, output);
+        
+        Console.ReadKey();
         return 0;
     }
 

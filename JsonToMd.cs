@@ -19,6 +19,8 @@ namespace JsonToMarkdown
 
             //Directory.CreateDirectory(args[1]);
 
+            int countFiiles = 0;
+
             using var fs = File.OpenRead(fileJson);
             using var doc = JsonDocument.Parse(fs);
 
@@ -142,8 +144,10 @@ namespace JsonToMarkdown
                 if (last.HasValue)
                     File.SetLastWriteTime(path, FromUnix(last.Value));
 
+                countFiiles ++;
                 Console.WriteLine($"Saved: {path}");
             }
+            Console.WriteLine($"Total saved: {countFiiles} files");
         }
 
         // -------- Helpers (compact) --------
