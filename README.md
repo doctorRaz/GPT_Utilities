@@ -176,6 +176,10 @@ GPTJsonMd.exe chats.json ./md
 *   Долгосрочное хранение инженерных диалогов
 
 * * *
+### Obsidian
+
+<img width="1867" height="1605" alt="image" src="https://github.com/user-attachments/assets/742cc5de-4e75-414a-997a-c4d49a5838ac" />
+
 
 
 
