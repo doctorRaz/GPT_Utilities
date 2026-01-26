@@ -9,7 +9,7 @@ class Program2
 {
     /// <summary>
     /// Defines the entry point of the application.<br/>
-    /// заработал экран
+    /// 
     /// </summary>
     /// <param name="args">The arguments.</param>
     static void Main2(string[] args)

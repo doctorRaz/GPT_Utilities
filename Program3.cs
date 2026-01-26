@@ -7,11 +7,12 @@ using System.Collections.Generic;
 class Program3
 {
     /// <summary>
+    /// Рабочий код <br/>
     /// Defines the entry point of the application.<br/>
-    /// коряво экранирует
+    /// заработал экран
     /// </summary>
     /// <param name="args">The arguments.</param>
-    static void Main(string[] args)
+    static void _Main(string[] args)
     {
         if (args.Length < 2)
         {
@@ -46,7 +47,7 @@ class Program3
                 string nodeId = item.Name;
                 var obj = item.Value;
 
-                string parent = obj.TryGetProperty("parent", out var p) && p.ValueKind == JsonValueKind.String
+                string? parent = obj.TryGetProperty("parent", out var p) && p.ValueKind == JsonValueKind.String
                     ? p.GetString()
                     : null;
 
@@ -103,10 +104,15 @@ class Program3
             writer.WriteLine("---");
             writer.WriteLine($"id: \"{EscapeYaml(id)}\"");
             writer.WriteLine($"title: \"{EscapeYaml(title)}\"");
-            writer.WriteLine($"created: \"{UnixToIso(createTime)}\"");
+            writer.WriteLine($"Date: \"{UnixToIso(createTime)}\"");
             writer.WriteLine($"updated: \"{UnixToIso(updateTime)}\"");
             writer.WriteLine("---");
             writer.WriteLine();
+            //todo add url chat
+            writer.WriteLine($"# {EscapeYaml(title)}");
+            writer.WriteLine($"Date: {UnixToIso(createTime)}");
+            writer.WriteLine();
+            writer.WriteLine("---");
 
             // Messages
             foreach (var msg in chain)
@@ -115,19 +121,20 @@ class Program3
                     ? UnixToIso(msg.CreateTime.Value)
                     : "unknown";
 
-                writer.WriteLine($"## {msg.Role/*.ToUpper()*/} — {time}");
+                writer.WriteLine($"## {msg.Role/*.ToUpper()*/}");
+                writer.WriteLine($"Date: {time}");
                 writer.WriteLine();
                 writer.WriteLine(/*EscapeTextExceptCode*/EscapeSmart(msg.Content.Trim()));
                 writer.WriteLine();
             }
-
+            //todo add last create & last modifed file
             Console.WriteLine($"Saved: {outputPath}");
         }
     }
 
     // -------- Helpers --------
 
-    static string GetString(JsonElement obj, string prop)
+    static string? GetString(JsonElement obj, string prop)
         => obj.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String
             ? p.GetString()
             : null;
@@ -143,11 +150,12 @@ class Program3
             : null;
 
     static string GetRole(JsonElement msg)
-    {
+    {//todo add ico  user & assistant
         if (msg.TryGetProperty("author", out var author) &&
             author.TryGetProperty("role", out var roleProp) &&
             roleProp.ValueKind == JsonValueKind.String)
         {
+
             return roleProp.GetString();
         }
 
