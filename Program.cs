@@ -7,6 +7,11 @@ using System.Net;
 
 class ProgramGPT
 {
+    /// <summary>
+    /// Main0s the specified arguments.<br/>
+    /// Экранирует <> в тч и в коде((
+    /// </summary>
+    /// <param name="args">The arguments.</param>
     static void Main0(string[] args)
     {
         if (args.Length < 2)

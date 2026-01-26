@@ -2,7 +2,7 @@
   "profiles": {
     "JsonToMarkdown": {
       "commandName": "Project",
-      "commandLineArgs": "conversations.json\r\nout"
+      "commandLineArgs": "d:\\@Developers\\Programmers\\!NET\\!SpecSPDS\\SpecSPDS.wiki\\GPT\\conversations.json\r\nd:\\@Developers\\Programmers\\!NET\\!SpecSPDS\\SpecSPDS.wiki\\GPT\\_out\\"
     }
   }
 }

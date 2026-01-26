@@ -4,14 +4,14 @@ using System.Text;
 using System.Text.Json;
 using System.Collections.Generic;
 
-class Program2
+class Program3
 {
     /// <summary>
     /// Defines the entry point of the application.<br/>
-    /// совсем без экранирования <>
+    /// коряво экранирует
     /// </summary>
     /// <param name="args">The arguments.</param>
-    static void Main2(string[] args)
+    static void Main3(string[] args)
     {
         if (args.Length < 2)
         {
@@ -117,7 +117,7 @@ class Program2
 
                 writer.WriteLine($"## {msg.Role.ToUpper()} — {time}");
                 writer.WriteLine();
-                writer.WriteLine(msg.Content.Trim());
+                writer.WriteLine(EscapeTextExceptCode(msg.Content.Trim()));
                 writer.WriteLine();
             }
 
@@ -125,7 +125,7 @@ class Program2
         }
     }
 
-    // Helpers
+    // -------- Helpers --------
 
     static string GetString(JsonElement obj, string prop)
         => obj.TryGetProperty(prop, out var p) && p.ValueKind == JsonValueKind.String
@@ -204,6 +204,44 @@ class Program2
 
     static string EscapeYaml(string text)
         => text?.Replace("\"", "\\\"") ?? "";
+
+    // Экранируем < > & только вне code blocks
+    static string EscapeTextExceptCode(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        var sb = new StringBuilder();
+        bool inCode = false;
+
+        using var reader = new StringReader(text);
+        string line;
+
+        while ((line = reader.ReadLine()) != null)
+        {
+            if (line.TrimStart().StartsWith("```"))
+            {
+                inCode = !inCode;
+                sb.AppendLine(line);
+                continue;
+            }
+
+            if (inCode)
+            {
+                sb.AppendLine(line);
+            }
+            else
+            {
+                sb.AppendLine(
+                    line.Replace("&", "&amp;")
+                        .Replace("<", "&lt;")
+                        .Replace(">", "&gt;")
+                );
+            }
+        }
+
+        return sb.ToString();
+    }
 
     record Node(string Parent, Message Message);
     record Message(string Role, double? CreateTime, string Content);
