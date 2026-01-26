@@ -1,0 +1,23 @@
+﻿<Project>
+	<PropertyGroup>
+		<!--<DateTime -->
+		<StartYear>2014</StartYear>
+		<CurrentYear>$([System.DateTime]::Now.Year)</CurrentYear>
+		<!--<Version />-->
+		<Deterministic>false</Deterministic>
+		<AssemblyVersion>1.0.*</AssemblyVersion>
+		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+		<GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+		<!--<Version />-->
+		<!-- Description -->
+		<Product>GPTJson2Md</Product>
+		<Company>doctorRaz</Company>
+		<Authors>Разыграев Андрей</Authors>
+		<Description>ChatGPT JSON to Markdown converter. Preserves code and metadata.</Description>
+		<Copyright>© Разыграев Андрей  $(StartYear)-$(CurrentYear)</Copyright>
+		<Trademark>doctorRaz $(StartYear)-$(CurrentYear)</Trademark>
+		<AssemblyTitle>GPTJson2Md</AssemblyTitle>
+		<NeutralLanguage>ru-RU</NeutralLanguage>
+		<RepositoryUrl>https://github.com/doctorRaz/SpecSPDS</RepositoryUrl>
+	</PropertyGroup>
+</Project>
