@@ -11,7 +11,7 @@ class Program2
     /// совсем без экранирования <>
     /// </summary>
     /// <param name="args">The arguments.</param>
-    static void Main2(string[] args)
+    static void Main(string[] args)
     {
         if (args.Length < 2)
         {
