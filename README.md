@@ -1,4 +1,4 @@
-﻿# GPTJsonMd
+﻿# GPTJson2Md
 
 Минималистичный консольный инструмент для преобразования JSON-экспорта чатов ChatGPT в Markdown без искажения текста и кода.
 
@@ -90,19 +90,19 @@ Console.WriteLine("Hello");
 ### Запуск
 
 ```bash
-GPTJsonMd.exe <input.json> <output_folder>
+GPTJson2Md.exe <input.json> <output_folder>
 ````
 
 Или с именованными параметрами:
 
 ```bash
-GPTJsonMd.exe --input chat.json --out output_folder
+GPTJson2Md.exe --input chat.json --out output_folder
 ```
 
 Сокращённо:
 
 ```bash
-GPTJsonMd.exe -i chat.json -o output_folder
+GPTJson2Md.exe -i chat.json -o output_folder
 ```
 
 * * *
@@ -136,11 +136,11 @@ Output folder (ESC = exit):
 ### CLI Help
 
 ```text
-GPTJsonMd — ChatGPT JSON → Markdown converter
+GPTJson2Md — ChatGPT JSON → Markdown converter
 
 Usage:
-  GPTJsonMd.exe <input.json> <output_folder>
-  GPTJsonMd.exe --input file.json --out folder
+  GPTJso2nMd.exe <input.json> <output_folder>
+  GPTJson2Md.exe --input file.json --out folder
 
 Options:
   -i, --input     Input JSON path
@@ -155,7 +155,7 @@ If args missing → interactive mode (ESC to exit)
 ### Пример запуска
 
 ```bash
-GPTJsonMd.exe chats.json ./md
+GPTJson2Md.exe chats.json ./md
 ```
 
 Результат:
