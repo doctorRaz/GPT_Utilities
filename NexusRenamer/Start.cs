@@ -1,8 +1,8 @@
-﻿using dRz.NexusRenamer;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
-namespace drz.MoveDuplicate
+namespace dRz.GPT_Utilities
 {
     internal class Start
     {
@@ -22,7 +22,7 @@ namespace drz.MoveDuplicate
 
             if (!string.IsNullOrWhiteSpace(root))
             {
-             var result=   MarkdownTitleRenamer.Rename(root);
+                IReadOnlyList<RenameResult> result = NexusRenamer.Rename(root);
                 //FileMover.MoveDuplicateFiles(root);
             }
             else
@@ -40,7 +40,9 @@ namespace drz.MoveDuplicate
             if (!string.IsNullOrWhiteSpace(def))
             {
                 if (Directory.Exists(def))
+                {
                     return def;
+                }
             }
 
             // 1. Проверяем аргумент командной строки.
@@ -51,7 +53,9 @@ namespace drz.MoveDuplicate
                     string path = Path.GetFullPath(args[0]);
 
                     if (Directory.Exists(path))
+                    {
                         return path;
+                    }
                 }
                 catch
                 {
@@ -62,7 +66,9 @@ namespace drz.MoveDuplicate
             // 2. Если рабочий каталог существует, используем его.
             string currentDirectory = Directory.GetCurrentDirectory();
             if (Directory.Exists(currentDirectory))
+            {
                 return currentDirectory;
+            }
 
             // 3. Последний вариант ничего не найдено, возвращаем пустую строку.
             return string.Empty;

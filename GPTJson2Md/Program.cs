@@ -1,23 +1,34 @@
 ﻿using System;
 using System.IO;
 
-namespace GPTJson2Md
+namespace dRz.GPT_Utilities
 {
-    class Program
+    internal class Program
     {
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
-            if (args.Length == 0) Help();
+            if (args.Length == 0)
+            {
+                Help();
+            }
             else if (HasHelp(args)) { Help(); return 0; }
 
-            var (input, output) = ParseArgs(args);
-			
-			//todo получать список файлов conversations*.json в директории по маске и обрабатывать их в цикле
-            
-			if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(output))
-                if (!Prompt(out input, out output)) return 0;
+            (string? input, string? output) = ParseArgs(args);
 
-            if (!Validate(input, output)) return 1;
+            //todo получать список файлов conversations*.json в директории по маске и обрабатывать их в цикле
+
+            if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(output))
+            {
+                if (!Prompt(out input, out output))
+                {
+                    return 0;
+                }
+            }
+
+            if (!Validate(input, output))
+            {
+                return 1;
+            }
 
             Console.WriteLine($"OK\nInput: {input}\nOutput: {output}");
 
@@ -27,7 +38,7 @@ namespace GPTJson2Md
             return 0;
         }
 
-        static (string? input, string? output) ParseArgs(string[] a)
+        private static (string? input, string? output) ParseArgs(string[] a)
         {
             string? i = null, o = null;
 
@@ -38,39 +49,52 @@ namespace GPTJson2Md
                     case "--input": case "-i": i = Next(a, ref n); break;
                     case "--out": case "-o": o = Next(a, ref n); break;
                     default:
-                        if (i == null) i = a[n];
-                        else if (o == null) o = a[n];
+                        if (i == null)
+                        {
+                            i = a[n];
+                        }
+                        else if (o == null)
+                        {
+                            o = a[n];
+                        }
+
                         break;
                 }
             }
             return (i, o);
         }
 
-        static string? Next(string[] a, ref int n) =>
+        private static string? Next(string[] a, ref int n) =>
             n + 1 < a.Length ? a[++n] : null;
 
-        static bool Prompt(out string input, out string output)
+        private static bool Prompt(out string input, out string output)
         {
             input = output = "";
             while (true)
             {
                 Console.Write("Input JSON (ESC = exit): ");
-                var i = ReadEsc(); if (i == null) return false;
+                string? i = ReadEsc(); if (i == null)
+                {
+                    return false;
+                }
 
                 Console.Write("Output folder (ESC = exit): ");
-                var o = ReadEsc(); if (o == null) return false;
+                string? o = ReadEsc(); if (o == null)
+                {
+                    return false;
+                }
 
                 if (Validate(i, o)) { input = i; output = o; return true; }
                 Console.WriteLine("Ошибка. Повтор.\n");
             }
         }
 
-        static string? ReadEsc()
+        private static string? ReadEsc()
         {
-            var s = "";
+            string s = "";
             while (true)
             {
-                var k = Console.ReadKey(true);
+                ConsoleKeyInfo k = Console.ReadKey(true);
                 if (k.Key == ConsoleKey.Escape) { Console.WriteLine(); return null; }
                 if (k.Key == ConsoleKey.Enter) { Console.WriteLine(); return s.Trim(); }
                 if (k.Key == ConsoleKey.Backspace && s.Length > 0)
@@ -80,17 +104,21 @@ namespace GPTJson2Md
             }
         }
 
-        static bool Validate(string input, string output)
+        private static bool Validate(string input, string output)
         {
             if (!File.Exists(input)) { Console.WriteLine($"Файл не найден: {input}"); return false; }
-            if (!Directory.Exists(output)) Directory.CreateDirectory(output);
+            if (!Directory.Exists(output))
+            {
+                Directory.CreateDirectory(output);
+            }
+
             return true;
         }
 
-        static bool HasHelp(string[] a)
+        private static bool HasHelp(string[] a)
             => Array.Exists(a, x => x is "-h" or "--help" or "/?");
 
-        static void Help() => Console.WriteLine(@"
+        private static void Help() => Console.WriteLine(@"
 Usage:
   MyTool.exe <input.json> <output_folder>
   MyTool.exe --input file.json --out folder

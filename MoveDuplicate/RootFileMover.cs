@@ -1,9 +1,8 @@
-﻿using dRz.MoveDuplicate;
-using System;
+﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace drz.MoveDuplicate
+namespace dRz.GPT_Utilities
 {
     /// <summary>
     /// Выполняет перемещение файлов из корневого каталога
@@ -40,7 +39,9 @@ namespace drz.MoveDuplicate
         public static void MoveFiles(string rootDirectory)
         {
             if (!Directory.Exists(rootDirectory))
+            {
                 throw new DirectoryNotFoundException(rootDirectory);
+            }
 
             //убираем префикс даты у файлов в директориях
             NormalizeSubdirectoriesFiles(rootDirectory);
@@ -65,7 +66,10 @@ namespace drz.MoveDuplicate
                     string targetFile = Path.Combine(subDirectory, fileName);
 
                     // Файл отсутствует.
-                    if (!File.Exists(targetFile)) continue;
+                    if (!File.Exists(targetFile))
+                    {
+                        continue;
+                    }
 
                     // Сравниваем дату последнего изменения.
                     DateTime sourceTime = File.GetLastWriteTime(rootFile);
@@ -141,7 +145,9 @@ namespace drz.MoveDuplicate
 
                     // Если имя уже "чистое", ничего не делаем
                     if (rawName.Equals(baseName, StringComparison.OrdinalIgnoreCase))
+                    {
                         continue;
+                    }
 
                     string targetBaseName = Path.Combine(subDirectory, baseName);
 

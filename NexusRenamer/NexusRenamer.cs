@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace dRz.NexusRenamer
+namespace dRz.GPT_Utilities
 {
     /// <summary>
     /// Выполняет переименование Markdown-файлов по значению заголовка
@@ -19,7 +19,7 @@ namespace dRz.NexusRenamer
     /// </code>
     /// Поиск выполняется рекурсивно по всем подкаталогам.
     /// </remarks>
-    public static class MarkdownTitleRenamer
+    public static class NexusRenamer
     {
         private const string TitlePrefix = "# Title:";
 
@@ -39,7 +39,9 @@ namespace dRz.NexusRenamer
         public static IReadOnlyList<RenameResult> Rename(string directory)
         {
             if (!Directory.Exists(directory))
+            {
                 throw new DirectoryNotFoundException(directory);
+            }
 
             List<RenameResult> result = new();
 
@@ -51,16 +53,22 @@ namespace dRz.NexusRenamer
                 string? title = ReadTitle(file);
 
                 if (string.IsNullOrWhiteSpace(title))
+                {
                     continue;
+                }
 
                 string newName = SanitizeFileName(title) + ".md";
                 string newPath = Path.Combine(Path.GetDirectoryName(file)!, newName);
 
                 if (string.Equals(file, newPath, StringComparison.OrdinalIgnoreCase))
+                {
                     continue;
+                }
 
                 if (File.Exists(newPath))
+                {
                     continue;
+                }
 
                 File.Move(file, newPath);
 

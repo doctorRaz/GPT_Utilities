@@ -1,16 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
-		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputType>Exe</OutputType>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<Description>Раскидывает json в markdown по чатам</Description>
+		<HostFamily>$(MSBuildProjectName)</HostFamily>
+		<HostCode>_$(MSBuildProjectName)</HostCode>
+		<ApplicationIcon>Refresh.ico</ApplicationIcon>
 	</PropertyGroup>
-	<ItemGroup>
-		<Compile Remove="_Draft\**" />
-		<EmbeddedResource Remove="_Draft\**" />
-		<None Remove="_Draft\**" />
-	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Include="Refresh.ico" />
+	</ItemGroup>
 </Project>
