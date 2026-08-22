@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConvovizRenamer;
+using System;
 using System.IO;
 
 namespace dRz.GPT_Utilities
@@ -14,15 +15,20 @@ namespace dRz.GPT_Utilities
             {
                 System.Diagnostics.Debugger.Launch();
             }
-               def = @"d:\@Developers\В работе\Reminder\Convoviz\";
+            def = @"d:\@Developers\В работе\Reminder\Convoviz\";
 #endif
 
             string root = GetRootDirectory(args, def);
 
             if (!string.IsNullOrWhiteSpace(root))
             {
-                var result = ConvovizRenamer.Rename(root);
-                //FileMover.MoveDuplicateFiles(root);
+
+                var renamer = new MarkdownRenamer();
+
+                var res = renamer.Rename(root);
+
+                //var result = ConvovizRenamer.Rename(root);
+
             }
             else
             {
