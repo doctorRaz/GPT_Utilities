@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.8.12023.21
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GPTJson2Md", "!GPTJson2Md\GPTJson2Md.csproj", "{FBD558C3-D1AF-75B3-87A4-127B300262AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GPTJson2Md", "GPTJson2Md\GPTJson2Md.csproj", "{FBD558C3-D1AF-75B3-87A4-127B300262AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoveDuplicate", "MoveDuplicate\MoveDuplicate.csproj", "{8F14B469-5F03-070B-3A44-C29A80D81FC8}"
 EndProject
