@@ -1,0 +1,209 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- https://chatgpt.com/c/6a74fa4a-8ee4-83eb-bec2-0d4ad27474e8 -->
+	<!-- ================================================================= -->
+	<!-- Основные параметры проекта                                                   -->
+	<!-- ================================================================= -->
+	<PropertyGroup>
+
+		<!-- Короткий идентификатор разработчика -->
+		<Vendor>dRz</Vendor>
+
+		<!-- Целевая платформа -->
+		<TargetFramework>net6.0-windows</TargetFramework>
+
+		<!-- Тип выходного файла -->
+		<OutputType>Exe</OutputType>
+
+		<!-- Платформа процессора -->
+		<PlatformTarget>AnyCPU</PlatformTarget>
+
+		<!-- Корневое пространство имен -->
+		<RootNamespace>$(Vendor).$(MSBuildProjectName)</RootNamespace>
+
+		<!-- Версия языка -->
+		<LangVersion>latest</LangVersion>
+
+		<!-- Nullable Reference Types -->
+		<Nullable>enable</Nullable>
+
+		<!-- Не добавлять TargetFramework в путь вывода -->
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+		<!-- Сборка не является детерминированной (необходимо при использовании AssemblyVersion=*) -->
+		<!--<Deterministic>false</Deterministic>-->
+
+		<!--название файла сборки-->
+		<!--<AssemblyName>$(SolutionName).$(MSBuildProjectName)</AssemblyName>-->
+
+	</PropertyGroup>
+
+	<!-- ================================================================= -->
+	<!-- Параметры Host                                                     -->
+	<!-- ================================================================= -->
+	<PropertyGroup>
+
+		<!-- Семейство хоста, для которого собрана сборка -->
+		<HostFamily>Utilities</HostFamily>
+
+		<!-- Короткий код хоста для условной компиляции, логов и имен файлов -->
+		<HostCode>nr</HostCode>
+
+		<!-- Добавить код хоста в условную компиляцию -->
+		<DefineConstants>$(DefineConstants);$(HostCode)</DefineConstants>
+
+	</PropertyGroup>
+
+	<!-- ================================================================= -->
+	<!-- Версия сборки                                                     -->
+	<!-- ================================================================= -->
+	<PropertyGroup>
+
+		<!-- Базовая версия продукта -->
+		<Version>1.0</Version>
+
+		<!--
+			Версия аналогична механизму AssemblyVersion=0.1.*
+			Build  = количество дней от 01.01.2000
+			Revision = секунды от начала суток / 2
+		-->
+		<Build>$([System.DateTime]::Now.Subtract($([System.DateTime]::Parse('2000-01-01'))).Days)</Build>
+		<Revision>$([MSBuild]::Divide($([System.DateTime]::Now.TimeOfDay.TotalSeconds), 2).ToString("F0"))</Revision>
+
+		<!-- Полная версия CLR -->
+		<AssemblyVersion>$(Version).$(Build).$(Revision)</AssemblyVersion>
+
+		<!-- Версия файла Windows -->
+		<FileVersion>$(Version).$(Build).$(Revision)</FileVersion>
+
+		<!-- Версия продукта для пользователя -->
+		<InformationalVersion>$(Version).$(Build).$(Revision)</InformationalVersion>
+
+
+		<!-- Не добавлять Git commit hash в InformationalVersion -->
+		<!--<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>-->
+
+		<!-- Не генерировать второй AssemblyFileVersion -->
+		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+
+	</PropertyGroup>
+
+	<!-- ***************************************************************** -->
+	<!-- Информация о продукте                                             -->
+	<!-- ***************************************************************** -->
+	<PropertyGroup>
+
+		<Product>$(SolutionName)</Product>
+
+		<AssemblyTitle>NexusRenamer — rename files by export Nexus</AssemblyTitle>
+
+		<Description>Переименовывает файлы экспорта Nexus в соответствии с Title</Description>
+
+		<Company>doctorRaz Technologies</Company>
+
+		<Trademark>doctorRaz</Trademark>
+
+		<StartYear>2014</StartYear>
+		<CurrentYear>$([System.DateTime]::Now.Year)</CurrentYear>
+
+		<!-- Авторские права -->
+		<Copyright>©Разыграев Андрей $(StartYear)-$(CurrentYear)</Copyright>
+
+		<!-- Домашняя страница проекта -->
+		<RepositoryUrl>https://github.com/doctorRaz</RepositoryUrl>
+
+	</PropertyGroup>
+
+	<!-- ================================================================= -->
+	<!-- Настройки компиляции                                             -->
+	<!-- ================================================================= -->
+	<PropertyGroup>
+
+		<!-- Иконка приложения -->
+		<ApplicationIcon>Refresh.ico</ApplicationIcon>
+
+		<!-- Не использовать глобальные using -->
+		<ImplicitUsings>disable</ImplicitUsings>
+
+		<!-- Создавать reference assembly -->
+		<ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+
+		<!-- Включить анализаторы .NET -->
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+
+		<!-- Рекомендуемый набор правил анализа -->
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
+
+		<AnalysisMode>Recommended</AnalysisMode>
+	</PropertyGroup>
+
+	<!-- ================================================================= -->
+	<!-- Дополнительные настройки Release                                  -->
+	<!-- ================================================================= -->
+	<PropertyGroup Condition="'$(Configuration)'!= 'Debug'">
+
+		<!-- XML документация для публичного API -->
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<!-- ================================================================= -->
+	<!-- Ресурсы                                                            -->
+	<!-- ================================================================= -->
+	<ItemGroup>
+		<Content Include="Refresh.ico" />
+	</ItemGroup>
+
+	<!-- ================================================================= -->
+	<!-- Исключение рабочих каталогов                                      -->
+	<!-- ================================================================= -->
+	<ItemGroup>
+		<!-- Черновики -->
+		<Compile Remove="**/_draft/**" />
+		<EmbeddedResource Remove="**/_draft/**" />
+		<None Remove="**/_draft/**" />
+		<Content Remove="**/_draft/**" />
+
+		<!-- Экспериментальный код -->
+		<Compile Remove="**/_experimental/**" />
+		<EmbeddedResource Remove="**/_experimental/**" />
+		<None Remove="**/_experimental/**" />
+		<Content Remove="**/_experimental/**" />
+	</ItemGroup>
+
+	<!-- ================================================================= -->
+	<!-- Дополнительные метаданные сборки                                  -->
+	<!-- ================================================================= -->
+	<ItemGroup>
+
+		<!--
+			ContactEmail
+			ContactEmailBackup
+			SupportEmail
+			LicenseEmail
+			VendorEmail
+		-->
+
+		<!-- Контактная информация -->
+		<AssemblyMetadata Include="ContactEmail" Value="razygraev@gmail.com" />
+		<AssemblyMetadata Include="SupportEmail" Value="doctorRaz@gmail.com" />
+		<AssemblyMetadata Include="VendorEmail" Value="doctorRaz@yandex.ry" />
+
+		<!--домашняя страница-->
+		<AssemblyMetadata Include="HomePage" Value="https://doctorraz.blogspot.com" />
+
+		<!-- Семейство Host -->
+		<AssemblyMetadata Include="HostFamily" Value="$(HostFamily)" />
+
+		<!-- Код Host -->
+		<AssemblyMetadata Include="HostCode" Value="$(HostCode)" />
+
+		<!--Product может быть красивым названием, а ProductFamily удобно использовать программно.-->
+		<AssemblyMetadata Include="ProductFamily" Value="$(HostFamily).$(SolutionName)" />
+
+		<AssemblyMetadata Include="Vendor" Value="$(Vendor)" />
+
+	</ItemGroup>
+
+
+
+</Project>
