@@ -11,8 +11,10 @@ namespace GPTJson2Md
             else if (HasHelp(args)) { Help(); return 0; }
 
             var (input, output) = ParseArgs(args);
-
-            if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(output))
+			
+			//todo получать список файлов conversations*.json в директории по маске и обрабатывать их в цикле
+            
+			if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(output))
                 if (!Prompt(out input, out output)) return 0;
 
             if (!Validate(input, output)) return 1;
@@ -21,7 +23,7 @@ namespace GPTJson2Md
 
             JsonTo2Md.Json2MdParser(input, output);
 
-            Console.ReadKey();
+            //Console.ReadKey();
             return 0;
         }
 
