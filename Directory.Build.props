@@ -10,14 +10,17 @@
 		<GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
 		<!--<Version />-->
 		<!-- Description -->
-		<Product>GPTJson2Md</Product>
+		<Product>GPT Utilities</Product>
 		<Company>doctorRaz</Company>
 		<Authors>Разыграев Андрей</Authors>
-		<Description>ChatGPT JSON to Markdown converter. Preserves code and metadata.</Description>
+		<Description>ChatGPT JSON to Markdown converter and Others.</Description>
 		<Copyright>© Разыграев Андрей  $(StartYear)-$(CurrentYear)</Copyright>
 		<Trademark>doctorRaz $(StartYear)-$(CurrentYear)</Trademark>
-		<AssemblyTitle>GPTJson2Md</AssemblyTitle>
+		<AssemblyTitle>GPT Utilities</AssemblyTitle>
 		<NeutralLanguage>ru-RU</NeutralLanguage>
 		<RepositoryUrl>https://github.com/doctorRaz/GPTJsonMd</RepositoryUrl>
+				<!-- путь сборки в каталоге решения общий bin -->
+		<BaseOutputPath>..\bin\</BaseOutputPath>
+		<OutputPath>$(SolutionDir)bin\$(Configuration)</OutputPath>
 	</PropertyGroup>
 </Project>
