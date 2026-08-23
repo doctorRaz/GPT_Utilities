@@ -4,9 +4,9 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 
-namespace dRz.GPT_Utilities
+namespace dRz.GPT_Utilities.GPTJson2Md
 {
-    public class JsonTo2Md
+    public class GPTJson2Md
     {
         public static void Json2MdParser(string fileJson, string folderOut)
         {

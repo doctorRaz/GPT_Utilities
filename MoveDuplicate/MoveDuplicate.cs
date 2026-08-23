@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace dRz.GPT_Utilities
+namespace dRz.GPT_Utilities.MoveDuplicate
 {
     /// <summary>
     /// Выполняет перемещение файлов из корневого каталога
@@ -20,7 +20,7 @@ namespace dRz.GPT_Utilities
     /// Если файл найден и файл в корне новее,
     /// выполняется замена файла в подкаталоге.
     /// </summary>
-    public static class RootFileMover//only gpt
+    public static class MoveDuplicate//only gpt
     {
         private const string extension = "*.md";
 

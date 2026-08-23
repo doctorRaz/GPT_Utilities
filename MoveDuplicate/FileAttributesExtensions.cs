@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace dRz.GPT_Utilities
+namespace dRz.GPT_Utilities.MoveDuplicate
 {
     /// <summary>
     /// 

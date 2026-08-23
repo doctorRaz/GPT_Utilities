@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace dRz.GPT_Utilities
+namespace dRz.GPT_Utilities.MoveDuplicate
 {
     internal class Start
     {
@@ -21,7 +21,7 @@ namespace dRz.GPT_Utilities
 
             if (!string.IsNullOrWhiteSpace(root))
             {
-                RootFileMover.MoveFiles(root);
+                MoveDuplicate.MoveFiles(root);
                 //FileMover.MoveDuplicateFiles(root);
             }
             else

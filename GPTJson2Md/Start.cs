@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 
-namespace dRz.GPT_Utilities
+namespace dRz.GPT_Utilities.GPTJson2Md
 {
-    internal class Program
+    internal class Start
     {
         private static int Main(string[] args)
         {
@@ -32,7 +32,7 @@ namespace dRz.GPT_Utilities
 
             Console.WriteLine($"OK\nInput: {input}\nOutput: {output}");
 
-            JsonTo2Md.Json2MdParser(input, output);
+            GPTJson2Md.Json2MdParser(input, output);
 
             //Console.ReadKey();
             return 0;

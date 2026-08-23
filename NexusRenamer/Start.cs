@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace dRz.GPT_Utilities
+namespace dRz.GPT_Utilities.NexusRenamer
 {
     internal class Start
     {

@@ -1,8 +1,7 @@
-﻿using ConvovizRenamer;
-using System;
+﻿using System;
 using System.IO;
 
-namespace dRz.GPT_Utilities
+namespace dRz.GPT_Utilities.ConvovizRenamer
 {
     internal class Start
     {
@@ -23,9 +22,9 @@ namespace dRz.GPT_Utilities
             if (!string.IsNullOrWhiteSpace(root))
             {
 
-                var renamer = new MarkdownRenamer();
+                ConvovizRenamer renamer = new ConvovizRenamer();
 
-                var res = renamer.Rename(root);
+                RenameResult res = renamer.Rename(root);
 
                 //var result = ConvovizRenamer.Rename(root);
 

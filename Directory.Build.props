@@ -5,7 +5,7 @@
 		<Vendor>dRz</Vendor>
 
 		<!--RootNamespace default-->
-		<RootNamespace>$(Vendor).$(SolutionName)</RootNamespace>
+		<RootNamespace>$(Vendor).$(SolutionName).$(MSBuildProjectName)</RootNamespace>
 
 		<!-- Версия языка -->
 		<LangVersion>latest</LangVersion>

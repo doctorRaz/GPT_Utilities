@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace ConvovizRenamer
+namespace dRz.GPT_Utilities.ConvovizRenamer
 {
     /// <summary>
     /// Переименовывает Markdown-файлы Convoviz по значению
@@ -39,7 +39,7 @@ namespace ConvovizRenamer
     /// 2. YAML-свойство <c>title</c> заменяется на это же значение.
     /// 3. Ссылки в <c>_index.md</c> автоматически исправляются.
     /// </remarks>
-    public sealed class MarkdownRenamer
+    public sealed class ConvovizRenamer
     {
         /// <summary>
         /// Расширение Markdown-файлов.
@@ -76,7 +76,7 @@ namespace ConvovizRenamer
                     $"Каталог не найден: {rootDirectory}");
             }
 
-            var result = new RenameResult();
+            RenameResult result = new RenameResult();
 
             // Каждый каталог обрабатывается отдельно.
             //
@@ -103,7 +103,7 @@ namespace ConvovizRenamer
                 SearchOption.TopDirectoryOnly);
 
             // _index.md сам не переименовываем.
-            var markdownFiles = files
+            string[] markdownFiles = files
                 .Where(file =>
                     !string.Equals(
                         Path.GetFileName(file),
@@ -112,13 +112,15 @@ namespace ConvovizRenamer
                 .ToArray();
 
             if (markdownFiles.Length == 0)
+            {
                 return;
+            }
 
             // Первый проход:
             // только определяем необходимые операции.
             //
             // Файлы пока НЕ переименовываем.
-            var renameMap =
+            Dictionary<string, RenameOperation> renameMap =
                 new Dictionary<string, RenameOperation>(
                     StringComparer.OrdinalIgnoreCase);
 
@@ -198,7 +200,9 @@ namespace ConvovizRenamer
             }
 
             if (renameMap.Count == 0)
+            {
                 return;
+            }
 
             // ---------------------------------------------------------
             // Проверяем конфликты между самими переименованиями.
@@ -211,7 +215,7 @@ namespace ConvovizRenamer
             // В этом случае оба файла оставляем без изменений.
             // ---------------------------------------------------------
 
-            var duplicateTargets = renameMap
+            HashSet<string> duplicateTargets = renameMap
                 .GroupBy(
                     pair => pair.Value.NewFile,
                     StringComparer.OrdinalIgnoreCase)
@@ -221,7 +225,7 @@ namespace ConvovizRenamer
 
             foreach (string target in duplicateTargets)
             {
-                var sources = renameMap
+                string[] sources = renameMap
                     .Where(pair =>
                         string.Equals(
                             pair.Value.NewFile,
@@ -243,7 +247,9 @@ namespace ConvovizRenamer
             }
 
             if (renameMap.Count == 0)
+            {
                 return;
+            }
 
             // ---------------------------------------------------------
             // Второй проход.
@@ -251,11 +257,11 @@ namespace ConvovizRenamer
             // Теперь выполняем реальные переименования.
             // ---------------------------------------------------------
 
-            var performedRenames =
+            Dictionary<string, string> performedRenames =
                 new Dictionary<string, string>(
                     StringComparer.OrdinalIgnoreCase);
 
-            foreach (var pair in renameMap)
+            foreach (KeyValuePair<string, RenameOperation> pair in renameMap)
             {
                 string sourceFile = pair.Key;
                 RenameOperation operation = pair.Value;
@@ -314,14 +320,18 @@ namespace ConvovizRenamer
             // ---------------------------------------------------------
 
             if (performedRenames.Count == 0)
+            {
                 return;
+            }
 
             string indexFile = Path.Combine(
                 directory,
                 IndexFileName);
 
             if (!File.Exists(indexFile))
+            {
                 return;
+            }
 
             try
             {
@@ -381,7 +391,7 @@ namespace ConvovizRenamer
                 new UTF8Encoding(
                     encoderShouldEmitUTF8Identifier: false));
 
-            foreach (var pair in renameMap)
+            foreach (KeyValuePair<string, string> pair in renameMap)
             {
                 string oldFileName =
                     Path.GetFileName(pair.Key);
@@ -470,7 +480,9 @@ namespace ConvovizRenamer
 
                 // Конец YAML frontmatter.
                 if (trimmed == "---")
+                {
                     break;
+                }
 
                 // Нашли существующий title.
                 if (IsYamlProperty(trimmed, "title"))
@@ -499,7 +511,7 @@ namespace ConvovizRenamer
             // title не найден.
             //
             // Добавляем его сразу после открывающего "---".
-            var newLines = new string[lines.Length + 1];
+            string[] newLines = new string[lines.Length + 1];
 
             newLines[0] = lines[0];
             newLines[1] =
@@ -551,7 +563,7 @@ namespace ConvovizRenamer
         /// </remarks>
         private static string? ReadFirstAlias(string file)
         {
-            using var reader = new StreamReader(
+            using StreamReader reader = new StreamReader(
                 file,
                 new UTF8Encoding(
                     encoderShouldEmitUTF8Identifier: false,
@@ -561,7 +573,9 @@ namespace ConvovizRenamer
 
             // YAML frontmatter должен начинаться с "---".
             if (line?.Trim() != "---")
+            {
                 return null;
+            }
 
             bool inAliases = false;
 
@@ -571,7 +585,9 @@ namespace ConvovizRenamer
 
                 // Конец YAML frontmatter.
                 if (trimmed == "---")
+                {
                     break;
+                }
 
                 if (trimmed == "aliases:")
                 {
@@ -580,7 +596,9 @@ namespace ConvovizRenamer
                 }
 
                 if (!inAliases)
+                {
                     continue;
+                }
 
                 // Первый элемент списка aliases.
                 if (trimmed.StartsWith("-"))
@@ -697,7 +715,7 @@ namespace ConvovizRenamer
         private static string UrlEncodeFileName(
             string fileName)
         {
-            var builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder();
 
             foreach (char c in fileName)
             {
@@ -760,7 +778,9 @@ namespace ConvovizRenamer
             int index = text.IndexOf('\n');
 
             if (index < 0)
+            {
                 return Environment.NewLine;
+            }
 
             if (index > 0 &&
                 text[index - 1] == '\r')
@@ -806,7 +826,7 @@ namespace ConvovizRenamer
     }
 
     /// <summary>
-    /// Результат работы <see cref="MarkdownRenamer"/>.
+    /// Результат работы <see cref="ConvovizRenamer"/>.
     /// </summary>
     public sealed class RenameResult
     {
