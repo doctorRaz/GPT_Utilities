@@ -101,7 +101,7 @@ def render_yaml_header(
     yaml_fields: dict[str, object] = {}
 
     if config.title:
-        sanitized_title = sanitize(conversation.title)
+        sanitized_title = sanitize(conversation.title, preserve_unicode=True)
         yaml_fields["title"] = sanitized_title
         if config.aliases and sanitized_title != conversation.title:
             yaml_fields["aliases"] = [conversation.title]
