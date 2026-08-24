@@ -39,7 +39,6 @@ def year_start(dt: datetime) -> datetime:
 
 def sanitize(text: str, *, preserve_unicode: bool = False) -> str:
     """Sanitize a string to be safe for filenames and YAML titles.
-
     - Transliterates non-ASCII to ASCII when possible, unless Unicode is preserved.
     - Removes non-ASCII that cannot be converted unless Unicode is preserved.
     - Replaces invalid characters with spaces.
@@ -51,16 +50,19 @@ def sanitize(text: str, *, preserve_unicode: bool = False) -> str:
         preserve_unicode: Preserve Unicode characters instead of converting to ASCII.
 
     Returns:
-        A safe ASCII string, or "untitled" if empty or invalid
+        A safe string, or "untitled" if empty or invalid.
 
     """
-    # 1. Transliterate to ASCII (e.g. 'é' -> 'e')
-    # NFKD decomposes characters (e.g. 'é' to 'e' + '`')
-    # then we encode to ascii and ignore non-ascii parts.
-    normalized = unicodedata.normalize("NFKD", text)
+    # Normalize Unicode first, so composed and decomposed characters
+    # such as "й" and "и + combining breve" become identical.
+    text = unicodedata.normalize("NFC", text)
+
     if preserve_unicode:
-        ascii_text = normalized
+        ascii_text = text
     else:
+        # NFKD decomposes characters (e.g. "é" -> "e" + accent),
+        # then encode to ASCII and ignore non-ASCII parts.
+        normalized = unicodedata.normalize("NFKD", text)
         ascii_text = normalized.encode("ascii", "ignore").decode("ascii")
 
     # 2. Replace single quotes with spaces
