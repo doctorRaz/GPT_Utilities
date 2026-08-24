@@ -4,6 +4,7 @@ setlocal
 
 set "ARCHIVE_DIR=d:\@Developers\В работе\GPT_export"
 set "OUTPUT=d:\@Developers\В работе\Reminder\Convoviz"
+set "CONFIG=d:\setup\Convoviz\config.toml"
 
 if not exist "%OUTPUT%" mkdir "%OUTPUT%"
 
@@ -25,7 +26,7 @@ echo Архив: "%ARCHIVE%"
 echo Выход: "%OUTPUT%"
 echo.
 
-convoviz --input "%ARCHIVE%" --output "%OUTPUT%" --outputs markdown
+convoviz --config "%CONFIG%" --input "%ARCHIVE%" --output "%OUTPUT%" --outputs markdown
 
 if errorlevel 1 (
     echo.
