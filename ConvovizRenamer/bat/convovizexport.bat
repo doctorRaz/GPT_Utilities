@@ -1,10 +1,29 @@
 @echo off
 chcp 65001 >nul
+setlocal
 
-set "ARCHIVE=d:\@Developers\В работе\GPT_export\dfd92c24f5cde964830cfc5c1a28d77b1b45587294bbecc983a8fe9faf89b81a-2026-08-22-09-43-48-e90c0a83ab054f6ea422a89c893cc19d.zip"
+set "ARCHIVE_DIR=d:\@Developers\В работе\GPT_export"
 set "OUTPUT=d:\@Developers\В работе\Reminder\Convoviz"
 
 if not exist "%OUTPUT%" mkdir "%OUTPUT%"
+
+rem Ищем последний изменённый ZIP в каталоге экспорта
+for /f "delims=" %%F in ('dir /b /a-d /o-d "%ARCHIVE_DIR%\*.zip" 2^>nul') do (
+    set "ARCHIVE=%ARCHIVE_DIR%\%%F"
+    goto :archive_found
+)
+
+echo.
+echo ERROR: ZIP-архивы не найдены в:
+echo "%ARCHIVE_DIR%"
+pause
+exit /b 1
+
+:archive_found
+
+echo Архив: "%ARCHIVE%"
+echo Выход: "%OUTPUT%"
+echo.
 
 convoviz --input "%ARCHIVE%" --output "%OUTPUT%" --outputs markdown
 
@@ -19,3 +38,5 @@ echo.
 echo Готово.
 echo Результат: "%OUTPUT%"
 pause
+
+endlocal
