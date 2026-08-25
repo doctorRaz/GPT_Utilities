@@ -1,4 +1,15 @@
 ﻿<Project>
+	<PropertyGroup>
+		<!-- Полная версия CLR -->
+		<AssemblyVersion>$(Version).$(Build).$(Revision)</AssemblyVersion>
+		<!-- Версия файла Windows -->
+		<FileVersion>$(Version).$(Build).$(Revision)</FileVersion>
+		<!-- Версия продукта для пользователя -->
+		<!-- ProductVersion он жэж AssemblyInformationalVersion-->
+		<InformationalVersion>$(Version).$(Build).$(Revision)</InformationalVersion>
+		<!-- Не добавлять Git commit hash в InformationalVersion -->
+		<!--<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>-->
+	</PropertyGroup>
 	<!-- что бы в каждый проект не добавлять -->
 	<ItemGroup>
 		<!-- Удаляем ВСЕ из _draft -->

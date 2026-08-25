@@ -9,9 +9,12 @@
 		<HostFamily>$(MSBuildProjectName)</HostFamily>
 		<HostCode>_$(MSBuildProjectName)</HostCode>
 		<ApplicationIcon>Refresh.ico</ApplicationIcon>
+		<!--========= FINAL Archived =================-->
+		<Version>0.2</Version>
+		<!--==========================-->
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Include="Refresh.ico" />
+		<Content Include="Refresh.ico" />
 	</ItemGroup>
 </Project>
