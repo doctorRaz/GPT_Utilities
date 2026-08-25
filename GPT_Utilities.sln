@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.8.12023.21
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GPTJson2Md", "GPTJson2Md\GPTJson2Md.csproj", "{FBD558C3-D1AF-75B3-87A4-127B300262AB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoveDuplicate", "MoveDuplicate\MoveDuplicate.csproj", "{8F14B469-5F03-070B-3A44-C29A80D81FC8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexusRenamer", "NexusRenamer\NexusRenamer.csproj", "{7C26D648-DA09-1D2F-1A09-53680E3881D3}"
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FBD558C3-D1AF-75B3-87A4-127B300262AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FBD558C3-D1AF-75B3-87A4-127B300262AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FBD558C3-D1AF-75B3-87A4-127B300262AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FBD558C3-D1AF-75B3-87A4-127B300262AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8F14B469-5F03-070B-3A44-C29A80D81FC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8F14B469-5F03-070B-3A44-C29A80D81FC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F14B469-5F03-070B-3A44-C29A80D81FC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
