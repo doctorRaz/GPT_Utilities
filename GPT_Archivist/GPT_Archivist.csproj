@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- https://chatgpt.com/c/6a74fa4a-8ee4-83eb-bec2-0d4ad27474e8 -->
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<HostFamily>$(MSBuildProjectName)</HostFamily>
+		<HostCode>_$(MSBuildProjectName)</HostCode>
+		<Description>Переименовывает файлы экспорта Nexus в соответствии с Title</Description>
+		<ApplicationIcon>Refresh.ico</ApplicationIcon>
+	</PropertyGroup>
+	<ItemGroup>
+		<Content Include="Refresh.ico" />
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="YamlDotNet" Version="18.1.0" />
+	</ItemGroup>
+</Project>

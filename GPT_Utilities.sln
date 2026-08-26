@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexusRenamer", "NexusRename
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConvovizRenamer", "ConvovizRenamer\ConvovizRenamer.csproj", "{09D08499-D77A-7BE3-9B12-B92161E8D5A1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GPT_Archivist", "GPT_Archivist\GPT_Archivist.csproj", "{D43BD3BE-B264-7524-401E-7180AA8CE1E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{09D08499-D77A-7BE3-9B12-B92161E8D5A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09D08499-D77A-7BE3-9B12-B92161E8D5A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09D08499-D77A-7BE3-9B12-B92161E8D5A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D43BD3BE-B264-7524-401E-7180AA8CE1E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D43BD3BE-B264-7524-401E-7180AA8CE1E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D43BD3BE-B264-7524-401E-7180AA8CE1E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D43BD3BE-B264-7524-401E-7180AA8CE1E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
