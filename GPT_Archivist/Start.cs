@@ -34,6 +34,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
             {
 
                 int result = ChatGptExportProcessor.Process(sourceDir, destinationDir);
+                Console.WriteLine($"Заменено и добавлено файлов: {result}");
 
             }
             else
