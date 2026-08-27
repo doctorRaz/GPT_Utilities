@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace dRz.GPT_Utilities.GPT_Archivist
+namespace dRz.GPT_Utilities.Archivist
 {
     internal class FileSynchronizer
     {

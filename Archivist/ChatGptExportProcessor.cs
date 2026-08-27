@@ -6,7 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 
-namespace dRz.GPT_Utilities.GPT_Archivist
+namespace dRz.GPT_Utilities.Archivist
 {
     /// <summary>
     /// Обрабатывает ZIP-архив экспорта ChatGPT и формирует

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace dRz.GPT_Utilities.GPT_Archivist
+namespace dRz.GPT_Utilities.Archivist
 {
     internal class MetadataReader
     {

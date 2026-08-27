@@ -1,4 +1,4 @@
-﻿namespace dRz.GPT_Utilities.GPT_Archivist
+﻿namespace dRz.GPT_Utilities.Archivist
 {
     internal enum CopyDecision
     {

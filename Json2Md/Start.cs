@@ -1,67 +1,40 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 
-namespace dRz.GPT_Utilities.GPT_Archivist
+namespace dRz.GPT_Utilities.Json2Md
 {
-    internal class ParseCmdLines
+    internal class Start
     {
-     [STAThread]
-        private static int _Main(string[] args)
+        private static int Main(string[] args)
         {
-           Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            //string destinationDir = "";
-            //string sourceDir = "";
-#if DEBUG
-            if (!System.Diagnostics.Debugger.IsAttached)
-            {
-                System.Diagnostics.Debugger.Launch();
-            }
-            //destinationDir = @"d:\@Developers\В работе\Reminder\GPT-export\Markdown\";
-
-            //sourceDir = @"d:\@Developers\В работе\GPT_export\chatgpt-export-markdown\";
-
-#endif
-
-            //todo доделать парсер ком строки
-
             if (args.Length == 0)
             {
                 Help();
             }
             else if (HasHelp(args)) { Help(); return 0; }
 
-            (string? sourceDir, string? destinationDir) = ParseArgs(args);
+            (string? input, string? output) = ParseArgs(args);
 
+            //todo получать список файлов conversations*.json в директории по маске и обрабатывать их в цикле
 
-            if (string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(destinationDir))
+            if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(output))
             {
-                if (!Prompt(out sourceDir, out destinationDir))
+                if (!Prompt(out input, out output))
                 {
                     return 0;
                 }
             }
 
-            if (!Validate(sourceDir, destinationDir))
+            if (!Validate(input, output))
             {
                 return 1;
             }
 
-            Console.WriteLine($"OK\nInput: {sourceDir}\nOutput: {destinationDir}");
+            Console.WriteLine($"OK\nInput: {input}\nOutput: {output}");
 
-            if (!(string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(destinationDir)))
-            {
-                int result = ChatGptExportProcessor.Process(sourceDir, destinationDir);
-                Console.WriteLine($"Заменено и добавлено файлов: {result}");
-            }
-            else
-            {
-                Console.WriteLine("Не заданы пути");
-            }
+            GPTJson2Md.Json2MdParser(input, output);
 
-            Console.WriteLine("Press eny key...");
-            Console.ReadKey();
+            //Console.ReadKey();
             return 0;
         }
 

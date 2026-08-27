@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace dRz.GPT_Utilities.GPT_Archivist
+namespace dRz.GPT_Utilities.Archivist
 {
     internal class FileNamer
     {

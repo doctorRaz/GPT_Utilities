@@ -1,4 +1,4 @@
-# GPT_Archivist
+# Archivist
 
 Утилита для обработки Markdown-файлов, экспортированных с помощью **[chatgpt-exporter](https://github.com/pionxzh/chatgpt-exporter)**.
 

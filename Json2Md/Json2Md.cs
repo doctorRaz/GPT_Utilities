@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 
-namespace dRz.GPT_Utilities.GPTJson2Md
+namespace dRz.GPT_Utilities.Json2Md
 {
     public class GPTJson2Md
     {
