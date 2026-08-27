@@ -25,7 +25,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
             // разные IDs — создаём уникальный файл в destination.
             if (decision == CopyDecision.AddUnique)
             {
-                destinationFilePath = FileName.GetUnique(destinationFilePath);
+                destinationFilePath = FileNamer.GetUnique(destinationFilePath);
             }
 
             // Единственная операция копирования.
@@ -69,7 +69,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
 
                 // Файлы относятся к разным conversation.
                 // Исходный файл нельзя перезаписывать.
-                if (sourceMetadata?.ConversationId != null &&
+                if (sourceMetadata.ConversationId != null &&
                     destinationMetadata.ConversationId != null &&
                     sourceMetadata.ConversationId != destinationMetadata.ConversationId)
                 {

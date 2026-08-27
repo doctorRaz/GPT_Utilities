@@ -222,7 +222,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
 
             string extension = Path.GetExtension(sourceFile);
 
-            fileName = FileName.Normalize(fileName);
+            fileName = FileNamer.Normalize(fileName);
 
             if (string.IsNullOrWhiteSpace(fileName))
             {

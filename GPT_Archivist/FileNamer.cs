@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace dRz.GPT_Utilities.GPT_Archivist
 {
-    internal class FileName
+    internal class FileNamer
     {
         /// <summary>
         /// Схлопывает последовательность пробельных символов в один пробел.
