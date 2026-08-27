@@ -106,28 +106,13 @@ namespace dRz.GPT_Utilities.Archivist
                     $"В каталоге не найден ZIP-архив: {sourceDirectory}");
             }
 
-            foreach (FileInfo zipFile in zipFiles)
-            {
-
-                Console.WriteLine($"ZIP: {zipFile.FullName}");
-                Console.WriteLine($"Дата изменения ZIP: {zipFile.LastWriteTimeUtc}");
-            }
-
             // Если требуется обработать только последний архив,
             // оставляем последний элемент отсортированного списка.
             if (!processAllArchives)
             {
-
                 zipFiles = zipFiles
                            .TakeLast(1)
                            .ToList();
-
-                foreach (FileInfo zipFile in zipFiles)
-                {
-
-                    Console.WriteLine($"ZIP: {zipFile.FullName}");
-                    Console.WriteLine($"Дата изменения ZIP: {zipFile.LastWriteTimeUtc}");
-                }
             }
 
             Console.WriteLine($"Архивов для обработки: {zipFiles.Count}");
@@ -135,23 +120,17 @@ namespace dRz.GPT_Utilities.Archivist
             //обработано копий
             int copiedCount = 0;
 
-
             //отправляем архивы  на обработку
             foreach (FileInfo zipFile in zipFiles)
             {
-                Console.WriteLine();
                 Console.WriteLine($"ZIP: {zipFile.FullName}");
-                Console.WriteLine(
-                    $"Дата изменения ZIP: {zipFile.LastWriteTime}");
+                Console.WriteLine($"Дата изменения ZIP: {zipFile.LastWriteTime}");
 
-                copiedCount += ProcessArchive(
-                    zipFile.FullName,
-                    destinationDirectory);
+                copiedCount += ProcessArchive(zipFile.FullName, destinationDirectory);
             }
+
             return copiedCount;
-
         }
-
 
         /// <summary>
         /// Распаковывает и обрабатывает один ZIP-архив.
@@ -172,9 +151,7 @@ namespace dRz.GPT_Utilities.Archivist
             // -------------------------------------------------------------
             // Создаём уникальный временный каталог для текущего архива.
             // -------------------------------------------------------------
-            string tempDirectory = Path.Combine(
-                Path.GetTempPath(),
-                $"GPT_Archivist_{Guid.NewGuid():N}");
+            string tempDirectory = Path.Combine(Path.GetTempPath(), $"GPT_Archivist_{Guid.NewGuid():N}");
 
             Directory.CreateDirectory(tempDirectory);
 
@@ -183,13 +160,10 @@ namespace dRz.GPT_Utilities.Archivist
                 // ---------------------------------------------------------
                 // Распаковываем ZIP во временный каталог.
                 // ---------------------------------------------------------
-                Console.WriteLine();
+
                 Console.WriteLine($"Распаковка ZIP: {tempDirectory}");
 
-                ZipFile.ExtractToDirectory(
-                    archiveFilePath,
-                    tempDirectory,
-                    Encoding.GetEncoding(866));
+                ZipFile.ExtractToDirectory(archiveFilePath, tempDirectory, Encoding.GetEncoding(866));
 
                 // ---------------------------------------------------------
                 // Находим все Markdown-файлы.
@@ -201,16 +175,7 @@ namespace dRz.GPT_Utilities.Archivist
                         SearchOption.AllDirectories)
                     .ToList();
 
-#if DEBUG
-                foreach (string markdownFile in markdownFiles)
-                {
-                    Console.WriteLine(markdownFile);
-                }
-#endif
-
-                Console.WriteLine();
-                Console.WriteLine(
-                    $"Найдено Markdown-файлов: {markdownFiles.Count}");
+                Console.WriteLine($"Найдено Markdown-файлов: {markdownFiles.Count}");
 
                 int copiedCount = 0;
 
@@ -218,9 +183,7 @@ namespace dRz.GPT_Utilities.Archivist
                 {
                     try
                     {
-                        if (ProcessMarkdownFile(
-                            sourceFile,
-                            destinationDirectory))
+                        if (ProcessMarkdownFile(sourceFile, destinationDirectory))
                         {
                             copiedCount++;
                         }
@@ -229,7 +192,6 @@ namespace dRz.GPT_Utilities.Archivist
                     {
                         // Ошибка одного файла не останавливает обработку
                         // остальных файлов текущего архива.
-                        Console.WriteLine();
                         Console.WriteLine($"ОШИБКА: {sourceFile}");
                         Console.WriteLine(ex.Message);
                     }
@@ -257,8 +219,7 @@ namespace dRz.GPT_Utilities.Archivist
             // -------------------------------------------------------------
             // 4. Читаем create_time из YAML front matter.
             // -------------------------------------------------------------
-            ChatMetadata sourceMetadata =
-              MetadataReader.ReadMetadata(sourceFile);
+            ChatMetadata sourceMetadata = MetadataReader.ReadMetadata(sourceFile);
 
             // -------------------------------------------------------------
             // 5. Формируем:
@@ -268,19 +229,16 @@ namespace dRz.GPT_Utilities.Archivist
             // create_time приходит из экспорта с часовым поясом.
             // Используем UTC, так как исходное значение содержит "Z".
             // -------------------------------------------------------------
-            DateTimeOffset createTime =
-                sourceMetadata.CreateTime.ToUniversalTime();
+            DateTimeOffset createTime = sourceMetadata.CreateTime.ToUniversalTime();
 
-            string yearDirectory = Path.Combine(
-                destinationDirectory,
-                createTime.ToString("yyyy"));
+            //string yearDirectory = Path.Combine(destinationDirectory, createTime.ToString("yyyy"));
 
             //string monthDirectory = Path.Combine(
             //    yearDirectory,
             //    createTime.ToString("MM"));
-            string monthDirectory = Path.Combine(
-                                yearDirectory,
-                                createTime.ToString("MM-MMMM", CultureInfo.InvariantCulture));
+            //string monthDirectory = Path.Combine(yearDirectory, createTime.ToString("MM-MMMM", CultureInfo.InvariantCulture));
+
+            string monthDirectory = Path.Combine(destinationDirectory, createTime.ToString("yyyy"), createTime.ToString("MM-MMMM", CultureInfo.InvariantCulture));
 
             Directory.CreateDirectory(monthDirectory);
 
@@ -326,14 +284,13 @@ namespace dRz.GPT_Utilities.Archivist
                     tempDirectory,
                     recursive: true);
 
-                Console.WriteLine();
                 Console.WriteLine($"Временный каталог: {tempDirectory} удалён.");
             }
             catch (Exception ex)
             {
                 // Не выбрасываем исключение отсюда, чтобы не скрыть
                 // возможную ошибку основной обработки.
-                Console.WriteLine();
+
                 Console.WriteLine(
                     $"Не удалось удалить временный каталог: {tempDirectory}" +
                     $"\n{ex.Message}");

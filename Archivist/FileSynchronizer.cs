@@ -16,8 +16,7 @@ namespace dRz.GPT_Utilities.Archivist
 
             if (decision == CopyDecision.Skip)
             {
-                Console.WriteLine(
-                    $"Пропущен: {Path.GetFileName(sourceFilePath)}");
+                Console.WriteLine($"Пропущен: {Path.GetFileName(sourceFilePath)}");
 
                 return false;
             }
@@ -29,27 +28,31 @@ namespace dRz.GPT_Utilities.Archivist
             }
 
             // Единственная операция копирования.
-            File.Copy(
-                sourceFilePath,
-                destinationFilePath,
-                overwrite: true);
+            File.Copy(sourceFilePath, destinationFilePath, overwrite: true);
 
             // Сохраняем UpdateTime исходного файла.
             if (sourceMetadata.UpdateTime.HasValue)
             {
-                File.SetLastWriteTime(
-                    destinationFilePath,
-                    sourceMetadata.UpdateTime.Value.LocalDateTime);
+                File.SetLastWriteTime(destinationFilePath, sourceMetadata.UpdateTime.Value.LocalDateTime);
             }
 
             string exo = $"{Path.GetFileName(sourceFilePath)}" +
                         $"\n\tupdate_time: {sourceMetadata.UpdateTime:yyyy-MM-dd-HH.mm.sss}" +
                         $"\n\tto->{destinationFilePath}";
 
-            Console.WriteLine(
-                decision == CopyDecision.Add 
-                    ? $"Добавлен: {exo}"
-                    : $"Обновлён: {exo}");
+            Console.WriteLine(decision switch
+            {
+                CopyDecision.Add =>
+                $"Добавлен: {exo}",
+
+                CopyDecision.AddUnique =>
+                $"Добавлен уникальный: {exo}",
+
+                CopyDecision.Replace =>
+                $"Обновлён: {exo}",
+
+                _ => throw new ArgumentOutOfRangeException()
+            });
 
             return true;
         }

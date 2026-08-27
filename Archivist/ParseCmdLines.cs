@@ -6,10 +6,10 @@ namespace dRz.GPT_Utilities.Archivist
 {
     internal class ParseCmdLines
     {
-     [STAThread]
+        [STAThread]
         private static int _Main(string[] args)
         {
-           Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             //string destinationDir = "";
             //string sourceDir = "";
@@ -33,7 +33,6 @@ namespace dRz.GPT_Utilities.Archivist
             else if (HasHelp(args)) { Help(); return 0; }
 
             (string? sourceDir, string? destinationDir) = ParseArgs(args);
-
 
             if (string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(destinationDir))
             {
