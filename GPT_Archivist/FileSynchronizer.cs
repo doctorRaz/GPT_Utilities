@@ -34,8 +34,6 @@ namespace dRz.GPT_Utilities.GPT_Archivist
                 destinationFilePath,
                 overwrite: true);
 
-                //todo дописать в файл <!-- conversation_id=6a6ecef2-1478-83eb-8782-c945e23f8734 -->
-
             // Сохраняем UpdateTime исходного файла.
             if (sourceMetadata.UpdateTime.HasValue)
             {
@@ -94,9 +92,9 @@ namespace dRz.GPT_Utilities.GPT_Archivist
             catch (Exception ex)
             {
                 // Не удалось прочитать metadata destination.
-                // Безопаснее разрешить перезапись.
+                // Безопаснее добавить копию файла.
                 Console.WriteLine(ex.Message);
-                return CopyDecision.Replace;
+                return CopyDecision.AddUnique;
             }
         }
     }
