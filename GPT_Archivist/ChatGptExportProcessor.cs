@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -101,7 +102,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
 
             Console.WriteLine($"ZIP: {latestZip.FullName}");
             Console.WriteLine(
-                $"Дата изменения: {latestZip.LastWriteTime}");
+                $"Дата изменения ZIP: {latestZip.LastWriteTime}");
 
             // -------------------------------------------------------------
             // 2. Создаём уникальный временный каталог.
@@ -118,11 +119,12 @@ namespace dRz.GPT_Utilities.GPT_Archivist
                 // 3. Распаковываем ZIP.
                 // ---------------------------------------------------------
                 Console.WriteLine();
-                Console.WriteLine($"Распаковка: {tempDirectory}");
-
+                Console.WriteLine($"Распаковка ZIP: {tempDirectory}");
+                
                 ZipFile.ExtractToDirectory(
                     latestZip.FullName,
-                    tempDirectory);
+                    tempDirectory,
+                    Encoding.GetEncoding(866));
 
                 // ---------------------------------------------------------
                 // 4. Находим все Markdown-файлы.
@@ -133,6 +135,13 @@ namespace dRz.GPT_Utilities.GPT_Archivist
                         "*.md",
                         SearchOption.AllDirectories)
                     .ToList();
+
+#if DEBUG
+                foreach (string markdownFile in markdownFiles)
+                {
+                    Console.WriteLine(markdownFile);
+                }
+#endif
 
                 Console.WriteLine();
                 Console.WriteLine(

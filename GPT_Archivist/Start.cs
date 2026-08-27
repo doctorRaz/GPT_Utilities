@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 namespace dRz.GPT_Utilities.GPT_Archivist
 {
@@ -12,6 +13,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
         [STAThread]
         private static void Main(string[] args)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             string destinationDir = "";
             string sourceDir = "";
