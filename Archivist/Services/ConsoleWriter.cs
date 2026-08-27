@@ -4,19 +4,28 @@ namespace dRz.GPT_Utilities.Archivist.Services
 {
     internal static class ConsoleWriter
     {
-        public static void WriteLine(string message, ConsoleColor color)
+        public static void WriteLine(
+            string message,
+            ConsoleColor? foreground = null,
+            ConsoleColor? background = null)
         {
-            ConsoleColor previousColor = Console.ForegroundColor;
+            ConsoleColor previousForeground = Console.ForegroundColor;
+            ConsoleColor previousBackground = Console.BackgroundColor;
 
-            Console.ForegroundColor = color;
+            if (foreground.HasValue)
+                Console.ForegroundColor = foreground.Value;
+
+            if (background.HasValue)
+                Console.BackgroundColor = background.Value;
+
             Console.WriteLine(message);
 
-            Console.ForegroundColor = previousColor;
+            Console.ForegroundColor = previousForeground;
+            Console.BackgroundColor = previousBackground;
         }
 
         public static void Info(string message)
         {
-
             WriteLine(message, ConsoleColor.Gray);
         }
 
@@ -38,6 +47,14 @@ namespace dRz.GPT_Utilities.Archivist.Services
         public static void Error(string message)
         {
             WriteLine(message, ConsoleColor.Red);
+        }
+
+        public static void Fatal(string message)
+        {
+            WriteLine(
+                message,
+                ConsoleColor.White,
+                ConsoleColor.DarkRed);
         }
     }
 }

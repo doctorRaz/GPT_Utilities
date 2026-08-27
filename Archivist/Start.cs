@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dRz.GPT_Utilities.Archivist.Services;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -15,6 +16,16 @@ namespace dRz.GPT_Utilities.Archivist
             string destinationDir = "";
             string sourceDir = "";
 #if DEBUG
+           
+            ConsoleWriter.Info($"Info:");           
+            ConsoleWriter.Success($"Success");           
+            ConsoleWriter.Update($"Update");
+            ConsoleWriter.Warning($"Warning");
+            ConsoleWriter.Error($"Error");
+            ConsoleWriter.Fatal($"Fatal");
+            Console.WriteLine("test");
+    
+
             if (!System.Diagnostics.Debugger.IsAttached)
             {
                 System.Diagnostics.Debugger.Launch();
@@ -29,15 +40,15 @@ namespace dRz.GPT_Utilities.Archivist
 
             if (!(string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(destinationDir)))
             {
-                int result = ChatGptExportProcessor.Process(sourceDir, destinationDir,true);
-                Console.WriteLine($"Заменено и добавлено файлов: {result}");
+                int result = ChatGptExportProcessor.Process(sourceDir, destinationDir, false);
+                ConsoleWriter.Info($"Заменено и добавлено файлов: {result}");
             }
             else
             {
-                Console.WriteLine("Не заданы пути");
+                ConsoleWriter.Error("Не заданы пути");
             }
 
-            Console.WriteLine("Press eny key...");
+            ConsoleWriter.Info("Press any key...");      
             Console.ReadKey();
         }
 
@@ -89,7 +100,7 @@ namespace dRz.GPT_Utilities.Archivist
             for (int i = 1; i < 13; i++)
             {
                 DateTime date = new DateTime(2024, i, 1);
-                Console.WriteLine(date.ToString("MM-MMMM", CultureInfo.InvariantCulture));
+                ConsoleWriter.Info(date.ToString("MM-MMMM", CultureInfo.InvariantCulture));
             }
         }
     }

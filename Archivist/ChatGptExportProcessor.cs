@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dRz.GPT_Utilities.Archivist.Services;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -83,7 +84,7 @@ namespace dRz.GPT_Utilities.Archivist
             }
 
             // Каталог назначения может отсутствовать.
-            Directory.CreateDirectory(destinationDirectory);
+            //Directory.CreateDirectory(destinationDirectory);
 
             // -------------------------------------------------------------
             // 1. Получаем ZIP-архивы.
@@ -115,7 +116,7 @@ namespace dRz.GPT_Utilities.Archivist
                            .ToList();
             }
 
-            Console.WriteLine($"Архивов для обработки: {zipFiles.Count}");
+            ConsoleWriter.Info($"Архивов для обработки: {zipFiles.Count}");
 
             //обработано копий
             int copiedCount = 0;
@@ -123,8 +124,8 @@ namespace dRz.GPT_Utilities.Archivist
             //отправляем архивы  на обработку
             foreach (FileInfo zipFile in zipFiles)
             {
-                Console.WriteLine($"ZIP: {zipFile.FullName}");
-                Console.WriteLine($"Дата изменения ZIP: {zipFile.LastWriteTime}");
+                ConsoleWriter.Info($"ZIP: {zipFile.FullName}");
+                ConsoleWriter.Info($"Дата изменения ZIP: {zipFile.LastWriteTime}");
 
                 copiedCount += ProcessArchive(zipFile.FullName, destinationDirectory);
             }
@@ -161,7 +162,7 @@ namespace dRz.GPT_Utilities.Archivist
                 // Распаковываем ZIP во временный каталог.
                 // ---------------------------------------------------------
 
-                Console.WriteLine($"Распаковка ZIP: {tempDirectory}");
+                ConsoleWriter.Info($"Распаковка ZIP: {tempDirectory}");
 
                 ZipFile.ExtractToDirectory(archiveFilePath, tempDirectory, Encoding.GetEncoding(866));
 
@@ -175,7 +176,7 @@ namespace dRz.GPT_Utilities.Archivist
                         SearchOption.AllDirectories)
                     .ToList();
 
-                Console.WriteLine($"Найдено Markdown-файлов: {markdownFiles.Count}");
+                ConsoleWriter.Info($"Найдено Markdown-файлов: {markdownFiles.Count}");
 
                 int copiedCount = 0;
 
@@ -192,8 +193,8 @@ namespace dRz.GPT_Utilities.Archivist
                     {
                         // Ошибка одного файла не останавливает обработку
                         // остальных файлов текущего архива.
-                        Console.WriteLine($"ОШИБКА: {sourceFile}");
-                        Console.WriteLine(ex.Message);
+                        ConsoleWriter.Error($"ОШИБКА: {sourceFile}");
+                        ConsoleWriter.Error(ex.Message);
                     }
                 }
 
@@ -255,7 +256,7 @@ namespace dRz.GPT_Utilities.Archivist
             {
                 fileName = Path.GetFileNameWithoutExtension(sourceFile);
 
-                Console.WriteLine($"КОПИРУЮ КАК ЕСТЬ: пустое имя файла: {sourceFile}");
+                ConsoleWriter.Warning($"КОПИРУЮ КАК ЕСТЬ: пустое имя файла: {sourceFile}");
             }
 
             // -------------------------------------------------------------
@@ -284,16 +285,14 @@ namespace dRz.GPT_Utilities.Archivist
                     tempDirectory,
                     recursive: true);
 
-                Console.WriteLine($"Временный каталог: {tempDirectory} удалён.");
+                ConsoleWriter.Info($"Временный каталог: {tempDirectory} удалён.");
             }
             catch (Exception ex)
             {
                 // Не выбрасываем исключение отсюда, чтобы не скрыть
                 // возможную ошибку основной обработки.
 
-                Console.WriteLine(
-                    $"Не удалось удалить временный каталог: {tempDirectory}" +
-                    $"\n{ex.Message}");
+                ConsoleWriter.Error($"Не удалось удалить временный каталог: {tempDirectory}" + $"\n{ex.Message}");
             }
         }
     }

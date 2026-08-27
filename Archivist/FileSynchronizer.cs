@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dRz.GPT_Utilities.Archivist.Services;
+using System;
 using System.IO;
 
 namespace dRz.GPT_Utilities.Archivist
@@ -16,7 +17,7 @@ namespace dRz.GPT_Utilities.Archivist
 
             if (decision == CopyDecision.Skip)
             {
-                Console.WriteLine($"Пропущен: {Path.GetFileName(sourceFilePath)}");
+                ConsoleWriter.Info($"Пропущен: {Path.GetFileName(sourceFilePath)}");
 
                 return false;
             }
@@ -40,19 +41,23 @@ namespace dRz.GPT_Utilities.Archivist
                         $"\n\tupdate_time: {sourceMetadata.UpdateTime:yyyy-MM-dd-HH.mm.sss}" +
                         $"\n\tto->{destinationFilePath}";
 
-            Console.WriteLine(decision switch
+            switch (decision)
             {
-                CopyDecision.Add =>
-                $"Добавлен: {exo}",
+                case CopyDecision.Add:
+                    ConsoleWriter.Success($"Добавлен: {exo}");
+                    break;
 
-                CopyDecision.AddUnique =>
-                $"Добавлен уникальный: {exo}",
+                case CopyDecision.AddUnique:
+                    ConsoleWriter.Warning($"Добавлен уникальный: {exo}");
+                    break;
 
-                CopyDecision.Replace =>
-                $"Обновлён: {exo}",
+                case CopyDecision.Replace:
+                    ConsoleWriter.Update($"Обновлён: {exo}");
+                    break;
 
-                _ => throw new ArgumentOutOfRangeException()
-            });
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(decision), decision, null);
+            }
 
             return true;
         }
@@ -102,7 +107,7 @@ namespace dRz.GPT_Utilities.Archivist
             {
                 // Не удалось прочитать metadata destination.
                 // Безопаснее добавить копию файла.
-                Console.WriteLine(ex.Message);
+                ConsoleWriter.Error(ex.Message);
                 return CopyDecision.AddUnique;
             }
         }
