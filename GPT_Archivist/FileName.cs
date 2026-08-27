@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace dRz.GPT_Utilities.GPT_Archivist
 {
@@ -74,7 +70,9 @@ namespace dRz.GPT_Utilities.GPT_Archivist
         {
             // Исходное имя свободно.
             if (!File.Exists(filePath))
+            {
                 return filePath;
+            }
 
             string directory =
                 Path.GetDirectoryName(filePath)
@@ -97,7 +95,9 @@ namespace dRz.GPT_Utilities.GPT_Archivist
                     $"{fileName} ({number}){extension}");
 
                 if (!File.Exists(candidate))
+                {
                     return candidate;
+                }
             }
 
             throw new IOException(

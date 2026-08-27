@@ -7,9 +7,6 @@ namespace dRz.GPT_Utilities.GPT_Archivist
 {
     internal class Start
     {
-
-
-
         [STAThread]
         private static void Main(string[] args)
         {
@@ -30,14 +27,10 @@ namespace dRz.GPT_Utilities.GPT_Archivist
 
             //string root = GetDirectory(args, sourceDir, destinationDir);
 
-
-
             if (!(string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(destinationDir)))
             {
-
                 int result = ChatGptExportProcessor.Process(sourceDir, destinationDir);
                 Console.WriteLine($"Заменено и добавлено файлов: {result}");
-
             }
             else
             {
@@ -88,7 +81,6 @@ namespace dRz.GPT_Utilities.GPT_Archivist
             return string.Empty;
         }
 
-
         /// <summary>
         /// проверка вывода названий месяцев в формате MM-MMMM как у convoviz
         /// </summary>
@@ -96,9 +88,8 @@ namespace dRz.GPT_Utilities.GPT_Archivist
         {
             for (int i = 1; i < 13; i++)
             {
-                var date = new DateTime(2024, i, 1);
+                DateTime date = new DateTime(2024, i, 1);
                 Console.WriteLine(date.ToString("MM-MMMM", CultureInfo.InvariantCulture));
-
             }
         }
     }

@@ -8,7 +8,6 @@ namespace dRz.GPT_Utilities.GPT_Archivist
 {
     internal class MetadataReader
     {
-
         /// <summary>
         /// Десериализатор YAML.
         ///
@@ -100,6 +99,5 @@ namespace dRz.GPT_Utilities.GPT_Archivist
 
             return metadata;
         }
-
     }
 }

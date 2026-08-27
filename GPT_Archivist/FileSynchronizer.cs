@@ -58,7 +58,9 @@ namespace dRz.GPT_Utilities.GPT_Archivist
         {
             // Destination-файла ещё нет.
             if (!File.Exists(destinationFilePath))
+            {
                 return CopyDecision.Add;
+            }
 
             try
             {
@@ -77,12 +79,16 @@ namespace dRz.GPT_Utilities.GPT_Archivist
                 // Нет даты destination —
                 // считаем файл требующим обновления.
                 if (!destinationMetadata.UpdateTime.HasValue)
+                {
                     return CopyDecision.Replace;
+                }
 
                 // Нет даты source —
                 // сравнить файлы невозможно.
                 if (!sourceMetadata.UpdateTime.HasValue)
+                {
                     return CopyDecision.Skip;
+                }
 
                 // Обновляем только если source действительно новее.
                 return sourceMetadata.UpdateTime.Value > destinationMetadata.UpdateTime.Value

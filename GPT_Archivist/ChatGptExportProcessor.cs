@@ -5,9 +5,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace dRz.GPT_Utilities.GPT_Archivist
 {
@@ -120,7 +117,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
                 // ---------------------------------------------------------
                 Console.WriteLine();
                 Console.WriteLine($"Распаковка ZIP: {tempDirectory}");
-                
+
                 ZipFile.ExtractToDirectory(
                     latestZip.FullName,
                     tempDirectory,
@@ -250,7 +247,9 @@ namespace dRz.GPT_Utilities.GPT_Archivist
             string tempDirectory)
         {
             if (!Directory.Exists(tempDirectory))
+            {
                 return;
+            }
 
             try
             {
