@@ -47,7 +47,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
                         $"\n\tto->{destinationFilePath}";
 
             Console.WriteLine(
-                decision == CopyDecision.Add
+                decision == CopyDecision.Add 
                     ? $"Добавлен: {exo}"
                     : $"Обновлён: {exo}");
 

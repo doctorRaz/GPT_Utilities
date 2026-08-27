@@ -29,7 +29,7 @@ namespace dRz.GPT_Utilities.GPT_Archivist
 
             if (!(string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(destinationDir)))
             {
-                int result = ChatGptExportProcessor.Process(sourceDir, destinationDir);
+                int result = ChatGptExportProcessor.Process(sourceDir, destinationDir,true);
                 Console.WriteLine($"Заменено и добавлено файлов: {result}");
             }
             else
