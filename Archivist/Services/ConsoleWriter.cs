@@ -105,14 +105,9 @@ namespace dRz.GPT_Utilities.Archivist.Services
             Fatal($"\t{nameof(Fatal),-15}: пример сообщения");
         }
 
-        public static void Update(string message) => WriteLine(message, ConsoleColor.Yellow);
+        public static void Update(string message) => WriteLine(message, ConsoleColor.Cyan);
 
-        public static void Warning(string message) => WriteLine(message, ConsoleColor.DarkYellow);
-
-        public static void WriteLine()
-        {
-            Console.WriteLine();
-        }
+        public static void Warning(string message) => WriteLine(message, ConsoleColor.Magenta);
 
         public static void WriteLine(string message,
                                      ConsoleColor? foreground = null,
