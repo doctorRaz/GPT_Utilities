@@ -56,5 +56,12 @@ namespace dRz.GPT_Utilities.Archivist.Services
                 ConsoleColor.White,
                 ConsoleColor.DarkRed);
         }
+
+        public static void PressAnyKey()
+        {
+            ConsoleWriter.Info("");
+            ConsoleWriter.Info("Press any key...");
+            Console.ReadKey();
+        }
     }
 }
