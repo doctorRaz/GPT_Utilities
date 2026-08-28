@@ -1,0 +1,8 @@
+REM @echo off
+REM chcp 65001 >nul
+REM setlocal
+
+"d:\@Developers\Programmers\!NET\!GPT_Utilities\bin\Debug\Archivist.exe" -s "d:\@Developers\В работе\GPT_export\chatgpt-export-markdown" -d "d:\@Developers\В работе\Reminder\GPT-export\Markdown+" -a
+REM "d:\@Developers\Programmers\!NET\!GPT_Utilities\bin\Release\Archivist.exe" -s "d:\@Developers\В работе\GPT_export\chatgpt-export-markdown" -d "d:\@Developers\В работе\Reminder\GPT-export\Markdown+" -a
+
+pause
