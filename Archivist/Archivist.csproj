@@ -8,7 +8,7 @@
 		<Nullable>enable</Nullable>
 		<HostFamily>$(MSBuildProjectName)</HostFamily>
 		<HostCode>_$(MSBuildProjectName)</HostCode>
-		<Description>Переименовывает файлы экспорта Nexus в соответствии с Title</Description>
+		<Description>Перемещает ZIP файлы экспорта chatgpt-export-markdown в соответствующие каталоги</Description>
 		<ApplicationIcon>Refresh.ico</ApplicationIcon>
 	</PropertyGroup>
 	<ItemGroup>

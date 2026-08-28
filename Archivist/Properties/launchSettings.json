@@ -9,7 +9,7 @@
       "commandLineArgs": "-s \"d:\\@Developers\\В работе\\GPT_export\\chatgpt-export-markdown\" -d \"d:\\@Developers\\В работе\\Reminder\\GPT-export\\Markdown+\" -a"
     },
     "Empty": {
-      "commandName": "Executable"
+      "commandName": "Project"
     }
   }
 }
