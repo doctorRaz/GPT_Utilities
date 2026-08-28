@@ -63,6 +63,9 @@ namespace dRz.GPT_Utilities.Archivist
                     destinationId is null ||
                     sourceId != destinationId)
                 {
+                //todo проверять (1...) file name*.md
+                 //в цикле рекурсивно? сравнить по sourceId != destinationId
+                 //если совпадут проверить UpdateTime
                     return CopyDecision.AddUnique;
                 }
 

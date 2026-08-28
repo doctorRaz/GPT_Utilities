@@ -95,7 +95,7 @@ namespace dRz.GPT_Utilities.Archivist
                            .ToList();
             }
 
-            ConsoleWriter.Step($"Найдено {zipFiles.Count.Of(Words.Archives)} для обработки");
+            ConsoleWriter.Step($"Найден {zipFiles.Count.Of(Words.Archives)} для обработки");
 
             //обработано копий
             CopyStatistics statistics = new CopyStatistics();
@@ -248,7 +248,7 @@ namespace dRz.GPT_Utilities.Archivist
             string destinationFile = Path.Combine(monthDirectory, fileName + extension);
 
             // Проверяем, требуется ли копирование и в методе копируем файл, если нужно.
-            FileOperationResult copyResult = FileSynchronizer.CopyIfNewer(sourceFile, destinationFile, sourceMetadata);
+            FileOperationResult copyResult = CopyIfNewer(sourceFile, destinationFile, sourceMetadata);
 
             // destinationFile мог измениться внутри CopyIfNewer, если было принято решение AddUnique.
             // поэтому для консоли пользуем copyResult.DestinationFilePath 
@@ -290,7 +290,7 @@ namespace dRz.GPT_Utilities.Archivist
 
         internal static void WriteCopyResult(FileOperationResult fileOperationResult)
         {
-            //todo причесать вывод в консоль
+            //вывод в консоль
             string sourseFileName = Path.GetFileName(fileOperationResult.SourceFilePath);
 
             string exo = $"{sourseFileName}" +
