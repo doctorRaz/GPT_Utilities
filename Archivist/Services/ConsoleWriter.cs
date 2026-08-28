@@ -20,7 +20,6 @@ namespace dRz.GPT_Utilities.Archivist.Services
                 ConsoleColor.DarkRed);
 
         public static void Info(string message) => WriteLine(message, ConsoleColor.Gray);
-
         public static void PressAnyKey()
         {
             Info("");
@@ -28,6 +27,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
             Console.ReadKey();
         }
 
+        public static void Step(string message) => WriteLine(message, ConsoleColor.DarkGray);
         public static void Success(string message) => WriteLine(message, ConsoleColor.Green);
 
         /// <summary>Tests the show colors.</summary>
@@ -92,6 +92,8 @@ namespace dRz.GPT_Utilities.Archivist.Services
 
             WriteLine("<< ShowStyles >>", _contrastColor);
 
+            Step($"\t{nameof(Step),-15}: пример сообщения");
+
             Info($"\t{nameof(Info),-15}: пример сообщения");
 
             Success($"\t{nameof(Success),-15}: пример сообщения");
@@ -141,6 +143,10 @@ namespace dRz.GPT_Utilities.Archivist.Services
             }
         }
 
+        private static void WriteLine()
+        {
+            Console.WriteLine();
+        }
         #endregion Public Methods
 
         #region Private Methods
