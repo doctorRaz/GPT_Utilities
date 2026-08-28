@@ -17,4 +17,7 @@
 	<ItemGroup>
 	  <PackageReference Include="YamlDotNet" Version="18.1.0" />
 	</ItemGroup>
+	<ItemGroup>
+		<InternalsVisibleTo Include="Archivist.Tests" />
+	</ItemGroup>
 </Project>
