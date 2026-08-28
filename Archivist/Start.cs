@@ -20,9 +20,9 @@ namespace dRz.GPT_Utilities.Archivist
                 System.Diagnostics.Debugger.Launch();
             }
 
-            ConsoleWriter.TestShowStyles();
-            ConsoleWriter.TestShowColors();
-            ConsoleWriter.TestShowColorsBackground();
+            //ConsoleWriter.TestShowStyles();
+            //ConsoleWriter.TestShowColors();
+            //ConsoleWriter.TestShowColorsBackground();
 
 #endif
 
