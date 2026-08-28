@@ -46,11 +46,11 @@ namespace dRz.GPT_Utilities.Archivist
         ///
         /// В нём автоматически создаётся структура:
         ///
-        ///     YYYY\MM
+        ///     YYYY\MM-MMMM
         /// </param>
         /// <param name="processAllArchives">
         /// Если <see langword="true"/>, обрабатываются все ZIP-архивы
-        /// в исходном каталоге.
+        /// в исходном каталоге.<br/>
         ///
         /// Если <see langword="false"/>, обрабатывается только последний
         /// изменённый ZIP-архив.
@@ -63,29 +63,6 @@ namespace dRz.GPT_Utilities.Archivist
             string destinationDirectory,
             bool processAllArchives = false)
         {
-            if (string.IsNullOrWhiteSpace(sourceDirectory))
-            {
-                throw new ArgumentException(
-                    "Не указан исходный каталог.",
-                    nameof(sourceDirectory));
-            }
-
-            if (string.IsNullOrWhiteSpace(destinationDirectory))
-            {
-                throw new ArgumentException(
-                    "Не указан каталог назначения.",
-                    nameof(destinationDirectory));
-            }
-
-            if (!Directory.Exists(sourceDirectory))
-            {
-                throw new DirectoryNotFoundException(
-                    $"Исходный каталог не найден: {sourceDirectory}");
-            }
-
-            // Каталог назначения может отсутствовать.
-            //Directory.CreateDirectory(destinationDirectory);
-
             // -------------------------------------------------------------
             // 1. Получаем ZIP-архивы.
             //
