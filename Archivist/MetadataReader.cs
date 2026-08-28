@@ -95,7 +95,7 @@ namespace dRz.GPT_Utilities.Archivist
                     $"update_time: {filePath}");
             }
 
-            //sourceMetadata.ChatLink пока не проверяем
+            // ChatLink необязателен: ConversationId тогда будет null.
 
             return metadata;
         }

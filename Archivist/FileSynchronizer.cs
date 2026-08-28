@@ -75,11 +75,15 @@ namespace dRz.GPT_Utilities.Archivist
                 // Читаем metadata существующего файла.
                 ChatMetadata destinationMetadata = MetadataReader.ReadMetadata(destinationFilePath);
 
-                // Файлы относятся к разным conversation.
-                // Исходный файл нельзя перезаписывать.
-                if (sourceMetadata.ConversationId != null &&
-                    destinationMetadata.ConversationId != null &&
-                    sourceMetadata.ConversationId != destinationMetadata.ConversationId)
+                Guid? sourceId = sourceMetadata.ConversationId;
+                Guid? destinationId = destinationMetadata.ConversationId;
+
+                // Обновлять существующий файл можно только если оба
+                // conversation_id известны и совпадают.
+                // Иначе безопаснее сохранить копию с суффиксом (1)...
+                if (sourceId is null ||
+                    destinationId is null ||
+                    sourceId != destinationId)
                 {
                     return CopyDecision.AddUnique;
                 }

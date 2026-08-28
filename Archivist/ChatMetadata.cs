@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using YamlDotNet.Serialization;
 
 namespace dRz.GPT_Utilities.Archivist
@@ -28,6 +27,9 @@ namespace dRz.GPT_Utilities.Archivist
         ///
         /// Получается из ChatLink и не участвует
         /// в сериализации YAML.
+        ///
+        /// Возвращает <see langword="null"/>, если ChatLink отсутствует
+        /// или не содержит корректный идентификатор.
         /// </summary>
         [YamlIgnore]
         public Guid? ConversationId
@@ -36,8 +38,7 @@ namespace dRz.GPT_Utilities.Archivist
             {
                 if (string.IsNullOrWhiteSpace(ChatLink))
                 {
-                    throw new InvalidDataException(
-                        "Chat link is empty.");
+                    return null;
                 }
 
                 const string prefix = "https://chatgpt.com/c/";
@@ -46,20 +47,15 @@ namespace dRz.GPT_Utilities.Archivist
                         prefix,
                         StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidDataException(
-                        $"Invalid ChatGPT chat link: {ChatLink}");
+                    return null;
                 }
 
                 string value = ChatLink[prefix.Length..]
                     .TrimEnd('/');
 
-                if (!Guid.TryParse(value, out Guid id))
-                {
-                    throw new InvalidDataException(
-                        $"Conversation ID not found in chat link: {ChatLink}");
-                }
-
-                return id;
+                return Guid.TryParse(value, out Guid id)
+                    ? id
+                    : null;
             }
         }
     }
