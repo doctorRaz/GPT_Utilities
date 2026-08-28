@@ -12,25 +12,17 @@ namespace dRz.GPT_Utilities.Archivist
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            //string destinationDir = "";
-            //string sourceDir = "";
+            ConsoleSetup.Initialize(AppDomain.CurrentDomain.FriendlyName);
+
 #if DEBUG
-
-            ConsoleWriter.Info($"Info:");
-            ConsoleWriter.Success($"Success");
-            ConsoleWriter.Update($"Update");
-            ConsoleWriter.Warning($"Warning");
-            ConsoleWriter.Error($"Error");
-            ConsoleWriter.Fatal($"Fatal");
-            Console.WriteLine("test");
-
             if (!System.Diagnostics.Debugger.IsAttached)
             {
                 System.Diagnostics.Debugger.Launch();
             }
-            //destinationDir = @"d:\@Developers\В работе\Reminder\GPT-export\Markdown\";
 
-            //sourceDir = @"d:\@Developers\В работе\GPT_export\chatgpt-export-markdown\";
+            ConsoleWriter.TestShowStyles();
+            ConsoleWriter.TestShowColors();
+            ConsoleWriter.TestShowColorsBackground();
 
 #endif
 
@@ -55,10 +47,11 @@ namespace dRz.GPT_Utilities.Archivist
                         $"{options.SourceDirectory}");
                 }
                 // Destination может отсутствовать.
-                // сразу проверяем возможность создания
+                // сразу проверяем возможность создания, каталога
+                // лучше упасть здесь, чем в процессе обработки.
                 Directory.CreateDirectory(options.DestinationDirectory);
 
-                //идем парсить zip
+                //идем разбирать zip
                 int result = ChatGptExportProcessor.Process(options.SourceDirectory, options.DestinationDirectory, options.ExtractAll);
 
                 ConsoleWriter.Info($"Заменено и добавлено файлов: {result}");
