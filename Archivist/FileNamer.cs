@@ -92,7 +92,7 @@ namespace dRz.GPT_Utilities.Archivist
             {
                 string candidate = Path.Combine(
                     directory,
-                    $"{fileName} ({number}){extension}");
+                    $"{fileName}({number}){extension}");
 
                 if (!File.Exists(candidate))
                 {

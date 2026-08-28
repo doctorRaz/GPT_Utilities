@@ -1,4 +1,5 @@
-﻿using dRz.GPT_Utilities.Archivist.Services;
+﻿using dRz.GPT_Utilities.Archivist.dRz.GPT_Utilities.Archivist;
+using dRz.GPT_Utilities.Archivist.Services;
 using System;
 using System.IO;
 using System.Text;
@@ -20,8 +21,15 @@ namespace dRz.GPT_Utilities.Archivist
                 System.Diagnostics.Debugger.Launch();
             }
 
-            //ConsoleWriter.TestShowStyles();
-            //ConsoleWriter.TestShowColors();
+            for (int i = 0; i < 30; i++)
+            {
+                Console.WriteLine(i.Of(Words.Files));
+            }
+
+            Console.WriteLine(5.Of(Words.Archives));
+
+            ConsoleWriter.TestShowStyles();
+            ConsoleWriter.TestShowColors();
             //ConsoleWriter.TestShowColorsBackground();
 
 #endif
@@ -52,10 +60,26 @@ namespace dRz.GPT_Utilities.Archivist
                 Directory.CreateDirectory(options.DestinationDirectory);
 
                 //идем разбирать zip
-                int result = ChatGptExportProcessor.Process(options.SourceDirectory, options.DestinationDirectory, options.ExtractAll);
+                ChatGptExportProcessor.CopyStatistics totalStatistics = ChatGptExportProcessor.Process(options.SourceDirectory, options.DestinationDirectory, options.ExtractAll);
 
-                ConsoleWriter.Info($"Заменено и добавлено файлов: {result}");
+                //total statistics
+                ConsoleWriter.Success($"================ TOTAL STATISTICS =====================");
+                
+                ConsoleWriter.Step($"Обработано всего {totalStatistics.Total.Of(Words.Files)}");
+                
+                ConsoleWriter.Step($"Из них:");
 
+                ConsoleWriter.Success($"\tДобавлено {totalStatistics.Added.Of(Words.Files)}");
+
+                ConsoleWriter.Warning($"\tДобавлено уникальных {totalStatistics.AddedUnique.Of(Words.Files)}");
+
+                ConsoleWriter.Update($"\tОбновлено {totalStatistics.Updated.Of(Words.Files)}");
+
+                ConsoleWriter.Step($"\tПропущено {totalStatistics.Skipped.Of(Words.Files)}");
+
+                ConsoleWriter.Info($"Всего заменено и добавлено {(totalStatistics.Added + totalStatistics.AddedUnique + totalStatistics.Updated).Of(Words.Files)}");
+
+                ConsoleWriter.Success($"=======================================================");
                 ConsoleWriter.PressAnyKey();
 
                 return 0;

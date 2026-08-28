@@ -3,7 +3,7 @@
     /// <summary>
     /// Параметры командной строки GPT_Archivist.
     /// </summary>
-    public sealed class CommandLineOptions
+    internal sealed class CommandLineOptions
     {
         /// <summary>
         /// Каталог, содержащий ZIP-архивы экспорта ChatGPT.

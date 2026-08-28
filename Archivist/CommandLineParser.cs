@@ -6,7 +6,7 @@ namespace dRz.GPT_Utilities.Archivist
     /// <summary>
     /// Разбирает параметры командной строки GPT_Archivist.
     /// </summary>
-    public static class CommandLineParser
+    internal static class CommandLineParser
     {
         /// <summary>
         /// Разбирает параметры командной строки.
