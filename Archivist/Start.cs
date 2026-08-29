@@ -1,5 +1,4 @@
-﻿using dRz.GPT_Utilities.Archivist.dRz.GPT_Utilities.Archivist;
-using dRz.GPT_Utilities.Archivist.Services;
+﻿using dRz.GPT_Utilities.Archivist.Services;
 using System;
 using System.IO;
 using System.Text;
@@ -8,7 +7,7 @@ namespace dRz.GPT_Utilities.Archivist
 {
     internal class Start
     {
-        [STAThread]
+        //[STAThread]
         private static int Main(string[] args)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -25,23 +24,23 @@ namespace dRz.GPT_Utilities.Archivist
             //{
             //    Console.WriteLine(i.Of(Words.Files));
             //}
-            try
-            {
-                var f = 0;
-                _ = 10 / f;
+            //try
+            //{
+            //    var f = 0;
+            //    _ = 10 / f;
 
-            }
-            catch (Exception ex)
-            {
-            ConsoleWriter.Fatal(ex, $"Ошибка: ");
-            ConsoleWriter.Error($"Ошибка: ",ex);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //ConsoleWriter.Fatal(ex, $"Ошибка: ");
+            //ConsoleWriter.Error($"Ошибка: ",ex);
+            //}
             //Console.WriteLine(5.Of(Words.Archives));
 
-            ConsoleWriter.TestShowStyles();
+            //ConsoleWriter.TestShowStyles();
 
 
-            ConsoleWriter.TestShowColors();
+            //ConsoleWriter.TestShowColors();
             //ConsoleWriter.TestShowColorsBackground();
 
 #endif
@@ -77,7 +76,7 @@ namespace dRz.GPT_Utilities.Archivist
                 //total statistics
                 ConsoleWriter.Success($"================ TOTAL STATISTICS =====================");
 
-                ConsoleWriter.Trace($"Обработано всего {totalStatistics.Total.Of(Words.Files)}");
+                ConsoleWriter.Trace($"Обработано всего: {totalStatistics.Total.Of(Words.Files)}");
 
                 ConsoleWriter.Trace($"Из них:");
 

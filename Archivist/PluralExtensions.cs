@@ -1,7 +1,6 @@
 ﻿using System;
 
-namespace dRz.GPT_Utilities.Archivist
-{
+
     namespace dRz.GPT_Utilities.Archivist
     {
         public static class PluralExtensions
@@ -40,4 +39,4 @@ namespace dRz.GPT_Utilities.Archivist
 
 
     }
-}
+

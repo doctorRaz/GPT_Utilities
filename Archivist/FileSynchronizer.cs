@@ -151,5 +151,6 @@ namespace dRz.GPT_Utilities.Archivist
         {
             private bool IsCopied => Decision != CopyDecision.Skip;
         }
+ 
     }
 }

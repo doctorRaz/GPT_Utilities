@@ -51,18 +51,13 @@ namespace dRz.GPT_Utilities.Archivist
 
         /// <summary>
         /// Возвращает свободное имя файла.
-        ///
         /// Если:
-        ///
         ///     Test.md
-        ///
         /// уже существует:
-        ///
         ///     Test (1).md
         ///     Test (2).md
         ///     ...
         ///     Test (100).md
-        ///
         /// Если все варианты заняты, выбрасывается IOException.
         /// </summary>
         internal static string GetUnique(
