@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace dRz.GPT_Utilities.Archivist.Services
 {
     public static class ConsoleWriter
     {
+
         #region Private Properties
 
         private static ConsoleColor _contrastColor => Console.BackgroundColor == Console.ForegroundColor ? GetContrastColor(Console.BackgroundColor) : Console.ForegroundColor;
@@ -12,14 +14,17 @@ namespace dRz.GPT_Utilities.Archivist.Services
 
         #region Public Methods
 
-        public static void Error(string message) => WriteLine(message, ConsoleColor.Red);
-
-        public static void Fatal(string message) => WriteLine(
-                message,
-                ConsoleColor.White,
-                ConsoleColor.DarkRed);
+        public static void Error(string message, Exception? ex = null) =>        
+                                                            WriteLine(Format(message, ex), 
+                                                            ConsoleColor.Red);
+        
+        public static void Fatal(Exception ex, string? message = null) => WriteLine(
+                                                               Format(message, ex, "Fatal error"),
+                                                                ConsoleColor.White,
+                                                                ConsoleColor.DarkRed);
 
         public static void Info(string message) => WriteLine(message, ConsoleColor.Gray);
+
         public static void PressAnyKey()
         {
             Info("");
@@ -28,6 +33,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
         }
 
         public static void Step(string message) => WriteLine(message, ConsoleColor.DarkGray);
+
         public static void Success(string message) => WriteLine(message, ConsoleColor.Green);
 
         /// <summary>Tests the show colors.</summary>
@@ -88,6 +94,8 @@ namespace dRz.GPT_Utilities.Archivist.Services
         /// <summary>Tests the show styles.</summary>
         public static void TestShowStyles()
         {
+            Exception ex = new Exception("Пример исключения для демонстрации стиля Fatal");
+
             WriteLine();
 
             WriteLine("<< ShowStyles >>", _contrastColor);
@@ -102,17 +110,56 @@ namespace dRz.GPT_Utilities.Archivist.Services
 
             Warning($"\t{nameof(Warning),-15}: пример сообщения");
 
-            Error($"\t{nameof(Error),-15}: пример сообщения");
+            Error($"{nameof(Error)}: полный Ex", ex);
+            Error($"{nameof(Error)}: без Ex");
 
-            Fatal($"\t{nameof(Fatal),-15}: пример сообщения");
+            Fatal(ex, $"{nameof(Fatal)}: полный Ex");
+            Fatal(ex);
         }
 
         public static void Update(string message) => WriteLine(message, ConsoleColor.Cyan);
 
         public static void Warning(string message) => WriteLine(message, ConsoleColor.Magenta);
 
-        public static void WriteLine(string message,
-                                     ConsoleColor? foreground = null,
+        #endregion Public Methods
+
+        #region Private Methods
+
+        private static string Format(string? userMessage, Exception? ex, string defaultMessage = "Error")
+        {
+            if (ex == null && string.IsNullOrEmpty(userMessage))
+                return defaultMessage;
+
+            var parts = new List<string>();
+
+            if (!string.IsNullOrEmpty(userMessage))
+                parts.Add(userMessage);
+
+            if (ex != null)
+            {
+                parts.Add($"Exception: {ex.Message}");
+                if (!string.IsNullOrEmpty(ex.StackTrace))
+                    parts.Add($"StackTrace: {ex.StackTrace}");
+            }
+
+            return string.Join(Environment.NewLine, parts);
+        }
+
+        private static ConsoleColor GetContrastColor(ConsoleColor background)
+        {
+            return background switch
+            {
+                ConsoleColor.Gray or
+                ConsoleColor.White or
+                ConsoleColor.Yellow
+                    => ConsoleColor.Black,
+
+                _ => ConsoleColor.White
+            };
+        }
+
+        private static void WriteLine(string message,
+                                                     ConsoleColor? foreground = null,
                                      ConsoleColor? background = null)
         {
             ConsoleColor previousForeground = Console.ForegroundColor;
@@ -146,22 +193,6 @@ namespace dRz.GPT_Utilities.Archivist.Services
         private static void WriteLine()
         {
             Console.WriteLine();
-        }
-        #endregion Public Methods
-
-        #region Private Methods
-
-        private static ConsoleColor GetContrastColor(ConsoleColor background)
-        {
-            return background switch
-            {
-                ConsoleColor.Gray or
-                ConsoleColor.White or
-                ConsoleColor.Yellow
-                    => ConsoleColor.Black,
-
-                _ => ConsoleColor.White
-            };
         }
 
         #endregion Private Methods
