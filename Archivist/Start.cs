@@ -21,14 +21,26 @@ namespace dRz.GPT_Utilities.Archivist
                 System.Diagnostics.Debugger.Launch();
             }
 
-            for (int i = 0; i < 30; i++)
+            //for (int i = 0; i < 30; i++)
+            //{
+            //    Console.WriteLine(i.Of(Words.Files));
+            //}
+            try
             {
-                Console.WriteLine(i.Of(Words.Files));
-            }
+                var f = 0;
+                _ = 10 / f;
 
-            Console.WriteLine(5.Of(Words.Archives));
+            }
+            catch (Exception ex)
+            {
+            ConsoleWriter.Fatal(ex, $"Ошибка: ");
+            ConsoleWriter.Error($"Ошибка: ",ex);
+            }
+            //Console.WriteLine(5.Of(Words.Archives));
 
             ConsoleWriter.TestShowStyles();
+
+
             ConsoleWriter.TestShowColors();
             //ConsoleWriter.TestShowColorsBackground();
 
@@ -64,9 +76,9 @@ namespace dRz.GPT_Utilities.Archivist
 
                 //total statistics
                 ConsoleWriter.Success($"================ TOTAL STATISTICS =====================");
-                
+
                 ConsoleWriter.Step($"Обработано всего {totalStatistics.Total.Of(Words.Files)}");
-                
+
                 ConsoleWriter.Step($"Из них:");
 
                 ConsoleWriter.Success($"\tДобавлено {totalStatistics.Added.Of(Words.Files)}");
@@ -86,7 +98,7 @@ namespace dRz.GPT_Utilities.Archivist
             }
             catch (Exception ex)
             {
-                ConsoleWriter.Fatal($"Ошибка: {ex.Message}\n {ex.StackTrace}");
+                ConsoleWriter.Fatal(ex, $"Ошибка: ");
 
                 ConsoleWriter.PressAnyKey();
 
