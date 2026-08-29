@@ -6,7 +6,7 @@ namespace dRz.GPT_Utilities.Archivist
     {
         public static class PluralExtensions
         {
-            public static string Of(this int number, PluralForms forms)
+            public static string Of(this int number, PluralForms forms, bool OnlyWord = false)
             {
                 int value = Math.Abs(number);
 
@@ -25,7 +25,10 @@ namespace dRz.GPT_Utilities.Archivist
                         _ => forms.Many
                     };
                 }
-
+                if (OnlyWord)
+                {
+                    return $"{word}";
+                }
                 return $"{number} {word}";
             }
         }
@@ -35,6 +38,6 @@ namespace dRz.GPT_Utilities.Archivist
             string Few,
             string Many);
 
-        
+
     }
 }
