@@ -77,17 +77,17 @@ namespace dRz.GPT_Utilities.Archivist
                 //total statistics
                 ConsoleWriter.Success($"================ TOTAL STATISTICS =====================");
 
-                ConsoleWriter.Step($"Обработано всего {totalStatistics.Total.Of(Words.Files)}");
+                ConsoleWriter.Trace($"Обработано всего {totalStatistics.Total.Of(Words.Files)}");
 
-                ConsoleWriter.Step($"Из них:");
+                ConsoleWriter.Trace($"Из них:");
 
                 ConsoleWriter.Success($"\tДобавлено {totalStatistics.Added.Of(Words.Files)}");
 
-                ConsoleWriter.Warning($"\tДобавлено уникальных {totalStatistics.AddedUnique.Of(Words.Files)}");
+                ConsoleWriter.Warn($"\tДобавлено уникальных {totalStatistics.AddedUnique.Of(Words.Files)}");
 
                 ConsoleWriter.Update($"\tОбновлено {totalStatistics.Updated.Of(Words.Files)}");
 
-                ConsoleWriter.Step($"\tПропущено {totalStatistics.Skipped.Of(Words.Files)}");
+                ConsoleWriter.Trace($"\tПропущено {totalStatistics.Skipped.Of(Words.Files)}");
 
                 ConsoleWriter.Info($"Всего заменено и добавлено {(totalStatistics.Added + totalStatistics.AddedUnique + totalStatistics.Updated).Of(Words.Files)}");
 

@@ -32,7 +32,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
             Console.ReadKey();
         }
 
-        public static void Step(string message) => WriteLine(message, ConsoleColor.DarkGray);
+        public static void Trace(string message) => WriteLine(message, ConsoleColor.DarkGray);
 
         public static void Success(string message) => WriteLine(message, ConsoleColor.Green);
 
@@ -100,7 +100,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
 
             WriteLine("<< ShowStyles >>", _contrastColor);
 
-            Step($"\t{nameof(Step),-15}: пример сообщения");
+            Trace($"\t{nameof(Trace),-15}: пример сообщения");
 
             Info($"\t{nameof(Info),-15}: пример сообщения");
 
@@ -108,7 +108,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
 
             Update($"\t{nameof(Update),-15}: пример сообщения");
 
-            Warning($"\t{nameof(Warning),-15}: пример сообщения");
+            Warn($"\t{nameof(Warn),-15}: пример сообщения");
 
             Error($"{nameof(Error)}: полный Ex", ex);
             Error($"{nameof(Error)}: без Ex");
@@ -119,7 +119,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
 
         public static void Update(string message) => WriteLine(message, ConsoleColor.Cyan);
 
-        public static void Warning(string message) => WriteLine(message, ConsoleColor.Magenta);
+        public static void Warn(string message) => WriteLine(message, ConsoleColor.Magenta);
 
         #endregion Public Methods
 

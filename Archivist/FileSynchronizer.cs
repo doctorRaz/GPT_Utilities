@@ -128,7 +128,7 @@ namespace dRz.GPT_Utilities.Archivist
                     break;
 
                 case CopyDecision.AddUnique:
-                    ConsoleWriter.Warning($"\tДобавлен уникальный: {exo}");
+                    ConsoleWriter.Warn($"\tДобавлен уникальный: {exo}");
                     break;
 
                 case CopyDecision.Replace:
@@ -136,7 +136,7 @@ namespace dRz.GPT_Utilities.Archivist
                     break;
 
                 case CopyDecision.Skip:
-                    ConsoleWriter.Step($"\tПропущен: {sourseFileName}"); ;
+                    ConsoleWriter.Trace($"\tПропущен: {sourseFileName}"); ;
                     break;
 
                 default:

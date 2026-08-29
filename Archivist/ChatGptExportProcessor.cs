@@ -95,7 +95,7 @@ namespace dRz.GPT_Utilities.Archivist
                            .ToList();
             }
 
-            ConsoleWriter.Step($"Найден {zipFiles.Count.Of(Words.Archives)} для обработки");
+            ConsoleWriter.Trace($"Найден {zipFiles.Count.Of(Words.Archives)} для обработки");
 
             //обработано копий
             CopyStatistics statistics = new CopyStatistics();
@@ -103,9 +103,9 @@ namespace dRz.GPT_Utilities.Archivist
             //отправляем архивы  на обработку
             foreach (FileInfo zipFile in zipFiles)
             {
-                ConsoleWriter.Step($"ZIP: {zipFile.FullName}");
+                ConsoleWriter.Trace($"ZIP: {zipFile.FullName}");
 
-                ConsoleWriter.Step($"\tДата изменения ZIP: {zipFile.LastWriteTime}");
+                ConsoleWriter.Trace($"\tДата изменения ZIP: {zipFile.LastWriteTime}");
 
                 CopyStatistics archiveStatistics = ProcessArchive(zipFile.FullName, destinationDirectory);//по текущему архиву возвращаем статистику по обработанным файлам
                 //суммирование статистики по каждому zip
@@ -145,7 +145,7 @@ namespace dRz.GPT_Utilities.Archivist
                 // Распаковываем ZIP во временный каталог.
                 // ---------------------------------------------------------
 
-                ConsoleWriter.Step($"Распаковка ZIP в: {tempDirectory}");
+                ConsoleWriter.Trace($"Распаковка ZIP в: {tempDirectory}");
 
                 ZipFile.ExtractToDirectory(archiveFilePath, tempDirectory, Encoding.GetEncoding(866));
 
@@ -159,7 +159,7 @@ namespace dRz.GPT_Utilities.Archivist
                         SearchOption.AllDirectories)
                     .ToList();
 
-                ConsoleWriter.Step($"\tНайдено {markdownFiles.Count.Of(Words.Files)} Markdown");
+                ConsoleWriter.Trace($"\tНайдено {markdownFiles.Count.Of(Words.Files)} Markdown");
 
                 CopyStatistics statistics = new CopyStatistics();
 
@@ -240,7 +240,7 @@ namespace dRz.GPT_Utilities.Archivist
             {
                 fileName = Path.GetFileNameWithoutExtension(sourceFile);
 
-                ConsoleWriter.Warning($"КОПИРУЮ КАК ЕСТЬ: пустое имя файла: {sourceFile}");
+                ConsoleWriter.Warn($"КОПИРУЮ КАК ЕСТЬ: пустое имя файла: {sourceFile}");
             }
 
             // -------------------------------------------------------------
@@ -274,7 +274,7 @@ namespace dRz.GPT_Utilities.Archivist
                     tempDirectory,
                     recursive: true);
 
-                ConsoleWriter.Step($"Удалён временный каталог: {tempDirectory}");
+                ConsoleWriter.Trace($"Удалён временный каталог: {tempDirectory}");
             }
             catch (Exception ex)
             {
