@@ -169,7 +169,8 @@ namespace dRz.GPT_Utilities.Archivist
                     {
                         CopyDecision decision = ProcessMarkdownFile(sourceFile, destinationDirectory);
 
-                        statistics.Add(decision);//добавляем статистику по каждому файлу
+                        //добавляем статистику по каждому файлу
+                        statistics.Add(decision);
                     }
                     catch (Exception ex)
                     {
@@ -248,16 +249,12 @@ namespace dRz.GPT_Utilities.Archivist
             string destinationFile = Path.Combine(monthDirectory, fileName + extension);
 
             // Проверяем, требуется ли копирование и в методе копируем файл, если нужно.
-            FileOperationResult copyResult = CopyIfNewer(sourceFile, destinationFile, sourceMetadata);
+            CopyDecision copyDecision = CopyIfNewer(sourceFile, destinationFile, sourceMetadata);
 
-            // destinationFile мог измениться внутри CopyIfNewer, если было принято решение AddUnique.
-            // поэтому для консоли пользуем copyResult.DestinationFilePath 
 
-            //вывод в консоль результата копирования
-            WriteCopyResult(copyResult);
 
             //прокидываем статистику в ProcessArchive, чтобы суммировать количество обработанных файлов
-            return copyResult.Decision;
+            return copyDecision;
         }
 
         /// <summary>
@@ -288,37 +285,7 @@ namespace dRz.GPT_Utilities.Archivist
             }
         }
 
-        internal static void WriteCopyResult(FileOperationResult fileOperationResult)
-        {
-            //вывод в консоль
-            string sourseFileName = Path.GetFileName(fileOperationResult.SourceFilePath);
-
-            string exo = $"{sourseFileName}" +
-                        $"\n\t\tupdate_time: {fileOperationResult.UpdateTime:yyyy-MM-dd-HH.mm.sss}" +
-                        $"\n\t\tto->{fileOperationResult.DestinationFilePath}";
-
-            switch (fileOperationResult.Decision)
-            {
-                case CopyDecision.Add:
-                    ConsoleWriter.Success($"\tДобавлен: {exo}");
-                    break;
-
-                case CopyDecision.AddUnique:
-                    ConsoleWriter.Warning($"\tДобавлен уникальный: {exo}");
-                    break;
-
-                case CopyDecision.Replace:
-                    ConsoleWriter.Update($"\tОбновлён: {exo}");
-                    break;
-
-                case CopyDecision.Skip:
-                    ConsoleWriter.Step($"\tПропущен: {sourseFileName}"); ;
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(fileOperationResult.Decision), fileOperationResult.Decision, null);
-            }
-        }
+       
 
         internal sealed class CopyStatistics
         {

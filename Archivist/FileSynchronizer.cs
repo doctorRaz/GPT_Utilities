@@ -11,15 +11,19 @@ namespace dRz.GPT_Utilities.Archivist
         /// <param name="destinationFilePath">The destination file path.</param>
         /// <param name="sourceMetadata">The source update time.</param>
         /// <returns> The copy result. </returns>
-        internal static FileOperationResult CopyIfNewer(string sourceFilePath, string destinationFilePath, ChatMetadata sourceMetadata)
+        internal static CopyDecision CopyIfNewer(string sourceFilePath, string destinationFilePath, ChatMetadata sourceMetadata)
         {
             CopyDecision decision = GetCopyDecision(destinationFilePath, sourceMetadata);
 
             if (decision == CopyDecision.Skip)
             {
+                //todo дублирование
                 //результат по файлу
-                return new FileOperationResult(decision, sourceFilePath, DestinationFilePath: null, UpdateTime: null);
+                FileOperationResult fileOperationResult = new FileOperationResult(decision, sourceFilePath, DestinationFilePath: null, UpdateTime: null);
 
+                //вывод в консоль результата копирования
+                WriteCopyResult(fileOperationResult);
+                return decision;
             }
             // разные IDs — создаём уникальный файл в destination.
             if (decision == CopyDecision.AddUnique)
@@ -36,8 +40,19 @@ namespace dRz.GPT_Utilities.Archivist
                 File.SetLastWriteTime(destinationFilePath, sourceMetadata.UpdateTime.Value.LocalDateTime);
             }
 
-            //результат по файлу
-            return new FileOperationResult(decision, sourceFilePath, destinationFilePath,sourceMetadata.UpdateTime);
+            { //todo костыль области видимости
+                //todo дублирование
+                FileOperationResult fileOperationResult = new FileOperationResult(decision, sourceFilePath, destinationFilePath, sourceMetadata.UpdateTime);
+
+                // destinationFile мог измениться внутри CopyIfNewer, если было принято решение AddUnique.
+                // поэтому для консоли пользуем copyResult.DestinationFilePath
+
+                //вывод в консоль результата копирования
+                WriteCopyResult(fileOperationResult);
+
+                //результат по файлу
+                return decision;
+            }
         }
 
         private static CopyDecision GetCopyDecision(string destinationFilePath, ChatMetadata sourceMetadata)
@@ -63,9 +78,9 @@ namespace dRz.GPT_Utilities.Archivist
                     destinationId is null ||
                     sourceId != destinationId)
                 {
-                //todo проверять (1...) file name*.md
-                 //в цикле рекурсивно? сравнить по sourceId != destinationId
-                 //если совпадут проверить UpdateTime
+                    //todo проверять (1...) file name*.md
+                    //в цикле рекурсивно? сравнить по sourceId != destinationId
+                    //если совпадут проверить UpdateTime
                     return CopyDecision.AddUnique;
                 }
 
@@ -97,12 +112,44 @@ namespace dRz.GPT_Utilities.Archivist
             }
         }
 
-        internal sealed record FileOperationResult(CopyDecision Decision,
+        private static void WriteCopyResult(FileOperationResult fileOperationResult)
+        {
+            //вывод в консоль
+            string sourseFileName = Path.GetFileName(fileOperationResult.SourceFilePath);
+
+            string exo = $"{sourseFileName}" +
+                        $"\n\t\tupdate_time: {fileOperationResult.UpdateTime:yyyy-MM-dd-HH.mm.sss}" +
+                        $"\n\t\tto->{fileOperationResult.DestinationFilePath}";
+
+            switch (fileOperationResult.Decision)
+            {
+                case CopyDecision.Add:
+                    ConsoleWriter.Success($"\tДобавлен: {exo}");
+                    break;
+
+                case CopyDecision.AddUnique:
+                    ConsoleWriter.Warning($"\tДобавлен уникальный: {exo}");
+                    break;
+
+                case CopyDecision.Replace:
+                    ConsoleWriter.Update($"\tОбновлён: {exo}");
+                    break;
+
+                case CopyDecision.Skip:
+                    ConsoleWriter.Step($"\tПропущен: {sourseFileName}"); ;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(fileOperationResult.Decision), fileOperationResult.Decision, null);
+            }
+        }
+
+        private sealed record FileOperationResult(CopyDecision Decision,
                                                         string SourceFilePath,
                                                         string? DestinationFilePath,
                                                         DateTimeOffset? UpdateTime)
         {
-            public bool IsCopied => Decision != CopyDecision.Skip;
+            private bool IsCopied => Decision != CopyDecision.Skip;
         }
     }
 }
