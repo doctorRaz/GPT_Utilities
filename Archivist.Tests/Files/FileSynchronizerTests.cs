@@ -1,8 +1,11 @@
+using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Files;
+using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
 using System.IO;
 using Xunit;
 
-namespace dRz.GPT_Utilities.Archivist.Tests
+namespace dRz.GPT_Utilities.Archivist.Tests.Files
 {
     public sealed class FileSynchronizerTests
     {
@@ -15,6 +18,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
         private const string ConversationB =
             "https://chatgpt.com/c/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 
+        /// <summary>Copies if newer adds file when destination does not exist.</summary>
         [Fact]
         public void CopyIfNewer_AddsFile_WhenDestinationDoesNotExist()
         {
@@ -27,15 +31,16 @@ namespace dRz.GPT_Utilities.Archivist.Tests
             string destination = temp.Combine("dst", "Chat.md");
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(source);
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
 
-            bool copied = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
-            Assert.True(copied);
+            Assert.Equal(FileCopyDecision.Add, decision);
             Assert.True(File.Exists(destination));
             Assert.Equal(File.ReadAllText(source), File.ReadAllText(destination));
         }
 
+        /// <summary>Copies if newer replaces file when source is newer.</summary>
         [Fact]
         public void CopyIfNewer_ReplacesFile_WhenSourceIsNewer()
         {
@@ -53,15 +58,16 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 ConversationA,
                 "new");
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(source);
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
 
-            bool copied = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
-            Assert.True(copied);
+            Assert.Equal(FileCopyDecision.Replace, decision);
             Assert.Contains("new", File.ReadAllText(destination));
             Assert.DoesNotContain(" (1)", destination);
         }
 
+        /// <summary>Copies if newer skips file when source is older or equal.</summary>
         [Fact]
         public void CopyIfNewer_SkipsFile_WhenSourceIsOlderOrEqual()
         {
@@ -79,14 +85,15 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 ConversationA,
                 "stale");
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(source);
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
 
-            bool copied = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
-            Assert.False(copied);
+            Assert.Equal(FileCopyDecision.Skip, decision);
             Assert.Contains("kept", File.ReadAllText(destination));
         }
 
+        /// <summary>Copies if newer adds unique file when conversation ids differ.</summary>
         [Fact]
         public void CopyIfNewer_AddsUniqueFile_WhenConversationIdsDiffer()
         {
@@ -104,18 +111,19 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 ConversationB,
                 "second");
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(source);
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
 
-            bool copied = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
             string unique = temp.Combine("dst", "Chat (1).md");
 
-            Assert.True(copied);
+            Assert.Equal(FileCopyDecision.AddUnique, decision);
             Assert.Contains("first", File.ReadAllText(destination));
             Assert.True(File.Exists(unique));
             Assert.Contains("second", File.ReadAllText(unique));
         }
 
+        /// <summary>Copies if newer adds unique file when both conversation ids are missing.</summary>
         [Fact]
         public void CopyIfNewer_AddsUniqueFile_WhenBothConversationIdsAreMissing()
         {
@@ -133,18 +141,19 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 chatLink: null,
                 body: "new");
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(source);
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
 
-            bool copied = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
             string unique = temp.Combine("dst", "Chat (1).md");
 
-            Assert.True(copied);
+            Assert.Equal(FileCopyDecision.AddUnique, decision);
             Assert.Contains("old", File.ReadAllText(destination));
             Assert.True(File.Exists(unique));
             Assert.Contains("new", File.ReadAllText(unique));
         }
 
+        /// <summary>Copies if newer adds unique file when one conversation identifier is missing.</summary>
         [Fact]
         public void CopyIfNewer_AddsUniqueFile_WhenOneConversationIdIsMissing()
         {
@@ -162,11 +171,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 chatLink: null,
                 body: "new");
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(source);
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
 
-            bool copied = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
-            Assert.True(copied);
+            Assert.Equal(FileCopyDecision.AddUnique, decision);
             Assert.Contains("kept", File.ReadAllText(destination));
             Assert.True(File.Exists(temp.Combine("dst", "Chat (1).md")));
         }
@@ -184,11 +193,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 CreateTime.AddHours(1),
                 ConversationA);
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(source);
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
 
-            bool copied = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
-            Assert.True(copied);
+            Assert.Equal(FileCopyDecision.AddUnique, decision);
             Assert.Equal("not a chatgpt export", File.ReadAllText(destination));
             Assert.True(File.Exists(temp.Combine("dst", "Chat (1).md")));
         }
@@ -206,7 +215,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
             string destination = temp.Combine("dst", "Chat.md");
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(source);
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
 
             FileSynchronizer.CopyIfNewer(source, destination, metadata);
 

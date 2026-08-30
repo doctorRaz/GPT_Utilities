@@ -1,7 +1,8 @@
+using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System.IO;
 using Xunit;
 
-namespace dRz.GPT_Utilities.Archivist.Tests
+namespace dRz.GPT_Utilities.Archivist.Tests.Files
 {
     public sealed class FileNamerTests
     {
@@ -15,7 +16,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
             string input,
             string expected)
         {
-            Assert.Equal(expected, FileNamer.Normalize(input));
+            Assert.Equal(expected, FileNameHelper.Normalize(input));
         }
 
         [Fact]
@@ -24,7 +25,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
             using TempDirectory temp = new();
             string path = temp.Combine("Test.md");
 
-            Assert.Equal(path, FileNamer.GetUnique(path));
+            Assert.Equal(path, FileNameHelper.GetUnique(path));
         }
 
         [Fact]
@@ -34,7 +35,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
             string path = temp.Combine("Test.md");
             File.WriteAllText(path, "exists");
 
-            string unique = FileNamer.GetUnique(path);
+            string unique = FileNameHelper.GetUnique(path);
 
             Assert.Equal(temp.Combine("Test (1).md"), unique);
         }
@@ -47,7 +48,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
             File.WriteAllText(temp.Combine("Test (1).md"), "1");
             File.WriteAllText(temp.Combine("Test (2).md"), "2");
 
-            string unique = FileNamer.GetUnique(temp.Combine("Test.md"));
+            string unique = FileNameHelper.GetUnique(temp.Combine("Test.md"));
 
             Assert.Equal(temp.Combine("Test (3).md"), unique);
         }
@@ -64,7 +65,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
             }
 
             IOException ex = Assert.Throws<IOException>(
-                () => FileNamer.GetUnique(temp.Combine("Test.md")));
+                () => FileNameHelper.GetUnique(temp.Combine("Test.md")));
 
             Assert.Contains("(100)", ex.Message);
         }

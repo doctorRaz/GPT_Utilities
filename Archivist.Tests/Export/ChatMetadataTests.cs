@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace dRz.GPT_Utilities.Archivist.Tests
+namespace dRz.GPT_Utilities.Archivist.Tests.Export
 {
     public sealed class ChatMetadataTests
     {

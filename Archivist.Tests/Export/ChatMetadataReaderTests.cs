@@ -1,10 +1,12 @@
+using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
 using System.IO;
 using Xunit;
 
-namespace dRz.GPT_Utilities.Archivist.Tests
+namespace dRz.GPT_Utilities.Archivist.Tests.Export
 {
-    public sealed class MetadataReaderTests
+    public sealed class ChatMetadataReaderTests
     {
         private static readonly DateTimeOffset CreateTime =
             new(2026, 8, 24, 15, 23, 56, 473, TimeSpan.Zero);
@@ -21,7 +23,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 CreateTime,
                 UpdateTime);
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(file);
+            ChatMetadata metadata = ChatMetadataReader.Read(file);
 
             Assert.Equal(CreateTime, metadata.CreateTime);
             Assert.Equal(UpdateTime, metadata.UpdateTime);
@@ -49,7 +51,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 body
                 """);
 
-            ChatMetadata metadata = MetadataReader.ReadMetadata(file);
+            ChatMetadata metadata = ChatMetadataReader.Read(file);
 
             Assert.Equal(CreateTime, metadata.CreateTime);
             Assert.Equal(UpdateTime, metadata.UpdateTime);
@@ -65,7 +67,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
             File.WriteAllText(file, "# just markdown");
 
             FormatException ex = Assert.Throws<FormatException>(
-                () => MetadataReader.ReadMetadata(file));
+                () => ChatMetadataReader.Read(file));
 
             Assert.Contains("YAML front matter", ex.Message);
         }
@@ -84,7 +86,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 """);
 
             FormatException ex = Assert.Throws<FormatException>(
-                () => MetadataReader.ReadMetadata(file));
+                () => ChatMetadataReader.Read(file));
 
             Assert.Contains("create_time", ex.Message);
         }
@@ -103,7 +105,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests
                 """);
 
             FormatException ex = Assert.Throws<FormatException>(
-                () => MetadataReader.ReadMetadata(file));
+                () => ChatMetadataReader.Read(file));
 
             Assert.Contains("update_time", ex.Message);
         }

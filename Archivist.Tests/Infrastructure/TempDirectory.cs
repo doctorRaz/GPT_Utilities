@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace dRz.GPT_Utilities.Archivist.Tests
+namespace dRz.GPT_Utilities.Archivist.Tests.Infrastructure
 {
     internal sealed class TempDirectory : IDisposable
     {
