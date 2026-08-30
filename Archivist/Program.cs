@@ -1,5 +1,6 @@
 ﻿using dRz.GPT_Utilities.Archivist.CommandLine;
 using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Localization;
 using System;
 using System.IO;
@@ -14,7 +15,7 @@ namespace dRz.GPT_Utilities.Archivist
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            ConsoleInitializer.Initialize(AppDomain.CurrentDomain.FriendlyName);
+            ConsoleSetup.Initialize(AppDomain.CurrentDomain.FriendlyName);
 
 #if DEBUG
             if (!System.Diagnostics.Debugger.IsAttached)

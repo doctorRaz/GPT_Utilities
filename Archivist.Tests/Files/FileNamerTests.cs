@@ -1,3 +1,4 @@
+using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System.IO;
 using Xunit;

@@ -19,7 +19,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// </summary>
         public DateTimeOffset CreateTime { get; set; }
 
+        /// <summary>Gets or sets the update time.</summary>
+        /// <value>The update time.</value>
         public DateTimeOffset? UpdateTime { get; set; }
+
+        /// <summary>Gets or sets the chat link.</summary>
+        /// <value>The chat link.</value>
         public string? ChatLink { get; set; }
 
         /// <summary>

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace dRz.GPT_Utilities.Archivist.Console
+namespace dRz.GPT_Utilities.Archivist.Infrastructure
 {
-    public static class ConsoleInitializer
+    public static class ConsoleSetup
     {
         public static void Initialize(string? title = null)
         {
