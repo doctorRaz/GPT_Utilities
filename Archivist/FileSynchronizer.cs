@@ -17,12 +17,8 @@ namespace dRz.GPT_Utilities.Archivist
 
             if (decision == CopyDecision.Skip)
             {
-                //todo дублирование
-                //результат по файлу
-                FileOperationResult fileOperationResult = new FileOperationResult(decision, sourceFilePath, DestinationFilePath: null, UpdateTime: null);
-
                 //вывод в консоль результата копирования
-                WriteCopyResult(fileOperationResult);
+                WriteCopyResult(decision, sourceFilePath, destinationFilePath: null, updateTime: null);
                 return decision;
             }
             // разные IDs — создаём уникальный файл в destination.
@@ -34,25 +30,20 @@ namespace dRz.GPT_Utilities.Archivist
             // Единственная операция копирования.
             File.Copy(sourceFilePath, destinationFilePath, overwrite: true);
 
-            // Сохраняем UpdateTime исходного файла.
+            // Сохраняем updateTime исходного файла.
             if (sourceMetadata.UpdateTime.HasValue)
             {
                 File.SetLastWriteTime(destinationFilePath, sourceMetadata.UpdateTime.Value.LocalDateTime);
             }
 
-            { //todo костыль области видимости
-                //todo дублирование
-                FileOperationResult fileOperationResult = new FileOperationResult(decision, sourceFilePath, destinationFilePath, sourceMetadata.UpdateTime);
+            // destinationFile мог измениться внутри CopyIfNewer, если было принято решение AddUnique.
+            // поэтому для консоли пользуем copyResult.destinationFilePath
 
-                // destinationFile мог измениться внутри CopyIfNewer, если было принято решение AddUnique.
-                // поэтому для консоли пользуем copyResult.DestinationFilePath
+            //вывод в консоль результата копирования
+            WriteCopyResult(decision, sourceFilePath, destinationFilePath, sourceMetadata.UpdateTime);
 
-                //вывод в консоль результата копирования
-                WriteCopyResult(fileOperationResult);
-
-                //результат по файлу
-                return decision;
-            }
+            //результат по файлу
+            return decision;
         }
 
         private static CopyDecision GetCopyDecision(string destinationFilePath, ChatMetadata sourceMetadata)
@@ -80,7 +71,7 @@ namespace dRz.GPT_Utilities.Archivist
                 {
                     //todo проверять (1...) file name*.md
                     //в цикле рекурсивно? сравнить по sourceId != destinationId
-                    //если совпадут проверить UpdateTime
+                    //если совпадут проверить updateTime
                     return CopyDecision.AddUnique;
                 }
 
@@ -112,16 +103,17 @@ namespace dRz.GPT_Utilities.Archivist
             }
         }
 
-        private static void WriteCopyResult(FileOperationResult fileOperationResult)
+        //private static void WriteCopyResult(FileOperationResult fileOperationResult)
+        private static void WriteCopyResult(CopyDecision decision, string sourceFilePath, string? destinationFilePath, DateTimeOffset? updateTime)
         {
             //вывод в консоль
-            string sourseFileName = Path.GetFileName(fileOperationResult.SourceFilePath);
+            string sourseFileName = Path.GetFileName(sourceFilePath);
 
             string exo = $"{sourseFileName}" +
-                        $"\n\t\tupdate_time: {fileOperationResult.UpdateTime:yyyy-MM-dd-HH.mm.sss}" +
-                        $"\n\t\tto->{fileOperationResult.DestinationFilePath}";
+                        $"\n\t\tupdate_time: {updateTime:yyyy-MM-dd-HH.mm.sss}" +
+                        $"\n\t\tto->{destinationFilePath}";
 
-            switch (fileOperationResult.Decision)
+            switch (decision)
             {
                 case CopyDecision.Add:
                     ConsoleWriter.Success($"\tДобавлен: {exo}");
@@ -140,10 +132,11 @@ namespace dRz.GPT_Utilities.Archivist
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(fileOperationResult.Decision), fileOperationResult.Decision, null);
+                    throw new ArgumentOutOfRangeException(nameof(decision), decision, null);
             }
         }
 
+        // todo не используется, но может быть полезно для...?
         private sealed record FileOperationResult(CopyDecision Decision,
                                                         string SourceFilePath,
                                                         string? DestinationFilePath,
@@ -151,6 +144,5 @@ namespace dRz.GPT_Utilities.Archivist
         {
             private bool IsCopied => Decision != CopyDecision.Skip;
         }
- 
     }
 }
