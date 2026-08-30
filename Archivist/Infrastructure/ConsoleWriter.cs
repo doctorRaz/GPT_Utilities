@@ -2,14 +2,6 @@
 {
     public static class ConsoleWriter
     {
-        #region Private Properties
-
-        private static ConsoleColor _contrastColor => Console.BackgroundColor == Console.ForegroundColor ? GetContrastColor(Console.BackgroundColor) : Console.ForegroundColor;
-
-        #endregion Private Properties
-
-        #region Public Methods
-
         public static void Error(string message, Exception? ex = null) =>
                                                             WriteLine(Format(message, ex),
                                                             ConsoleColor.Red);
@@ -32,96 +24,17 @@
 
         public static void Success(string message) => WriteLine(message, ConsoleColor.Green);
 
-        /// <summary>Tests the show colors.</summary>
-        internal static void TestShowColors()
-        {
-            WriteLine();
-
-            WriteLine("<< ShowColors >>", _contrastColor);
-
-            foreach (ConsoleColor color in Enum.GetValues<ConsoleColor>())
-            {
-                ConsoleColor background = Console.BackgroundColor;
-
-                string same = "";
-
-                if (color == background)
-                {
-                    background = GetContrastColor(color);
-
-                    same = "<-- SAME";
-                }
-
-                WriteLine($"\t{color,-15} {same}", color, background);
-            }
-        }
-
-        /// <summary>Tests the show colors background.</summary>
-        internal static void TestShowColorsBackground()
-        {
-            WriteLine();
-
-            WriteLine("<< ShowColorsBackground >>", _contrastColor);
-
-            foreach (ConsoleColor background in Enum.GetValues<ConsoleColor>())
-            {
-                ConsoleColor displayForeground = background == Console.ForegroundColor ? GetContrastColor(background) : Console.ForegroundColor;
-
-                WriteLine($"Background: {background}", displayForeground, background);
-
-                foreach (ConsoleColor foreground in Enum.GetValues<ConsoleColor>())
-                {
-                    string same = "";
-
-                    displayForeground = foreground;
-
-                    if (foreground == background)
-                    {
-                        displayForeground = GetContrastColor(background);
-
-                        same = "<-- SAME";
-                    }
-
-                    WriteLine($"\t{foreground,-15} on {background,-15} {same}", displayForeground, background);
-                }
-            }
-        }
-
-        /// <summary>Tests the show styles.</summary>
-        internal static void TestShowStyles()
-        {
-            Exception ex = new Exception("Пример исключения для демонстрации стиля Fatal");
-
-            WriteLine();
-
-            WriteLine("<< ShowStyles >>", _contrastColor);
-
-            Trace($"\t{nameof(Trace),-15}: пример сообщения");
-
-            Info($"\t{nameof(Info),-15}: пример сообщения");
-
-            Success($"\t{nameof(Success),-15}: пример сообщения");
-
-            Update($"\t{nameof(Update),-15}: пример сообщения");
-
-            Warn($"\t{nameof(Warn),-15}: пример сообщения");
-
-            Error($"{nameof(Error)}: полный Ex", ex);
-            Error($"{nameof(Error)}: без Ex");
-
-            Fatal(ex, $"{nameof(Fatal)}: полный Ex");
-            Fatal(ex);
-        }
-
         public static void Update(string message) => WriteLine(message, ConsoleColor.Cyan);
 
         public static void Warn(string message) => WriteLine(message, ConsoleColor.Magenta);
 
-        #endregion Public Methods
+#if DEBUG
 
-        #region Private Methods
+        internal static string Format(string? userMessage, Exception? ex, string defaultMessage = "Error")
+#else
 
         private static string Format(string? userMessage, Exception? ex, string defaultMessage = "Error")
+#endif
         {
             if (ex == null && string.IsNullOrEmpty(userMessage))
             {
@@ -147,7 +60,13 @@
             return string.Join(Environment.NewLine, parts);
         }
 
+#if DEBUG
+
+        internal static ConsoleColor GetContrastColor(ConsoleColor background)
+#else
+
         private static ConsoleColor GetContrastColor(ConsoleColor background)
+#endif
         {
             return background switch
             {
@@ -160,9 +79,17 @@
             };
         }
 
-        private static void WriteLine(string message,
-                                                     ConsoleColor? foreground = null,
+#if DEBUG
+
+        internal static void WriteLine(string message,
+                                      ConsoleColor? foreground = null,
                                      ConsoleColor? background = null)
+#else
+
+        private static void WriteLine(string message,
+                                      ConsoleColor? foreground = null,
+                                     ConsoleColor? background = null)
+#endif
         {
             ConsoleColor previousForeground = Console.ForegroundColor;
             ConsoleColor previousBackground = Console.BackgroundColor;
@@ -191,12 +118,5 @@
                 Console.BackgroundColor = previousBackground;
             }
         }
-
-        private static void WriteLine()
-        {
-            Console.WriteLine();
-        }
-
-        #endregion Private Methods
     }
 }
