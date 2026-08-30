@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace dRz.GPT_Utilities.Archivist.Services
+namespace dRz.GPT_Utilities.Archivist.Console
 {
     public static class ConsoleWriter
     {
-
         #region Private Properties
 
         private static ConsoleColor _contrastColor => Console.BackgroundColor == Console.ForegroundColor ? GetContrastColor(Console.BackgroundColor) : Console.ForegroundColor;
@@ -14,10 +13,10 @@ namespace dRz.GPT_Utilities.Archivist.Services
 
         #region Public Methods
 
-        public static void Error(string message, Exception? ex = null) =>        
-                                                            WriteLine(Format(message, ex), 
+        public static void Error(string message, Exception? ex = null) =>
+                                                            WriteLine(Format(message, ex),
                                                             ConsoleColor.Red);
-        
+
         public static void Fatal(Exception ex, string? message = null) => WriteLine(
                                                                Format(message, ex, "Fatal error"),
                                                                 ConsoleColor.White,
@@ -37,7 +36,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
         public static void Success(string message) => WriteLine(message, ConsoleColor.Green);
 
         /// <summary>Tests the show colors.</summary>
-        public static void TestShowColors()
+        internal static void TestShowColors()
         {
             WriteLine();
 
@@ -61,7 +60,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
         }
 
         /// <summary>Tests the show colors background.</summary>
-        public static void TestShowColorsBackground()
+        internal static void TestShowColorsBackground()
         {
             WriteLine();
 
@@ -92,7 +91,7 @@ namespace dRz.GPT_Utilities.Archivist.Services
         }
 
         /// <summary>Tests the show styles.</summary>
-        public static void TestShowStyles()
+        internal static void TestShowStyles()
         {
             Exception ex = new Exception("Пример исключения для демонстрации стиля Fatal");
 
@@ -128,18 +127,24 @@ namespace dRz.GPT_Utilities.Archivist.Services
         private static string Format(string? userMessage, Exception? ex, string defaultMessage = "Error")
         {
             if (ex == null && string.IsNullOrEmpty(userMessage))
+            {
                 return defaultMessage;
+            }
 
-            var parts = new List<string>();
+            List<string> parts = new List<string>();
 
             if (!string.IsNullOrEmpty(userMessage))
+            {
                 parts.Add(userMessage);
+            }
 
             if (ex != null)
             {
                 parts.Add($"Exception: {ex.Message}");
                 if (!string.IsNullOrEmpty(ex.StackTrace))
+                {
                     parts.Add($"StackTrace: {ex.StackTrace}");
+                }
             }
 
             return string.Join(Environment.NewLine, parts);

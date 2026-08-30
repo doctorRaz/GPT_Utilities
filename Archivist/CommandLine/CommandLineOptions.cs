@@ -1,4 +1,4 @@
-﻿namespace dRz.GPT_Utilities.Archivist
+﻿namespace dRz.GPT_Utilities.Archivist.CommandLine
 {
     /// <summary>
     /// Параметры командной строки GPT_Archivist.

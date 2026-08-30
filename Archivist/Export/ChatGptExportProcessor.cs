@@ -1,4 +1,5 @@
-﻿using dRz.GPT_Utilities.Archivist.Services;
+﻿using dRz.GPT_Utilities.Archivist.Files;
+using dRz.GPT_Utilities.Archivist.Localization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,9 +7,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using static dRz.GPT_Utilities.Archivist.FileSynchronizer;
+using static dRz.GPT_Utilities.Archivist.Files.FileSynchronizer;
 
-namespace dRz.GPT_Utilities.Archivist
+namespace dRz.GPT_Utilities.Archivist.Export
 {
     /// <summary>
     /// Обрабатывает ZIP-архив экспорта ChatGPT и формирует
@@ -94,7 +95,7 @@ namespace dRz.GPT_Utilities.Archivist
                            .ToList();
             }
 
-            ConsoleWriter.Trace($"Найден {zipFiles.Count.Of(Words.Archives)} для обработки");
+            ConsoleWriter.Trace($"Найден {zipFiles.Count.Of(RussianWords.Archives)} для обработки");
 
             //обработано копий
             CopyStatistics statistics = new CopyStatistics();
@@ -158,7 +159,7 @@ namespace dRz.GPT_Utilities.Archivist
                         SearchOption.AllDirectories)
                     .ToList();
 
-                ConsoleWriter.Trace($"\tНайдено {markdownFiles.Count.Of(Words.Files)} Markdown");
+                ConsoleWriter.Trace($"\tНайдено {markdownFiles.Count.Of(RussianWords.Files)} Markdown");
 
                 CopyStatistics statistics = new CopyStatistics();
 
@@ -166,7 +167,7 @@ namespace dRz.GPT_Utilities.Archivist
                 {
                     try
                     {
-                        CopyDecision decision = ProcessMarkdownFile(sourceFile, destinationDirectory);
+                        FileCopyDecision decision = ProcessMarkdownFile(sourceFile, destinationDirectory);
 
                         //добавляем статистику по каждому файлу
                         statistics.Add(decision);
@@ -196,14 +197,14 @@ namespace dRz.GPT_Utilities.Archivist
         /// <summary>
         /// Обрабатывает один Markdown-файл.
         /// </summary>
-        private static CopyDecision ProcessMarkdownFile(
+        private static FileCopyDecision ProcessMarkdownFile(
             string sourceFile,
             string destinationDirectory)
         {
             // -------------------------------------------------------------
             // 4. Читаем create_time из YAML front matter.
             // -------------------------------------------------------------
-            ChatMetadata sourceMetadata = MetadataReader.ReadMetadata(sourceFile);
+            ChatMetadata sourceMetadata = ChatMetadataReader.Read(sourceFile);
 
             // -------------------------------------------------------------
             // 5. Формируем:
@@ -233,7 +234,7 @@ namespace dRz.GPT_Utilities.Archivist
 
             string extension = Path.GetExtension(sourceFile);
 
-            fileName = FileNamer.Normalize(fileName);
+            fileName = FileNameHelper.Normalize(fileName);
 
             if (string.IsNullOrWhiteSpace(fileName))
             {
@@ -248,7 +249,7 @@ namespace dRz.GPT_Utilities.Archivist
             string destinationFile = Path.Combine(monthDirectory, fileName + extension);
 
             // Проверяем, требуется ли копирование и в методе копируем файл, если нужно.
-            CopyDecision copyDecision = CopyIfNewer(sourceFile, destinationFile, sourceMetadata);
+            FileCopyDecision copyDecision = CopyIfNewer(sourceFile, destinationFile, sourceMetadata);
 
 
 
@@ -284,7 +285,7 @@ namespace dRz.GPT_Utilities.Archivist
             }
         }
 
-       
+
 
         internal sealed class CopyStatistics
         {
@@ -298,25 +299,25 @@ namespace dRz.GPT_Utilities.Archivist
 
             public int AddedUnique { get; private set; }
 
-            public void Add(CopyDecision decision)
+            public void Add(FileCopyDecision decision)
             {
                 Total++;
 
                 switch (decision)
                 {
-                    case CopyDecision.Skip:
+                    case FileCopyDecision.Skip:
                         Skipped++;
                         break;
 
-                    case CopyDecision.Add:
+                    case FileCopyDecision.Add:
                         Added++;
                         break;
 
-                    case CopyDecision.AddUnique:
+                    case FileCopyDecision.AddUnique:
                         AddedUnique++;
                         break;
 
-                    case CopyDecision.Replace:
+                    case FileCopyDecision.Replace:
                         Updated++;
                         break;
 

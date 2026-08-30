@@ -1,7 +1,7 @@
 ﻿using System;
 using YamlDotNet.Serialization;
 
-namespace dRz.GPT_Utilities.Archivist
+namespace dRz.GPT_Utilities.Archivist.Export
 {
     /// <summary>
     /// Метаданные Markdown-файла из экспорта ChatGPT.

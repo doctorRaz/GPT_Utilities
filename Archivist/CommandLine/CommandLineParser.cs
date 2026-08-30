@@ -1,7 +1,6 @@
-﻿using dRz.GPT_Utilities.Archivist.Services;
-using System;
+﻿using System;
 
-namespace dRz.GPT_Utilities.Archivist
+namespace dRz.GPT_Utilities.Archivist.CommandLine
 {
     /// <summary>
     /// Разбирает параметры командной строки GPT_Archivist.

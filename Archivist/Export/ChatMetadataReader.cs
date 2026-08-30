@@ -4,9 +4,9 @@ using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace dRz.GPT_Utilities.Archivist
+namespace dRz.GPT_Utilities.Archivist.Export
 {
-    internal class MetadataReader
+    internal class ChatMetadataReader
     {
         /// <summary>
         /// Десериализатор YAML.
@@ -44,8 +44,7 @@ namespace dRz.GPT_Utilities.Archivist
         /// Читает YAML front matter Markdown-файла и преобразует его
         /// в типизированный объект ChatMetadata.
         /// </summary>
-        internal static ChatMetadata ReadMetadata(
-            string filePath)
+        internal static ChatMetadata Read(string filePath)
         {
             // -------------------------------------------------------------
             // Читаем Markdown целиком.

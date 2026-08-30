@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace dRz.GPT_Utilities.Archivist.Services
+namespace dRz.GPT_Utilities.Archivist.Console
 {
-    public static class ConsoleSetup
+    public static class ConsoleInitializer
     {
         public static void Initialize(string? title = null)
         {
@@ -17,5 +17,5 @@ namespace dRz.GPT_Utilities.Archivist.Services
         }
     }
 }
-            //Console.OutputEncoding = Encoding.UTF8;
-            //Console.InputEncoding = Encoding.UTF8;
+//Console.OutputEncoding = Encoding.UTF8;
+//Console.InputEncoding = Encoding.UTF8;

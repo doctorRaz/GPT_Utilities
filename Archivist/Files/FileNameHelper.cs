@@ -2,9 +2,9 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace dRz.GPT_Utilities.Archivist
+namespace dRz.GPT_Utilities.Archivist.Files
 {
-    internal class FileNamer
+    internal class FileNameHelper
     {
         /// <summary>
         /// Схлопывает последовательность пробельных символов в один пробел.
@@ -60,8 +60,7 @@ namespace dRz.GPT_Utilities.Archivist
         ///     Test (100).md
         /// Если все варианты заняты, выбрасывается IOException.
         /// </summary>
-        internal static string GetUnique(
-            string filePath)
+        internal static string GetUnique(string filePath)
         {
             // Исходное имя свободно.
             if (!File.Exists(filePath))
