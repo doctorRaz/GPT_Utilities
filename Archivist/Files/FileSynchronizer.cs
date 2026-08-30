@@ -14,16 +14,26 @@ namespace dRz.GPT_Utilities.Archivist.Files
         {
             FileCopyDecision decision = GetCopyDecision(destinationFilePath, sourceMetadata);
 
+            // разные IDs — ищем ранее созданную копию той же беседы.
+            if (decision == FileCopyDecision.AddUnique)
+            {
+                string? matchingFilePath = FindMatchingDuplicate(destinationFilePath, sourceMetadata.ConversationId);
+                if (matchingFilePath is null)
+                {
+                    destinationFilePath = FileNameHelper.GetUnique(destinationFilePath);
+                }
+                else
+                {
+                    destinationFilePath = matchingFilePath;
+                    decision = GetCopyDecision(destinationFilePath, sourceMetadata);
+                }
+            }
+
             if (decision == FileCopyDecision.Skip)
             {
                 //вывод в консоль результата копирования
                 WriteCopyResult(decision, sourceFilePath, destinationFilePath: null, updateTime: null);
                 return decision;
-            }
-            // разные IDs — создаём уникальный файл в destination.
-            if (decision == FileCopyDecision.AddUnique)
-            {
-                destinationFilePath = FileNameHelper.GetUnique(destinationFilePath);
             }
 
             // Единственная операция копирования.
@@ -43,6 +53,31 @@ namespace dRz.GPT_Utilities.Archivist.Files
 
             //результат по файлу
             return decision;
+        }
+
+        private static string? FindMatchingDuplicate(string destinationFilePath, Guid? sourceId)
+        {
+            if (sourceId is null)
+            {
+                return null;
+            }
+
+            foreach (string duplicateFilePath in FileNameHelper.GetExistingDuplicates(destinationFilePath))
+            {
+                try
+                {
+                    if (ChatMetadataReader.Read(duplicateFilePath).ConversationId == sourceId)
+                    {
+                        return duplicateFilePath;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ConsoleWriter.Error(ex.Message);
+                }
+            }
+
+            return null;
         }
 
         private static FileCopyDecision GetCopyDecision(string destinationFilePath, ChatMetadata sourceMetadata)
@@ -68,9 +103,6 @@ namespace dRz.GPT_Utilities.Archivist.Files
                     destinationId is null ||
                     sourceId != destinationId)
                 {
-                    //todo проверять (1...) file name*.md
-                    //в цикле рекурсивно? сравнить по sourceId != destinationId
-                    //если совпадут проверить updateTime
                     return FileCopyDecision.AddUnique;
                 }
 
