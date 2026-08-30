@@ -24,8 +24,4 @@
 		<ProjectReference Include="..\Archivist\Archivist.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="CommandLine\" />
-	</ItemGroup>
-
 </Project>
