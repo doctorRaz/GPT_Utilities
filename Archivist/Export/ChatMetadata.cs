@@ -1,4 +1,5 @@
-﻿using YamlDotNet.Serialization;
+﻿using System.Globalization;
+using YamlDotNet.Serialization;
 
 namespace dRz.GPT_Utilities.Archivist.Export
 {
@@ -22,6 +23,10 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <value>The update time.</value>
         public DateTimeOffset? UpdateTime { get; set; }
 
+        /// <summary>Gets or sets the date export.</summary>
+        /// <value>The date export.</value>
+        public string? DateExport { get; set; }
+
         /// <summary>Gets or sets the chat link.</summary>
         /// <value>The chat link.</value>
         public string? ChatLink { get; set; }
@@ -30,7 +35,26 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <value>The title.</value>
         public string? Title { get; set; }
 
+        /// <summary>Gets or sets the tags.</summary>
+        /// <value>The tags.</value>
         public List<string?> Tags { get; set; }
+
+        /// <summary>Gets the export date time.</summary>
+        /// <value>The export date time.</value>
+        [YamlIgnore]
+        public DateTime? ExportDateTime
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(DateExport))
+                {
+                    return null;
+                }
+                return DateTime.ParseExact(DateExport,
+                                            "yyyy-MM-dd'T'HH-mm-ss",
+                                            CultureInfo.InvariantCulture);
+            }
+        }
 
         /// <summary>
         /// Уникальный идентификатор conversation.

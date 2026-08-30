@@ -20,7 +20,7 @@ namespace dRz.GPT_Utilities.Archivist
             {
                 System.Diagnostics.Debugger.Launch();
             }
-            ConsoleDemo.Run();
+            //ConsoleDemo.Run();
 #endif
 
             try
