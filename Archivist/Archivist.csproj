@@ -11,12 +11,15 @@
 		<Description>Перемещает ZIP файлы экспорта chatgpt-export-markdown в соответствующие каталоги</Description>
 		<ApplicationIcon>Refresh.ico</ApplicationIcon>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<!--================= Рабочая сборка ==========================-->
+		<Version>0.2</Version>
+		<!--===========================================-->
 	</PropertyGroup>
 	<ItemGroup>
 		<Content Include="Refresh.ico" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="YamlDotNet" Version="18.1.0" />
+		<PackageReference Include="YamlDotNet" Version="18.1.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<InternalsVisibleTo Include="Archivist.Tests" />

@@ -5,49 +5,6 @@ namespace dRz.GPT_Utilities.Archivist.Files
     internal class FileNameHelper
     {
         /// <summary>
-        /// Схлопывает последовательность пробельных символов в один пробел.
-        ///
-        /// Например:
-        ///
-        /// "Моя   тема" -> "Моя тема"
-        /// "Моя     тема" -> "Моя тема"
-        /// </summary>
-        private static readonly Regex MultipleSpacesRegex = new(
-            @"\s+",
-            RegexOptions.Compiled);
-
-        internal static string Normalize(string fileName)
-        {
-            // "_" -> " "
-            fileName = fileName.Replace('_', ' ');
-
-            // Несколько пробельных символов подряд -> один пробел.
-            //
-            // Например:
-            //
-            // Проверка___Staged__Diff`
-            //
-            // после Replace:
-            //
-            // Проверка   Staged  Diff
-            //
-            // после Regex:
-            //
-            // Проверка Staged Diff
-            fileName = MultipleSpacesRegex.Replace(fileName, " ");
-
-            // Убираем пробелы в начале и конце имени.
-            fileName = fileName.Trim();
-
-            return fileName;
-        }
-
-        /// <summary>
-        /// Максимальный номер суффикса при совпадении имён.
-        /// </summary>
-        private const int MaxDuplicateNumber = 100;
-
-        /// <summary>
         /// Возвращает свободное имя файла.
         /// Если:
         ///     Test.md
@@ -97,5 +54,48 @@ namespace dRz.GPT_Utilities.Archivist.Files
                 $"{filePath}. " +
                 $"Заняты варианты от (1) до ({MaxDuplicateNumber}).");
         }
+
+        internal static string Normalize(string fileName)
+        {
+            // "_" -> " "
+            fileName = fileName.Replace('_', ' ');
+
+            // Несколько пробельных символов подряд -> один пробел.
+            //
+            // Например:
+            //
+            // Проверка___Staged__Diff`
+            //
+            // после Replace:
+            //
+            // Проверка   Staged  Diff
+            //
+            // после Regex:
+            //
+            // Проверка Staged Diff
+            fileName = MultipleSpacesRegex.Replace(fileName, " ");
+
+            // Убираем пробелы в начале и конце имени.
+            fileName = fileName.Trim();
+
+            return fileName;
+        }
+
+        /// <summary>
+        /// Максимальный номер суффикса при совпадении имён.
+        /// </summary>
+        private const int MaxDuplicateNumber = 100;
+
+        /// <summary>
+        /// Схлопывает последовательность пробельных символов в один пробел.
+        ///
+        /// Например:
+        ///
+        /// "Моя   тема" -> "Моя тема"
+        /// "Моя     тема" -> "Моя тема"
+        /// </summary>
+        private static readonly Regex MultipleSpacesRegex = new(
+            @"\s+",
+            RegexOptions.Compiled);
     }
 }
