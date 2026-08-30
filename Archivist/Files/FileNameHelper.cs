@@ -47,6 +47,26 @@ namespace dRz.GPT_Utilities.Archivist.Files
         /// </summary>
         private const int MaxDuplicateNumber = 100;
 
+        internal static IEnumerable<string> GetExistingDuplicates(string filePath)
+        {
+            string directory = Path.GetDirectoryName(filePath)
+                ?? throw new InvalidOperationException(
+                    $"Не удалось определить каталог: {filePath}");
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+            string extension = Path.GetExtension(filePath);
+
+            for (int number = 1; number <= MaxDuplicateNumber; number++)
+            {
+                string candidate = Path.Combine(
+                    directory,
+                    $"{fileName} ({number}){extension}");
+                if (File.Exists(candidate))
+                {
+                    yield return candidate;
+                }
+            }
+        }
+
         /// <summary>
         /// Возвращает свободное имя файла.
         /// Если:
