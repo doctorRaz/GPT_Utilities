@@ -123,6 +123,70 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.Contains("second", File.ReadAllText(unique));
         }
 
+        [Fact]
+        public void CopyIfNewer_ReplacesMatchingUniqueFile_InsteadOfAddingDuplicate()
+        {
+            using TempDirectory temp = new();
+            MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(1),
+                ConversationA,
+                "first");
+            string matchingDestination = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat (1).md"),
+                CreateTime,
+                CreateTime.AddHours(2),
+                ConversationB,
+                "old second");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(3),
+                ConversationB,
+                "new second");
+
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
+
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
+
+            Assert.Equal(FileCopyDecision.Replace, decision);
+            Assert.Contains("new second", File.ReadAllText(matchingDestination));
+            Assert.False(File.Exists(temp.Combine("dst", "Chat (2).md")));
+        }
+
+        [Fact]
+        public void CopyIfNewer_SkipsMatchingUniqueFile_WhenItIsNewer()
+        {
+            using TempDirectory temp = new();
+            MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(1),
+                ConversationA,
+                "first");
+            string matchingDestination = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat (1).md"),
+                CreateTime,
+                CreateTime.AddHours(3),
+                ConversationB,
+                "new second");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(2),
+                ConversationB,
+                "old second");
+
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
+
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
+
+            Assert.Equal(FileCopyDecision.Skip, decision);
+            Assert.Contains("new second", File.ReadAllText(matchingDestination));
+            Assert.False(File.Exists(temp.Combine("dst", "Chat (2).md")));
+        }
+
         /// <summary>Copies if newer adds unique file when both conversation ids are missing.</summary>
         [Fact]
         public void CopyIfNewer_AddsUniqueFile_WhenBothConversationIdsAreMissing()

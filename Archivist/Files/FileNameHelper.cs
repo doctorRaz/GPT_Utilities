@@ -4,6 +4,52 @@ namespace dRz.GPT_Utilities.Archivist.Files
 {
     internal class FileNameHelper
     {
+        internal static string Normalize(string fileName)
+        {
+            // "_" -> " "
+            fileName = fileName.Replace('_', ' ');
+
+            // Несколько пробельных символов подряд -> один пробел.
+            //
+            // Например:
+            //
+            // Проверка___Staged__Diff`
+            //
+            // после Replace:
+            //
+            // Проверка   Staged  Diff
+            //
+            // после Regex:
+            //
+            // Проверка Staged Diff
+            fileName = MultipleSpacesRegex.Replace(fileName, " ");
+
+            // Убираем пробелы в начале и конце имени.
+            fileName = fileName.Trim();
+
+            return fileName;
+        }
+
+        internal static IEnumerable<string> GetExistingDuplicates(string filePath)
+        {
+            string directory = Path.GetDirectoryName(filePath)
+                ?? throw new InvalidOperationException(
+                    $"Не удалось определить каталог: {filePath}");
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+            string extension = Path.GetExtension(filePath);
+
+            for (int number = 1; number <= MaxDuplicateNumber; number++)
+            {
+                string candidate = Path.Combine(
+                    directory,
+                    $"{fileName} ({number}){extension}");
+                if (File.Exists(candidate))
+                {
+                    yield return candidate;
+                }
+            }
+        }
+
         /// <summary>
         /// Возвращает свободное имя файла.
         /// Если:
@@ -53,32 +99,6 @@ namespace dRz.GPT_Utilities.Archivist.Files
                 $"Не удалось подобрать свободное имя для файла: " +
                 $"{filePath}. " +
                 $"Заняты варианты от (1) до ({MaxDuplicateNumber}).");
-        }
-
-        internal static string Normalize(string fileName)
-        {
-            // "_" -> " "
-            fileName = fileName.Replace('_', ' ');
-
-            // Несколько пробельных символов подряд -> один пробел.
-            //
-            // Например:
-            //
-            // Проверка___Staged__Diff`
-            //
-            // после Replace:
-            //
-            // Проверка   Staged  Diff
-            //
-            // после Regex:
-            //
-            // Проверка Staged Diff
-            fileName = MultipleSpacesRegex.Replace(fileName, " ");
-
-            // Убираем пробелы в начале и конце имени.
-            fileName = fileName.Trim();
-
-            return fileName;
         }
 
         /// <summary>
