@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace dRz.GPT_Utilities.Archivist.Infrastructure
+﻿namespace dRz.GPT_Utilities.Archivist.Infrastructure
 {
     public static class ConsoleSetup
     {
-        public static void Initialize(string? title = null)
+        public static void Configure(string? title = null)
         {
             if (title != null)
             {

@@ -1,5 +1,4 @@
-﻿using System;
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 
 namespace dRz.GPT_Utilities.Archivist.Export
 {
@@ -31,7 +30,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <value>The title.</value>
         public string? Title { get; set; }
 
-        public List<string?> Tags { get; set; } 
+        public List<string?> Tags { get; set; }
 
         /// <summary>
         /// Уникальный идентификатор conversation.

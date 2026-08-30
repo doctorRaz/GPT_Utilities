@@ -1,12 +1,8 @@
 ﻿using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Localization;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text;
 using static dRz.GPT_Utilities.Archivist.Files.FileSynchronizer;
 
@@ -177,7 +173,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     {
                         // Ошибка одного файла не останавливает обработку
                         // остальных файлов текущего архива.
-                        ConsoleWriter.Error(null,ex);
+                        ConsoleWriter.Error(null, ex);
                     }
                 }
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace dRz.GPT_Utilities.Archivist.Localization
+﻿namespace dRz.GPT_Utilities.Archivist.Localization
 {
     /// <summary>
     /// русский язык Pluralization Extensions

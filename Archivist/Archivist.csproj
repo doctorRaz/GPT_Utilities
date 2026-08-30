@@ -10,6 +10,7 @@
 		<HostCode>_$(MSBuildProjectName)</HostCode>
 		<Description>Перемещает ZIP файлы экспорта chatgpt-export-markdown в соответствующие каталоги</Description>
 		<ApplicationIcon>Refresh.ico</ApplicationIcon>
+		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
 		<Content Include="Refresh.ico" />

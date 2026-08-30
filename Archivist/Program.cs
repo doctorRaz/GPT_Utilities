@@ -2,8 +2,6 @@
 using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Localization;
-using System;
-using System.IO;
 using System.Text;
 
 namespace dRz.GPT_Utilities.Archivist
@@ -15,37 +13,14 @@ namespace dRz.GPT_Utilities.Archivist
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            ConsoleSetup.Initialize(AppDomain.CurrentDomain.FriendlyName);
+            ConsoleSetup.Configure(AppDomain.CurrentDomain.FriendlyName);
 
 #if DEBUG
             if (!System.Diagnostics.Debugger.IsAttached)
             {
                 System.Diagnostics.Debugger.Launch();
             }
-
-            //for (int i = 0; i < 30; i++)
-            //{
-            //    Console.WriteLine(i.Of(RussianWords.Files));
-            //}
-            //try
-            //{
-            //    var f = 0;
-            //    _ = 10 / f;
-
-            //}
-            //catch (Exception ex)
-            //{
-            //ConsoleWriter.Fatal(ex, $"Ошибка: ");
-            //ConsoleWriter.Error($"Ошибка: ",ex);
-            //}
-            //Console.WriteLine(5.Of(RussianWords.Archives));
-
-            //ConsoleWriter.TestShowStyles();
-
-
-            //ConsoleWriter.TestShowColors();
-            //ConsoleWriter.TestShowColorsBackground();
-
+            ConsoleDemo.Run();
 #endif
 
             try

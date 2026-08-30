@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace dRz.GPT_Utilities.Archivist.Infrastructure
+﻿namespace dRz.GPT_Utilities.Archivist.Infrastructure
 {
     public static class ConsoleWriter
     {
