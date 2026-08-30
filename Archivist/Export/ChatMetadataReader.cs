@@ -98,7 +98,6 @@ namespace dRz.GPT_Utilities.Archivist.Export
             //  date_export
             //  title
 
-
             return metadata;
         }
     }

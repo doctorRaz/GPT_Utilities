@@ -247,8 +247,6 @@ namespace dRz.GPT_Utilities.Archivist.Export
             // Проверяем, требуется ли копирование и в методе копируем файл, если нужно.
             FileCopyDecision copyDecision = CopyIfNewer(sourceFile, destinationFile, sourceMetadata);
 
-
-
             //прокидываем статистику в ProcessArchive, чтобы суммировать количество обработанных файлов
             return copyDecision;
         }
@@ -280,8 +278,6 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 ConsoleWriter.Error($"Не удалось удалить временный каталог: {tempDirectory}" + $"\n{ex.Message}");
             }
         }
-
-
 
         internal sealed class CopyStatistics
         {

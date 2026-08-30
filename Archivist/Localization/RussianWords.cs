@@ -11,6 +11,4 @@
         public static readonly RussianPluralForms Files =
             new("файл", "файла", "файлов");
     }
-
-
 }

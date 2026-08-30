@@ -4,7 +4,4 @@
             string One,
             string Few,
             string Many);
-
-
 }
-
