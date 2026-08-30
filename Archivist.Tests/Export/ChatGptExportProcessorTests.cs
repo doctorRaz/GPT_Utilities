@@ -11,6 +11,10 @@ using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Export
 {
+    /// <summary>
+    /// Тесты для ChatGptExportProcessor.
+    /// Проверяют обработку ZIP-архивов экспорта ChatGPT и распределение файлов по временным периодам.
+    /// </summary>
     public sealed class ChatGptExportProcessorTests
     {
         private static readonly DateTimeOffset CreateTime1 = new(2024, 1, 15, 10, 30, 45, 123, TimeSpan.Zero);

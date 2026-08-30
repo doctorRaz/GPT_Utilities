@@ -7,6 +7,10 @@ using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Export
 {
+    /// <summary>
+    /// Тесты для ChatMetadataReader.
+    /// Проверяют парсинг YAML front matter из Markdown файлов и извлечение метаданных.
+    /// </summary>
     public sealed class ChatMetadataReaderTests
     {
         private static readonly DateTimeOffset CreateTime =
@@ -15,6 +19,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         private static readonly DateTimeOffset UpdateTime =
             new(2026, 8, 25, 10, 0, 0, TimeSpan.Zero);
 
+        #region Основные тесты парсинга
+
+        /// <summary>
+        /// Тестирует парсинг базового YAML front matter с обязательными полями.
+        /// </summary>
         [Fact]
         public void ReadMetadata_ParsesFrontMatter()
         {
@@ -36,6 +45,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 metadata.ConversationId);
         }
 
+        /// <summary>
+        /// Тестирует игнорирование неизвестных полей YAML при десериализации.
+        /// Парсер попеременно игнорирует поля, которые не определены в ChatMetadata.
+        /// </summary>
         [Fact]
         public void ReadMetadata_IgnoresUnknownYamlFields()
         {
@@ -60,6 +73,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Null(metadata.ConversationId);
         }
 
+        #endregion
+
+        #region Тесты ошибок
+
+        /// <summary>
+        /// Тестирует выброс исключения, когда файл не содержит YAML front matter.
+        /// </summary>
         [Fact]
         public void ReadMetadata_Throws_WhenFrontMatterMissing()
         {
@@ -73,6 +93,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Contains("YAML front matter", ex.Message);
         }
 
+        /// <summary>
+        /// Тестирует выброс исключения, когда отсутствует обязательное поле create_time.
+        /// </summary>
         [Fact]
         public void ReadMetadata_Throws_WhenCreateTimeMissing()
         {
@@ -92,6 +115,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Contains("create_time", ex.Message);
         }
 
+        /// <summary>
+        /// Тестирует выброс исключения, когда отсутствует обязательное поле update_time.
+        /// </summary>
         [Fact]
         public void ReadMetadata_Throws_WhenUpdateTimeMissing()
         {
@@ -111,8 +137,14 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Contains("update_time", ex.Message);
         }
 
-        #region YAML Front Matter Regex Tests
+        #endregion
 
+        #region Тесты Regex для YAML front matter
+
+        /// <summary>
+        /// Тестирует, что regex корректно находит стандартный YAML front matter.
+        /// Front matter должен находиться между --- и --- в начале файла.
+        /// </summary>
         [Fact]
         public void FrontMatterRegex_MatchesStandardFrontMatter()
         {
@@ -132,6 +164,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Contains("create_time", match.Groups["yaml"].Value);
         }
 
+        /// <summary>
+        /// Тестирует, что regex корректно обрабатывает Windows-style линии (CRLF).
+        /// </summary>
         [Fact]
         public void FrontMatterRegex_MatchesFrontMatterWithCarriageReturns()
         {
@@ -142,6 +177,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.True(match.Success);
         }
 
+        /// <summary>
+        /// Тестирует, что front matter должен быть в начале файла.
+        /// Front matter в середине файла не должен быть распознан.
+        /// </summary>
         [Fact]
         public void FrontMatterRegex_MatchesFrontMatterAtStartOnly()
         {
@@ -158,6 +197,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.False(match.Success);
         }
 
+        /// <summary>
+        /// Тестирует, что front matter должен иметь как открывающий, так и закрывающий разделитель.
+        /// Отсутствие закрывающего --- делает front matter невалидным.
+        /// </summary>
         [Fact]
         public void FrontMatterRegex_FailsWhenMissingClosingDelimiter()
         {
@@ -174,6 +217,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.False(match.Success);
         }
 
+        /// <summary>
+        /// Тестирует, что regex не матчит пустой front matter.
+        /// Между --- должна быть хотя бы какая-то контент.
+        /// </summary>
         [Fact]
         public void FrontMatterRegex_MatchesEmptyFrontMatter()
         {
@@ -186,14 +233,18 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             Match match = ChatMetadataReader.FrontMatterRegex.Match(content);
 
-            // Regex �� ������ ������� ������ front matter
+            // Regex не должен матчить пустой front matter
             Assert.False(match.Success);
         }
 
         #endregion
 
-        #region Date Format Tests
+        #region Тесты форматов дат
 
+        /// <summary>
+        /// Тестирует парсинг дат в формате ISO 8601 с миллисекундами.
+        /// Формат: YYYY-MM-DDTHH:mm:ss.fffZ
+        /// </summary>
         [Fact]
         public void ReadMetadata_ParsesDateWithMilliseconds()
         {
@@ -214,6 +265,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Equal(new DateTimeOffset(2026, 8, 25, 10, 0, 0, 0, TimeSpan.Zero), metadata.UpdateTime);
         }
 
+        /// <summary>
+        /// Тестирует парсинг дат в формате ISO 8601 без миллисекунд.
+        /// Формат: YYYY-MM-DDTHH:mm:ssZ
+        /// </summary>
         [Fact]
         public void ReadMetadata_ParsesDateWithoutMilliseconds()
         {
@@ -233,6 +288,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Equal(new DateTimeOffset(2026, 8, 24, 15, 23, 56, TimeSpan.Zero), metadata.CreateTime);
         }
 
+        /// <summary>
+        /// Тестирует парсинг разных временных точек (крайние даты).
+        /// </summary>
         [Fact]
         public void ReadMetadata_ParsesDifferentTimes()
         {
@@ -258,8 +316,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
         #endregion
 
-        #region ConversationId Extraction Tests
+        #region Тесты извлечения ConversationId
 
+        /// <summary>
+        /// Тестирует извлечение GUID из поля chat_link.
+        /// GUID должен быть последней частью URL после /c/
+        /// </summary>
         [Fact]
         public void ConversationId_ExtractsGuidFromChatLink()
         {
@@ -282,6 +344,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Equal(guid, metadata.ConversationId);
         }
 
+        /// <summary>
+        /// Тестирует, что ConversationId возвращает null, если chat_link отсутствует.
+        /// </summary>
         [Fact]
         public void ConversationId_ReturnsNull_WhenChatLinkMissing()
         {
@@ -301,6 +366,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Null(metadata.ConversationId);
         }
 
+        /// <summary>
+        /// Тестирует, что ConversationId возвращает null при невалидном UUID.
+        /// </summary>
         [Fact]
         public void ConversationId_ReturnsNull_WhenChatLinkInvalid()
         {
@@ -321,6 +389,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Null(metadata.ConversationId);
         }
 
+        /// <summary>
+        /// Тестирует, что ConversationId возвращает null при неправильном домене.
+        /// Должен быть именно https://chatgpt.com/c/
+        /// </summary>
         [Fact]
         public void ConversationId_ReturnsNull_WhenChatLinkWrongDomain()
         {
@@ -343,6 +415,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Null(metadata.ConversationId);
         }
 
+        /// <summary>
+        /// Тестирует обработку trailing слэша в конце chat_link.
+        /// Нужно правильно извлектфь GUID даже если есть слэш в конце.
+        /// </summary>
         [Fact]
         public void ConversationId_HandlesTrailingSlash()
         {
@@ -365,6 +441,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Equal(guid, metadata.ConversationId);
         }
 
+        /// <summary>
+        /// Тестирует, что парсинг ConversationId регистронезависим для домена.
+        /// Должен работать с HTTPS://CHATGPT.COM/c/ и другими вариантами регистра.
+        /// </summary>
         [Fact]
         public void ConversationId_CaseInsensitiveForDomain()
         {
@@ -389,8 +469,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
         #endregion
 
-        #region Optional Fields Tests
+        #region Тесты опциональных полей
 
+        /// <summary>
+        /// Тестирует парсинг опционального поля title.
+        /// </summary>
         [Fact]
         public void ReadMetadata_ParsesTitle()
         {
@@ -413,6 +496,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Equal(title, metadata.Title);
         }
 
+        /// <summary>
+        /// Тестирует парсинг массива tags из YAML.
+        /// </summary>
         [Fact]
         public void ReadMetadata_ParsesTags()
         {
@@ -440,6 +526,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Contains("tag3", metadata.Tags);
         }
 
+        /// <summary>
+        /// Тестирует парсинг поля chat_link как обычной строки.
+        /// </summary>
         [Fact]
         public void ReadMetadata_ParsesChatLink()
         {
@@ -464,8 +553,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
         #endregion
 
-        #region Edge Cases Tests
+        #region Граничные случаи
 
+        /// <summary>
+        /// Тестирует обработку front matter, содержащего только пробелы и пустые строки.
+        /// Должно выброситься исключение, так как поля обязательны.
+        /// </summary>
         [Fact]
         public void ReadMetadata_HandlesFrontMatterWithOnlyWhitespace()
         {
@@ -486,6 +579,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Contains("YAML", ex.Message);
         }
 
+        /// <summary>
+        /// Тестирует, что парсинг работает, даже если после front matter нет body.
+        /// Front matter сам по себе достаточен для успешного парсинга.
+        /// </summary>
         [Fact]
         public void ReadMetadata_HandlesFrontMatterWithNoBody()
         {
@@ -504,6 +601,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Equal(UpdateTime, metadata.UpdateTime);
         }
 
+        /// <summary>
+        /// Тестирует обработку спец символов (кавычек, апострофов) в значениях YAML.
+        /// </summary>
         [Fact]
         public void ReadMetadata_HandlesFrontMatterWithSpecialCharactersInTitle()
         {
@@ -526,6 +626,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Equal(title, metadata.Title);
         }
 
+        /// <summary>
+        /// Тестирует парсинг multiline значений в YAML.
+        /// Используется синтаксис | для многострочных строк.
+        /// </summary>
         [Fact]
         public void ReadMetadata_HandlesMultilineYamlValues()
         {
@@ -549,6 +653,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Contains("multiline", metadata.Title);
         }
 
+        /// <summary>
+        /// Тестирует обработку пустых строк в значениях YAML.
+        /// </summary>
         [Fact]
         public void ReadMetadata_HandlesEmptyStringValues()
         {
@@ -571,6 +678,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.NotNull(metadata.ChatLink);
         }
 
+        /// <summary>
+        /// Тестирует, что парсинг работает независимо от регистра ключей YAML.
+        /// (благодаря UnderscoredNamingConvention в десериализаторе)
+        /// </summary>
         [Fact]
         public void ReadMetadata_HandlesMixedCaseYamlKeys()
         {
@@ -594,8 +705,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
         #endregion
 
-        #region Error Messages Tests
+        #region Тесты сообщений об ошибках
 
+        /// <summary>
+        /// Тестирует, что сообщение об ошибке содержит путь к файлу.
+        /// Это помогает при отладке определить, какой файл вызвал проблему.
+        /// </summary>
         [Fact]
         public void ReadMetadata_ErrorMessage_IncludesFilePath_WhenFrontMatterMissing()
         {
@@ -609,6 +724,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Contains("test_file.md", ex.Message);
         }
 
+        /// <summary>
+        /// Тестирует, что сообщение об ошибке содержит путь к файлу,
+        /// когда отсутствует обязательное поле create_time.
+        /// </summary>
         [Fact]
         public void ReadMetadata_ErrorMessage_IncludesFilePath_WhenCreateTimeMissing()
         {
@@ -631,3 +750,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         #endregion
     }
 }
+
+
+
+
+

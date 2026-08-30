@@ -4,8 +4,15 @@ using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
+    /// <summary>
+    /// Тесты для CommandLineParser.
+    /// Проверяют парсинг аргументов командной строки приложения GPT_Archivist.
+    /// </summary>
     public sealed class CommandLineParserTests
     {
+        /// <summary>
+        /// Тестирует возврат справки, когда аргументы не переданы.
+        /// </summary>
         [Fact]
         public void Parse_ReturnsShowHelp_WhenNoArgumentsProvided()
         {
