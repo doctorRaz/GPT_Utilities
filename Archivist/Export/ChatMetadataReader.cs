@@ -94,7 +94,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     $"update_time: {filePath}");
             }
 
-            // ChatLink необязателен: ConversationId тогда будет null.
+            // ChatLink ConversationId тогда будет null.
+            // необязательные:
+            //  tags
+            //  date_export
+            //  title
+
 
             return metadata;
         }

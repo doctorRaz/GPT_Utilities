@@ -177,8 +177,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     {
                         // Ошибка одного файла не останавливает обработку
                         // остальных файлов текущего архива.
-                        ConsoleWriter.Error($"ОШИБКА: {sourceFile}");
-                        ConsoleWriter.Error(ex.Message);
+                        ConsoleWriter.Error(null,ex);
                     }
                 }
 

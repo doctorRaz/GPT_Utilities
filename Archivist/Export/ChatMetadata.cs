@@ -27,6 +27,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <value>The chat link.</value>
         public string? ChatLink { get; set; }
 
+        /// <summary>Gets or sets the title.</summary>
+        /// <value>The title.</value>
+        public string? Title { get; set; }
+
+        public List<string?> Tags { get; set; } 
+
         /// <summary>
         /// Уникальный идентификатор conversation.
         ///
