@@ -1,4 +1,4 @@
-using dRz.GPT_Utilities.Archivist.Export;
+﻿using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
@@ -153,6 +153,44 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.Equal(FileCopyDecision.Replace, decision);
             Assert.Contains("new second", File.ReadAllText(matchingDestination));
             Assert.False(File.Exists(temp.Combine("dst", "Chat (2).md")));
+        }
+
+        [Fact]
+        public void CopyIfNewer_SkipsNewestMatchingUniqueFile_WhenSeveralExist()
+        {
+            using TempDirectory temp = new();
+            MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(1),
+                ConversationA,
+                "first");
+            string staleMatch = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat (1).md"),
+                CreateTime,
+                CreateTime.AddHours(2),
+                ConversationB,
+                "stale second");
+            string newestMatch = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat (2).md"),
+                CreateTime,
+                CreateTime.AddHours(4),
+                ConversationB,
+                "newest second");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(3),
+                ConversationB,
+                "incoming second");
+
+            ChatMetadata metadata = ChatMetadataReader.Read(source);
+
+            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
+
+            Assert.Equal(FileCopyDecision.Skip, decision);
+            Assert.Contains("stale second", File.ReadAllText(staleMatch));
+            Assert.Contains("newest second", File.ReadAllText(newestMatch));
         }
 
         [Fact]
