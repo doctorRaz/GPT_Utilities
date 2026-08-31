@@ -71,7 +71,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
             List<FileInfo> zipFiles = Directory
                                             .EnumerateFiles(
                                             sourceDirectory,
-                                            "*.zip",
+                                            "chatgpt-export-markdown*.zip",//todo : вынести маску в опции ком строки, чтобы не привязываться к конкретному имени
                                             SearchOption.TopDirectoryOnly)
                                             .Select(path => new FileInfo(path))
                                             .OrderBy(file => file.LastWriteTimeUtc)
