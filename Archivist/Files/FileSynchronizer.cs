@@ -56,31 +56,39 @@ namespace dRz.GPT_Utilities.Archivist.Files
         }
 
         private static string? FindMatchingDuplicate(string destinationFilePath, Guid? sourceId)
-        {
-            if (sourceId is null)
-            {
-                return null;
-            }
+{
+if (sourceId is null)
+{
+return null;
+}
 
-            foreach (string duplicateFilePath in FileNameHelper.GetExistingDuplicates(destinationFilePath))
-            {
-                try
-                {
-                    if (ChatMetadataReader.Read(duplicateFilePath).ConversationId == sourceId)
-                    {
-                        return duplicateFilePath;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ConsoleWriter.Error(ex.Message);
-                }
-            }
+string? matchingFilePath = null;
+DateTimeOffset? matchingUpdateTime = null;
 
-            return null;
-        }
+foreach (string duplicateFilePath in FileNameHelper.GetExistingDuplicates(destinationFilePath))
+{
+try
+{
+ChatMetadata duplicateMetadata = ChatMetadataReader.Read(duplicateFilePath);
+if (duplicateMetadata.ConversationId == sourceId &&
+(matchingFilePath is null ||
+matchingUpdateTime is null ||
+duplicateMetadata.UpdateTime > matchingUpdateTime))
+{
+matchingFilePath = duplicateFilePath;
+matchingUpdateTime = duplicateMetadata.UpdateTime;
+}
+}
+catch (Exception ex)
+{
+ConsoleWriter.Error(ex.Message);
+}
+}
 
-        private static FileCopyDecision GetCopyDecision(string destinationFilePath, ChatMetadata sourceMetadata)
+return matchingFilePath;
+}
+
+private static FileCopyDecision GetCopyDecision(string destinationFilePath, ChatMetadata sourceMetadata)
         {
             // Destination-файла ещё нет.
             if (!File.Exists(destinationFilePath))
