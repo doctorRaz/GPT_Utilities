@@ -94,6 +94,10 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
             ConsoleWriter.Trace($"Найден {zipFiles.Count.Of(RussianWords.Archives)} для обработки");
 
+
+            //todo идем строить индекс по всем файлам , чтобы при копировании проверять уникальность UID файла и не плодить дубликаты,
+            //ChatIndexFiles chatIndexFiles = GetChatIndexFiles(destinationDirectory);
+
             //обработано копий
             CopyStatistics statistics = new CopyStatistics();
 
