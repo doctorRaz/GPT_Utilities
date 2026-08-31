@@ -1,4 +1,5 @@
-﻿using dRz.GPT_Utilities.Archivist.Files;
+﻿using dRz.GPT_Utilities.Archivist.CommandLine;
+using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Localization;
 using System.Globalization;
@@ -57,10 +58,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <returns>
         /// Количество скопированных Markdown-файлов.
         /// </returns>
-        internal static CopyStatistics Process(
-            string sourceDirectory,
-            string destinationDirectory,
-            bool processAllArchives = false)
+        internal static CopyStatistics Process(CommandLineOptions options)
         {
             // -------------------------------------------------------------
             // 1. Получаем ZIP-архивы.
@@ -70,8 +68,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
             // -------------------------------------------------------------
             List<FileInfo> zipFiles = Directory
                                             .EnumerateFiles(
-                                            sourceDirectory,
-                                            "chatgpt-export-markdown*.zip",//todo : вынести маску в опции ком строки, чтобы не привязываться к конкретному имени
+                                            options.SourceDirectory   ,
+                                            options.ZipFilePattern,//todo : вынести маску в опции ком строки, чтобы не привязываться к конкретному имени
                                             SearchOption.TopDirectoryOnly)
                                             .Select(path => new FileInfo(path))
                                             .OrderBy(file => file.LastWriteTimeUtc)
@@ -80,12 +78,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
             if (zipFiles.Count == 0)
             {
                 throw new FileNotFoundException(
-                    $"В каталоге не найден ни один ZIP-архив: {sourceDirectory}");
+                    $"В каталоге не найден ни один ZIP-архив: {options.SourceDirectory}");
             }
 
             // Если требуется обработать только последний архив,
             // оставляем последний элемент отсортированного списка.
-            if (!processAllArchives)
+            if (!options.ExtractAll)
             {
                 zipFiles = zipFiles
                            .TakeLast(1)
@@ -94,9 +92,11 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
             ConsoleWriter.Trace($"Найден {zipFiles.Count.Of(RussianWords.Archives)} для обработки");
 
-
-            //todo идем строить индекс по всем файлам , чтобы при копировании проверять уникальность UID файла и не плодить дубликаты,
+            //todo строим индекс по всем файлам , чтобы при копировании проверять уникальность UID файла и не плодить дубликаты,
             //ChatIndexFiles chatIndexFiles = GetChatIndexFiles(destinationDirectory);
+
+            // проверяем индекс на уникальность файлов по UID , удаляем старые дубликаты по update_time,
+            //  если
 
             //обработано копий
             CopyStatistics statistics = new CopyStatistics();
@@ -108,7 +108,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
                 ConsoleWriter.Trace($"\tДата изменения ZIP: {zipFile.LastWriteTime}");
 
-                CopyStatistics archiveStatistics = ProcessArchive(zipFile.FullName, destinationDirectory);//по текущему архиву возвращаем статистику по обработанным файлам
+                CopyStatistics archiveStatistics = ProcessArchive(zipFile.FullName,options.DestinationDirectory);//по текущему архиву возвращаем статистику по обработанным файлам
                 //суммирование статистики по каждому zip
                 statistics.Add(archiveStatistics);
             }

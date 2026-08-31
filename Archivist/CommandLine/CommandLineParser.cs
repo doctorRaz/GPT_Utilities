@@ -7,6 +7,11 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
     /// </summary>
     internal static class CommandLineParser
     {
+
+        /// <summary>
+        /// Маска ZIP-файлов экспорта ChatGPT по умолчанию.
+        /// </summary>
+        private const string _defaultZipFilePattern = "*";
         /// <summary>
         /// Разбирает параметры командной строки.
         /// </summary>
@@ -34,6 +39,10 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
 
             string? sourceDirectory = null;
             string? destinationDirectory = null;
+            string? zipFilePattern = null;
+
+            // Маска ZIP-файлов экспорта ChatGPT по умолчанию.
+            const string _defaultZipFilePattern = "*.zip";
 
             // Флаг по умолчанию выключен.
             // Его наличие в командной строке переключит значение в true.
@@ -85,6 +94,19 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
                         break;
 
                     // ---------------------------------------------------------
+                    // ZIP file pattern
+                    // ---------------------------------------------------------
+
+                    case "-p":
+                    case "--pattern":
+                        zipFilePattern = ReadValue(
+                            args,
+                            ref i,
+                            argument);
+
+                        break;
+
+                    // ---------------------------------------------------------
                     // Extract all
                     // ---------------------------------------------------------
 
@@ -120,12 +142,59 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
                     "Используй параметр -d или --destination.");
             }
 
+            // ZipFilePattern не проверяется, допустимо string.empty
+            // значение будет парсится у получателя  
+            //       ? _defaultZipFilePattern
+            //       : zipFilePattern;
+
             return new CommandLineOptions
             {
                 SourceDirectory = sourceDirectory,
                 DestinationDirectory = destinationDirectory,
-                ExtractAll = extractAll
+                ExtractAll = extractAll,
+                ZipFilePattern = GetZipFilePattern(zipFilePattern),
             };
+        }
+
+
+        /// <summary>Determines whether [is valid zip file pattern] [the specified pattern].</summary>
+        /// <param name="pattern">The pattern.</param>
+        /// <returns><c>true</c> if [is valid zip file pattern] [the specified pattern]; otherwise, <c>false</c>.</returns>
+        private static bool IsValidZipFilePattern(string pattern)
+        {
+            char[] invalidCharacters =
+                {
+                    '\\',
+                    '/',
+                    ':',
+                    '"',
+                    '<',
+                    '>',
+                    '|'
+                };
+
+            return pattern.IndexOfAny(invalidCharacters) < 0;
+        }
+
+        private static string GetZipFilePattern(string? pattern)
+        {
+            if (string.IsNullOrWhiteSpace(pattern))
+            {
+                return _defaultZipFilePattern;
+            }
+
+            if (!IsValidZipFilePattern(pattern))
+            {
+                throw new ArgumentException(
+                    "Invalid ZIP file pattern.",
+                    nameof(pattern));
+            }
+
+            return pattern.EndsWith(
+                ".zip",
+                StringComparison.OrdinalIgnoreCase)
+                ? pattern
+                : $"{pattern}.zip";
         }
 
         /// <summary>
@@ -197,13 +266,18 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
                   Каталог для распаковки архивов.
                   Если каталог отсутствует, он будет создан.
 
+              -p, --pattern <маска>
+                  Маска ZIP-файлов для обработки.
+                  По умолчанию: *.zip.
+                  Поддерживается стандартная маска Directory.EnumerateFiles.
+
             Опции:
 
               -a, --all
                   Обработать все ZIP-архивы.
                   По умолчанию обрабатывается только последний архив.
 
-              -h, --help
+              -h, --help, /?
                   Показать эту справку.
 
             Примеры:
@@ -213,6 +287,8 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
               GPT_Archivist -s "D:\GPT\Archives" -d "D:\GPT\Unpacked" -a
 
               GPT_Archivist --source "D:\GPT\Archives" --destination "D:\GPT\Unpacked" --all
+
+              GPT_Archivist -s "D:\GPT\Archives" -d "D:\GPT\Unpacked" -p "*.zip"
             """);
         }
     }

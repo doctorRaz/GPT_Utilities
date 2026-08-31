@@ -1,11 +1,10 @@
+using dRz.GPT_Utilities.Archivist.CommandLine;
 using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -15,14 +14,16 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
     /// Тесты для ChatGptExportProcessor.
     /// Проверяют обработку ZIP-архивов экспорта ChatGPT и распределение файлов по временным периодам.
     /// </summary>
-    public sealed class ChatGptExportProcessorTests
+    public sealed class ChatGptExportProcessor
     {
         private static readonly DateTimeOffset CreateTime1 = new(2024, 1, 15, 10, 30, 45, 123, TimeSpan.Zero);
         private static readonly DateTimeOffset CreateTime2 = new(2024, 3, 22, 14, 20, 15, 456, TimeSpan.Zero);
         private static readonly DateTimeOffset UpdateTime1 = new(2024, 1, 16, 11, 45, 30, TimeSpan.Zero);
         private static readonly DateTimeOffset UpdateTime2 = new(2024, 3, 23, 15, 35, 45, TimeSpan.Zero);
 
-        static ChatGptExportProcessorTests()
+
+
+        static ChatGptExportProcessor()
         {
             // Регистрируем кодировку 866 для работы на всех платформах
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -32,8 +33,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         public void Process_ThrowsArgumentNullException_WhenSourceDirectoryIsNull()
         {
             // Код не валидирует параметры - мы просто проверяем, что выбросится какой-то exception
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            sourceDirectory: null!, destinationDirectory: "dest");
+
+
             Assert.Throws<ArgumentNullException>(
-                () => ChatGptExportProcessor.Process(null!, "dest"));
+                () => Archivist.Export.ChatGptExportProcessor.Process(options));
         }
 
         [Fact]
@@ -41,9 +46,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         {
             using TempDirectory dest = new();
 
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            sourceDirectory: string.Empty, destinationDirectory: dest.Path);
+
             // Пустая строка приведёт к ArgumentException
             Assert.Throws<ArgumentException>(
-                () => ChatGptExportProcessor.Process(string.Empty, dest.Path));
+                () => Archivist.Export.ChatGptExportProcessor.Process(options));
         }
 
         [Fact]
@@ -52,9 +60,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             using TempDirectory dest = new();
             string nonExistentSource = Path.Combine(dest.Path, "nonexistent");
 
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            sourceDirectory: nonExistentSource, destinationDirectory: dest.Path);
+
             // Несуществующий каталог приведёт к DirectoryNotFoundException
             Assert.Throws<DirectoryNotFoundException>(
-                () => ChatGptExportProcessor.Process(nonExistentSource, dest.Path));
+                () => Archivist.Export.ChatGptExportProcessor.Process(options));
         }
 
         [Fact]
@@ -63,8 +74,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             using TempDirectory source = new();
             using TempDirectory dest = new();
 
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
             FileNotFoundException ex = Assert.Throws<FileNotFoundException>(
-                () => ChatGptExportProcessor.Process(source.Path, dest.Path));
+                () => Archivist.Export.ChatGptExportProcessor.Process(options));
 
             Assert.Contains("ZIP", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
@@ -84,7 +98,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("test.md", CreateTime1, UpdateTime1)
             });
 
-            ChatGptExportProcessor.Process(source.Path, newDest);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                    sourceDirectory: source.Path, destinationDirectory: newDest);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             Assert.True(Directory.Exists(newDest));
         }
@@ -110,7 +127,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             File.SetLastWriteTimeUtc(zip1Path, DateTime.UtcNow.AddHours(-1));
             File.SetLastWriteTimeUtc(zip2Path, DateTime.UtcNow);
 
-            ChatGptExportProcessor.Process(source.Path, dest.Path, processAllArchives: false);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path, extractAll: false);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             // Проверяем, что обработан только второй архив (более новый)
             string year2 = CreateTime2.Year.ToString();
@@ -137,7 +157,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file2.md", CreateTime2, UpdateTime2)
             });
 
-            ChatGptExportProcessor.Process(source.Path, dest.Path, processAllArchives: true);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path, extractAll: true);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             // Проверяем, что оба архива обработаны
             string year1 = CreateTime1.Year.ToString();
@@ -146,6 +169,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.True(Directory.Exists(Path.Combine(dest.Path, year1)));
             Assert.True(Directory.Exists(Path.Combine(dest.Path, year2)));
         }
+
+        //todo test : выбор по маске
 
         [Fact]
         public void Process_CreatesYearMonthStructure()
@@ -158,7 +183,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("test.md", CreateTime1, UpdateTime1)
             });
 
-            ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             // Проверяем структуру YYYY\MM-MMMM
             string year = CreateTime1.Year.ToString();
@@ -179,7 +207,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file_with_underscores.md", CreateTime1, UpdateTime1)
             });
 
-            ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             string year = CreateTime1.Year.ToString();
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
@@ -203,7 +234,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("  test  .md", CreateTime1, UpdateTime1)
             });
 
-            ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             string year = CreateTime1.Year.ToString();
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
@@ -227,7 +261,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("my   test   file.md", CreateTime1, UpdateTime1)
             });
 
-            ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             string year = CreateTime1.Year.ToString();
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
@@ -253,7 +290,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file3.md", CreateTime1, UpdateTime1)
             });
 
-            ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             string year = CreateTime1.Year.ToString();
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
@@ -275,7 +315,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file2.md", CreateTime1, UpdateTime1)
             });
 
-            var stats = ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            var stats = Archivist.Export.ChatGptExportProcessor.Process(options);
 
             Assert.Equal(2, stats.Added);
             Assert.Equal(0, stats.Skipped);
@@ -295,7 +338,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("mar_file.md", CreateTime2, UpdateTime2)
             });
 
-            ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            Archivist.Export.ChatGptExportProcessor.Process(options);
 
             string year = CreateTime1.Year.ToString();
 
@@ -309,6 +355,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.True(File.Exists(Path.Combine(monthDir2, "mar file.md")));
         }
 
+
+
+
         [Fact]
         public void Process_HandlesEmptyArchive()
         {
@@ -318,7 +367,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             // Создаём пустой ZIP (без файлов)
             CreateEmptyZip(source.Path);
 
-            var stats = ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            var stats = Archivist.Export.ChatGptExportProcessor.Process(options);
 
             Assert.Equal(0, stats.Total);
         }
@@ -335,7 +387,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("test.md", CreateTime1, UpdateTime1)
             });
 
-            var stats = ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            var stats = Archivist.Export.ChatGptExportProcessor.Process(options);
 
             // Файл должен быть обработан
             Assert.True(stats.Total > 0);
@@ -354,7 +409,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file2.md", CreateTime2, UpdateTime2)
             });
 
-            var stats = ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            Archivist.Export.ChatGptExportProcessor.CopyStatistics stats = Archivist.Export.ChatGptExportProcessor.Process(options);
 
             // Оба файла должны быть обработаны 
             Assert.Equal(2, stats.Total);
@@ -372,10 +430,14 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("文件.md", CreateTime1, UpdateTime1)
             });
 
-            var stats = ChatGptExportProcessor.Process(source.Path, dest.Path);
+            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path, destinationDirectory: dest.Path);
+
+            Archivist.Export.ChatGptExportProcessor.CopyStatistics stats = Archivist.Export.ChatGptExportProcessor.Process(options);
 
             Assert.Equal(2, stats.Total);
         }
+
 
         private static string CreateTestZip(string sourceDirectory, TestMarkdownFile[] files)
         {

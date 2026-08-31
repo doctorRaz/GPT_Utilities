@@ -175,7 +175,7 @@ private static FileCopyDecision GetCopyDecision(string destinationFilePath, Chat
             }
         }
 
-        // todo не используется, но может быть полезно для...?
+        //think не используется, но может быть полезно для...?
         private sealed record FileOperationResult(FileCopyDecision Decision,
                                                         string SourceFilePath,
                                                         string? DestinationFilePath,

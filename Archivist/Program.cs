@@ -6,6 +6,12 @@ using System.Text;
 
 namespace dRz.GPT_Utilities.Archivist
 {
+
+/*
+ * Parser отвечает за то, что пользователь ввёл.
+ * Main / application layer отвечает за то, можно ли с этими параметрами реально работать.
+ * Processor занимается самой обработкой архивов.
+*/
     internal class Program
     {
         //[STAThread]
@@ -43,13 +49,18 @@ namespace dRz.GPT_Utilities.Archivist
                         $"Каталог с архивами не найден: " +
                         $"{options.SourceDirectory}");
                 }
+
+                //todo patern обработаем тут
+                // Pattern
+                //  нормализуем/проверяем здесь
+
                 // Destination может отсутствовать.
                 // сразу проверяем возможность создания, каталога
                 // лучше упасть здесь, чем в процессе обработки.
                 Directory.CreateDirectory(options.DestinationDirectory);
 
                 //идем разбирать zip
-                ChatGptExportProcessor.CopyStatistics totalStatistics = ChatGptExportProcessor.Process(options.SourceDirectory, options.DestinationDirectory, options.ExtractAll);
+                ChatGptExportProcessor.CopyStatistics totalStatistics = ChatGptExportProcessor.Process(options);
 
                 //total statistics
                 ConsoleWriter.Success($"================ TOTAL STATISTICS =====================");
