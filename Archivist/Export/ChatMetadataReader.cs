@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using dRz.GPT_Utilities.Archivist.Files;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
@@ -37,7 +38,19 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// </summary>
         public ChatMetadata Read(string filePath)
         {
-            string content = _fileSystem.ReadAllText(filePath);
+            StringBuilder frontMatter = new();
+
+            foreach (string line in _fileSystem.ReadLines(filePath))
+            {
+                frontMatter.AppendLine(line);
+
+                if (line.Trim() == "---" && frontMatter.Length > line.Length + Environment.NewLine.Length)
+                {
+                    break;
+                }
+            }
+
+            string content = frontMatter.ToString();
             Match match = FrontMatterRegex.Match(content);
 
             if (!match.Success)

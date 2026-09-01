@@ -9,6 +9,8 @@ internal interface IFileSystem
 
     string ReadAllText(string path);
 
+    IEnumerable<string> ReadLines(string path);
+
     void CopyFile(string sourcePath, string destinationPath, bool overwrite);
 
     /// <summary>
@@ -38,6 +40,8 @@ internal sealed class LocalFileSystem : IFileSystem
     public bool FileExists(string path) => File.Exists(path);
 
     public string ReadAllText(string path) => File.ReadAllText(path);
+
+    public IEnumerable<string> ReadLines(string path) => File.ReadLines(path);
 
     public void CopyFile(string sourcePath, string destinationPath, bool overwrite) =>
         File.Copy(sourcePath, destinationPath, overwrite);
