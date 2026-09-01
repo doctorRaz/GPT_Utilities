@@ -117,27 +117,7 @@
                 }
             }
 
-            //// Source обязателен.
-            //if (string.IsNullOrWhiteSpace(sourceDirectory))
-            //{
-            //    throw new ArgumentException(
-            //        "Не указан каталог с ZIP-архивами. " +
-            //        "Используй параметр -s или --source.");
-            //}
-
-            //// Destination обязателен.
-            //// При этом сам каталог может физически отсутствовать.
-            //if (string.IsNullOrWhiteSpace(destinationDirectory))
-            //{
-            //    throw new ArgumentException(
-            //        "Не указан каталог назначения. " +
-            //        "Используй параметр -d или --destination.");
-            //}
-
-            // ZipFilePattern не проверяется, допустимо string.empty
-            // значение будет парсится у получателя
-            //       ? _defaultZipFilePattern
-            //       : zipFilePattern;
+          
 
             return new CommandLineOptions
             {
@@ -147,7 +127,7 @@
 
                 ExtractAll = extractAll,
 
-                ZipFilePattern = /*GetZipFilePattern*/zipFilePattern ?? string.Empty,
+                ZipFilePattern = zipFilePattern ?? string.Empty,
             };
         }
 

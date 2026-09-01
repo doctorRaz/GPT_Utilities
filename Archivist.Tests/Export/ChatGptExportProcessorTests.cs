@@ -263,7 +263,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             }
         }
 
-        //todo test : выбор по маске
+        
 
         [Fact]
         public void Process_CreatesYearMonthStructure()
