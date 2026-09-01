@@ -2,11 +2,11 @@
   "profiles": {
     "Archivist all": {
       "commandName": "Project",
-      "commandLineArgs": "-s \"e:\\downloads\" -d \"d:\\@Developers\\В работе\\Reminder\\GPT-export\\Markdown\" -a"
+      "commandLineArgs": "-s \"e:\\downloads\" -d \"d:\\@Developers\\В работе\\Reminder\\GPT-export\\Markdown\" -a -p \"chatgpt-export-markdown*\""
     },
     "Archivist one": {
       "commandName": "Project",
-      "commandLineArgs": "-s \"e:\\downloads\" -d \"d:\\@Developers\\В работе\\Reminder\\GPT-export\\Markdown\""
+      "commandLineArgs": "-s \"e:\\downloads\" -d \"d:\\@Developers\\В работе\\Reminder\\GPT-export\\Markdown\" -p \"chatgpt-export-markdown*\""
     },
     "Empty": {
       "commandName": "Project"
