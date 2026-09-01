@@ -93,6 +93,16 @@ namespace dRz.GPT_Utilities.Archivist.Export
                         $"Нет доступа к ZIP-архиву: {archive.FullName}",
                         exception);
                 }
+                catch (Exception exception)
+                {
+                    statistics.AddArchiveError(CreateError(
+                        archive.FullName,
+                        "Архив",
+                        exception));
+                    _logger.Error(
+                        $"Непредвиденная ошибка обработки ZIP-архива: {archive.FullName}",
+                        exception);
+                }
             }
 
             return statistics.ToResult();
@@ -144,6 +154,16 @@ namespace dRz.GPT_Utilities.Archivist.Export
                         ex));
                     _logger.Error(
                         $"Ошибка при обработке файла: {sourceFile}",
+                        ex);
+                }
+                catch (Exception ex)
+                {
+                    statistics.AddMarkdownError(CreateError(
+                        sourceFile,
+                        "Markdown",
+                        ex));
+                    _logger.Error(
+                        $"Непредвиденная ошибка обработки Markdown-файла: {sourceFile}",
                         ex);
                 }
             }
