@@ -56,39 +56,39 @@ namespace dRz.GPT_Utilities.Archivist.Files
         }
 
         private static string? FindMatchingDuplicate(string destinationFilePath, Guid? sourceId)
-{
-if (sourceId is null)
-{
-return null;
-}
+        {
+            if (sourceId is null)
+            {
+                return null;
+            }
 
-string? matchingFilePath = null;
-DateTimeOffset? matchingUpdateTime = null;
+            string? matchingFilePath = null;
+            DateTimeOffset? matchingUpdateTime = null;
 
-foreach (string duplicateFilePath in FileNameHelper.GetExistingDuplicates(destinationFilePath))
-{
-try
-{
-ChatMetadata duplicateMetadata = ChatMetadataReader.Read(duplicateFilePath);
-if (duplicateMetadata.ConversationId == sourceId &&
-(matchingFilePath is null ||
-matchingUpdateTime is null ||
-duplicateMetadata.UpdateTime > matchingUpdateTime))
-{
-matchingFilePath = duplicateFilePath;
-matchingUpdateTime = duplicateMetadata.UpdateTime;
-}
-}
-catch (Exception ex)
-{
-ConsoleWriter.Error(ex.Message);
-}
-}
+            foreach (string duplicateFilePath in FileNameHelper.GetExistingDuplicates(destinationFilePath))
+            {
+                try
+                {
+                    ChatMetadata duplicateMetadata = ChatMetadataReader.Read(duplicateFilePath);
+                    if (duplicateMetadata.ConversationId == sourceId &&
+                    (matchingFilePath is null ||
+                    matchingUpdateTime is null ||
+                    duplicateMetadata.UpdateTime > matchingUpdateTime))
+                    {
+                        matchingFilePath = duplicateFilePath;
+                        matchingUpdateTime = duplicateMetadata.UpdateTime;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ConsoleWriter.Error(ex.Message);
+                }
+            }
 
-return matchingFilePath;
-}
+            return matchingFilePath;
+        }
 
-private static FileCopyDecision GetCopyDecision(string destinationFilePath, ChatMetadata sourceMetadata)
+        private static FileCopyDecision GetCopyDecision(string destinationFilePath, ChatMetadata sourceMetadata)
         {
             // Destination-файла ещё нет.
             if (!File.Exists(destinationFilePath))

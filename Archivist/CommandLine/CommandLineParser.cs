@@ -1,17 +1,10 @@
-﻿using dRz.GPT_Utilities.Archivist.Infrastructure;
-
-namespace dRz.GPT_Utilities.Archivist.CommandLine
+﻿namespace dRz.GPT_Utilities.Archivist.CommandLine
 {
     /// <summary>
     /// Разбирает параметры командной строки GPT_Archivist.
     /// </summary>
     internal static class CommandLineParser
     {
-
-        /// <summary>
-        /// Маска ZIP-файлов экспорта ChatGPT по умолчанию.
-        /// </summary>
-        private const string _defaultZipFilePattern = "*";
         /// <summary>
         /// Разбирает параметры командной строки.
         /// </summary>
@@ -27,6 +20,8 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
         /// </exception>
         public static CommandLineOptions Parse(string[] args)
         {
+            ArgumentNullException.ThrowIfNull(args);
+
             // Если параметры вообще не переданы,
             // показываем справку.
             if (args.Length == 0)
@@ -41,9 +36,6 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
             string? destinationDirectory = null;
             string? zipFilePattern = null;
 
-            // Маска ZIP-файлов экспорта ChatGPT по умолчанию.
-            const string _defaultZipFilePattern = "*.zip";
-
             // Флаг по умолчанию выключен.
             // Его наличие в командной строке переключит значение в true.
             bool extractAll = false;
@@ -51,9 +43,9 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
             // Последовательно обрабатываем все аргументы.
             for (int i = 0; i < args.Length; i++)
             {
-                string argument = args[i];
+                string argument = args[i].Trim().ToLowerInvariant();
 
-                switch (argument.ToLowerInvariant())
+                switch (argument)
                 {
                     // ---------------------------------------------------------
                     // Help
@@ -125,76 +117,38 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
                 }
             }
 
-            // Source обязателен.
-            if (string.IsNullOrWhiteSpace(sourceDirectory))
-            {
-                throw new ArgumentException(
-                    "Не указан каталог с ZIP-архивами. " +
-                    "Используй параметр -s или --source.");
-            }
+            //// Source обязателен.
+            //if (string.IsNullOrWhiteSpace(sourceDirectory))
+            //{
+            //    throw new ArgumentException(
+            //        "Не указан каталог с ZIP-архивами. " +
+            //        "Используй параметр -s или --source.");
+            //}
 
-            // Destination обязателен.
-            // При этом сам каталог может физически отсутствовать.
-            if (string.IsNullOrWhiteSpace(destinationDirectory))
-            {
-                throw new ArgumentException(
-                    "Не указан каталог назначения. " +
-                    "Используй параметр -d или --destination.");
-            }
+            //// Destination обязателен.
+            //// При этом сам каталог может физически отсутствовать.
+            //if (string.IsNullOrWhiteSpace(destinationDirectory))
+            //{
+            //    throw new ArgumentException(
+            //        "Не указан каталог назначения. " +
+            //        "Используй параметр -d или --destination.");
+            //}
 
             // ZipFilePattern не проверяется, допустимо string.empty
-            // значение будет парсится у получателя  
+            // значение будет парсится у получателя
             //       ? _defaultZipFilePattern
             //       : zipFilePattern;
 
             return new CommandLineOptions
             {
-                SourceDirectory = sourceDirectory,
-                DestinationDirectory = destinationDirectory,
+                SourceDirectory = sourceDirectory ?? string.Empty,
+
+                DestinationDirectory = destinationDirectory ?? string.Empty,
+
                 ExtractAll = extractAll,
-                ZipFilePattern = GetZipFilePattern(zipFilePattern),
+
+                ZipFilePattern = /*GetZipFilePattern*/zipFilePattern ?? string.Empty,
             };
-        }
-
-
-        /// <summary>Determines whether [is valid zip file pattern] [the specified pattern].</summary>
-        /// <param name="pattern">The pattern.</param>
-        /// <returns><c>true</c> if [is valid zip file pattern] [the specified pattern]; otherwise, <c>false</c>.</returns>
-        private static bool IsValidZipFilePattern(string pattern)
-        {
-            char[] invalidCharacters =
-                {
-                    '\\',
-                    '/',
-                    ':',
-                    '"',
-                    '<',
-                    '>',
-                    '|'
-                };
-
-            return pattern.IndexOfAny(invalidCharacters) < 0;
-        }
-
-        private static string GetZipFilePattern(string? pattern)
-        {
-            if (string.IsNullOrWhiteSpace(pattern))
-            {
-                return _defaultZipFilePattern;
-            }
-
-            if (!IsValidZipFilePattern(pattern))
-            {
-                throw new ArgumentException(
-                    "Invalid ZIP file pattern.",
-                    nameof(pattern));
-            }
-
-            return pattern.EndsWith(
-                ".zip",
-                StringComparison.OrdinalIgnoreCase)
-                ? pattern
-                : $"{pattern}.zip";
         }
 
         /// <summary>
@@ -236,60 +190,13 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
             // Если следующий аргумент начинается с '-',
             // считаем, что пользователь указал другой параметр,
             // но забыл значение текущего.
-            if (value.StartsWith("-", StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(value) || value.StartsWith("-", StringComparison.Ordinal))
             {
                 throw new ArgumentException(
                     $"Для параметра {parameterName} не указано значение.");
             }
 
             return value;
-        }
-
-        /// <summary>
-        /// Выводит справку по использованию программы.
-        /// </summary>
-        public static void PrintHelp()
-        {
-            ConsoleWriter.Info("""
-            GPT_Archivist — обработка архивов экспорта ChatGPT
-
-            Использование:
-              GPT_Archivist -s <каталог> -d <каталог> [опции]
-
-            Параметры:
-
-              -s, --source <каталог>
-                  Каталог с ZIP-архивами экспорта ChatGPT.
-                  Каталог должен существовать.
-
-              -d, --destination <каталог>
-                  Каталог для распаковки архивов.
-                  Если каталог отсутствует, он будет создан.
-
-              -p, --pattern <маска>
-                  Маска ZIP-файлов для обработки.
-                  По умолчанию: *.zip.
-                  Поддерживается стандартная маска Directory.EnumerateFiles.
-
-            Опции:
-
-              -a, --all
-                  Обработать все ZIP-архивы.
-                  По умолчанию обрабатывается только последний архив.
-
-              -h, --help, /?
-                  Показать эту справку.
-
-            Примеры:
-
-              GPT_Archivist -s "D:\GPT\Archives" -d "D:\GPT\Unpacked"
-
-              GPT_Archivist -s "D:\GPT\Archives" -d "D:\GPT\Unpacked" -a
-
-              GPT_Archivist --source "D:\GPT\Archives" --destination "D:\GPT\Unpacked" --all
-
-              GPT_Archivist -s "D:\GPT\Archives" -d "D:\GPT\Unpacked" -p "*.zip"
-            """);
         }
     }
 }

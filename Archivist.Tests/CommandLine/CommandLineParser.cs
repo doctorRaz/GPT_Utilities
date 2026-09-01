@@ -1,5 +1,4 @@
 using dRz.GPT_Utilities.Archivist.CommandLine;
-using System;
 using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
@@ -11,29 +10,26 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
     public sealed class CommandLineParser
     {
         /// <summary>Parses the is case insensitive for all flags.</summary>
-        [Fact]
-        public void Parse_IsCaseInsensitive_ForAllFlags()
+        [Theory]
+        [InlineData("-S", "C:\\source", "-D", "C:\\dest", "-A", "-P", "test*test")]
+        [InlineData("--SOURCE", "C:\\source", "--DESTINATION", "C:\\dest", "--ALL", "--PATTERN", "test*test")]
+        public void Parse_IsCaseInsensitive_ForAllFlags(string sourceFlag, string sourceValue, string destinationFlag, string destinationValue, string allFlag, string patternFlag, string patternValue)
         {
-            var result1 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-S", "C:\\source", "-D", "C:\\dest", "-A", "-P", "test*test" });
-            var result2 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--SOURCE", "C:\\source", "--DESTINATION", "C:\\dest", "--ALL", "--PATTERN", "test*test" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { sourceFlag, sourceValue, destinationFlag, destinationValue, allFlag, patternFlag, patternValue });
 
-            Assert.Equal("C:\\source", result1.SourceDirectory);
-            Assert.True(result1.ExtractAll);
-            Assert.Equal("test*test.zip", result1.ZipFilePattern);
-
-            Assert.Equal("C:\\source", result2.SourceDirectory);
-            Assert.True(result2.ExtractAll);
-            Assert.Equal("test*test.zip", result2.ZipFilePattern);
+            Assert.Equal(sourceValue, result.SourceDirectory);
+            Assert.Equal(destinationValue, result.DestinationDirectory);
+            Assert.Equal(patternValue, result.ZipFilePattern);
+            Assert.True(result.ExtractAll);
         }
-
 
         /// <summary>Parses the allows all flags in any order.</summary>
         [Fact]
         public void Parse_AllowsAllFlagsInAnyOrder()
         {
-            var result1 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest", "-a" });
-            var result2 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-a", "-s", "C:\\source", "-d", "C:\\dest" });
-            var result3 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-d", "C:\\dest", "-a", "-s", "C:\\source" });
+            CommandLineOptions result1 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest", "-a" });
+            CommandLineOptions result2 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-a", "-s", "C:\\source", "-d", "C:\\dest" });
+            CommandLineOptions result3 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-d", "C:\\dest", "-a", "-s", "C:\\source" });
 
             Assert.Equal("C:\\source", result1.SourceDirectory);
             Assert.Equal("C:\\dest", result1.DestinationDirectory);
@@ -52,7 +48,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_MixesShortAndLongFlags()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "--destination", "C:\\dest", "-a" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "--destination", "C:\\dest", "-a" });
 
             Assert.Equal("C:\\source", result.SourceDirectory);
             Assert.Equal("C:\\dest", result.DestinationDirectory);
@@ -63,7 +59,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_MixesShortAndLongFlagsAlternative()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--source", "C:\\source", "-d", "C:\\dest", "--all" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--source", "C:\\source", "-d", "C:\\dest", "--all" });
 
             Assert.Equal("C:\\source", result.SourceDirectory);
             Assert.Equal("C:\\dest", result.DestinationDirectory);
@@ -74,7 +70,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ReturnsCorrectDefaultValues()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest" });
 
             Assert.NotNull(result.SourceDirectory);
             Assert.NotNull(result.DestinationDirectory);

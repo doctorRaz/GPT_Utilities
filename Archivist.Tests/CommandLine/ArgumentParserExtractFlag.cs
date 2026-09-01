@@ -1,9 +1,4 @@
 ﻿using dRz.GPT_Utilities.Archivist.CommandLine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
@@ -14,7 +9,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ParsesExtractAll_WithShortFlag()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest", "-a" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest", "-a" });
 
             Assert.True(result.ExtractAll);
         }
@@ -23,7 +18,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ParsesExtractAll_WithLongFlag()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest", "--all" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest", "--all" });
 
             Assert.True(result.ExtractAll);
         }
@@ -32,7 +27,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ExtractAllDefaultIsFalse()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest" });
 
             Assert.False(result.ExtractAll);
         }
@@ -41,7 +36,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_HandlesMultipleExtractAllFlags()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest", "-a", "-a", "-a" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest", "-a", "-a", "-a" });
 
             Assert.True(result.ExtractAll);
         }

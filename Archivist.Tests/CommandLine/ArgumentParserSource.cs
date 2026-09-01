@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using dRz.GPT_Utilities.Archivist.CommandLine;
+using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
@@ -11,7 +12,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ParsesSourceDirectory_WithShortFlag()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source", "-d", "C:\\dest" });
 
             Assert.Equal("C:\\source", result.SourceDirectory);
             Assert.Equal("C:\\dest", result.DestinationDirectory);
@@ -21,7 +22,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ParsesSourceDirectory_WithLongFlag()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--source", "C:\\source", "--destination", "C:\\dest" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--source", "C:\\source", "--destination", "C:\\dest" });
 
             Assert.Equal("C:\\source", result.SourceDirectory);
             Assert.Equal("C:\\dest", result.DestinationDirectory);

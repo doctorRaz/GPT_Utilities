@@ -33,7 +33,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
     /// 8. При совпадении имени добавляет (1)...(100).
     /// 9. Удаляет временный каталог.
     /// </summary>
-    internal static class ChatGptExportProcessor
+    internal sealed class ChatGptExportProcessor : IChatGptExportProcessor
     {
         /// <summary>
         /// Обрабатывает ZIP-архивы в исходном каталоге.
@@ -58,7 +58,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <returns>
         /// Количество скопированных Markdown-файлов.
         /// </returns>
-        internal static CopyStatistics Process(CommandLineOptions options)
+        public CopyStatistics Process(CommandLineOptions options)
         {
             // -------------------------------------------------------------
             // 1. Получаем ZIP-архивы.
@@ -68,8 +68,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
             // -------------------------------------------------------------
             List<FileInfo> zipFiles = Directory
                                             .EnumerateFiles(
-                                            options.SourceDirectory   ,
-                                            options.ZipFilePattern,//todo : вынести маску в опции ком строки, чтобы не привязываться к конкретному имени
+                                            options.SourceDirectory,
+                                            options.ZipFilePattern,
                                             SearchOption.TopDirectoryOnly)
                                             .Select(path => new FileInfo(path))
                                             .OrderBy(file => file.LastWriteTimeUtc)
@@ -108,7 +108,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
                 ConsoleWriter.Trace($"\tДата изменения ZIP: {zipFile.LastWriteTime}");
 
-                CopyStatistics archiveStatistics = ProcessArchive(zipFile.FullName,options.DestinationDirectory);//по текущему архиву возвращаем статистику по обработанным файлам
+                CopyStatistics archiveStatistics = ProcessArchive(zipFile.FullName, options.DestinationDirectory);//по текущему архиву возвращаем статистику по обработанным файлам
                 //суммирование статистики по каждому zip
                 statistics.Add(archiveStatistics);
             }
@@ -129,7 +129,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <returns>
         /// Количество скопированных Markdown-файлов.
         /// </returns>
-        private static CopyStatistics ProcessArchive(
+        private CopyStatistics ProcessArchive(
             string archiveFilePath,
             string destinationDirectory)
         {
@@ -138,7 +138,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
             // -------------------------------------------------------------
             string tempDirectory = Path.Combine(Path.GetTempPath(), $"GPT_Archivist_{Guid.NewGuid():N}");
 
-            Directory.CreateDirectory(tempDirectory);
+            _ = Directory.CreateDirectory(tempDirectory);
 
             try
             {
@@ -197,7 +197,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <summary>
         /// Обрабатывает один Markdown-файл.
         /// </summary>
-        private static FileCopyDecision ProcessMarkdownFile(
+        private FileCopyDecision ProcessMarkdownFile(
             string sourceFile,
             string destinationDirectory)
         {
@@ -225,7 +225,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
             string monthDirectory = Path.Combine(destinationDirectory, createTime.ToString("yyyy"), createTime.ToString("MM-MMMM", CultureInfo.InvariantCulture));
 
-            Directory.CreateDirectory(monthDirectory);
+            _ = Directory.CreateDirectory(monthDirectory);
 
             // -------------------------------------------------------------
             // 6. Обрабатываем имя файла.
@@ -258,7 +258,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <summary>
         /// Удаляет временный каталог вместе со всем содержимым.
         /// </summary>
-        private static void DeleteTempDirectory(
+        private void DeleteTempDirectory(
             string tempDirectory)
         {
             if (!Directory.Exists(tempDirectory))

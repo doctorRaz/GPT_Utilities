@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using dRz.GPT_Utilities.Archivist.CommandLine;
+using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
@@ -10,7 +11,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ReturnsShowHelp_WhenNoArgumentsProvided()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new string[] { });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new string[] { });
 
             Assert.True(result.ShowHelp);
             Assert.False(result.ExtractAll);
@@ -22,7 +23,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ReturnsShowHelp_WhenHelpFlagShort()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-h" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-h" });
 
             Assert.True(result.ShowHelp);
         }
@@ -31,7 +32,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ReturnsShowHelp_WhenHelpFlagLong()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--help" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--help" });
 
             Assert.True(result.ShowHelp);
         }
@@ -40,7 +41,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_ReturnsShowHelp_WhenHelpFlagWindows()
         {
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "/?" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "/?" });
 
             Assert.True(result.ShowHelp);
         }
@@ -49,9 +50,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_IsCaseInsensitive_ForHelpFlag()
         {
-            var result1 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-H" });
-            var result2 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--HELP" });
-            var result3 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--Help" });
+            CommandLineOptions result1 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-H" });
+            CommandLineOptions result2 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--HELP" });
+            CommandLineOptions result3 = Archivist.CommandLine.CommandLineParser.Parse(new[] { "--Help" });
 
             Assert.True(result1.ShowHelp);
             Assert.True(result2.ShowHelp);
@@ -63,7 +64,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         public void Parse_HelpFlagImmediatelyReturns()
         {
             // Help flag должен немедленно вернуть результат, остальные параметры игнорируются
-            var result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-h", "-s", "", "-d", "" });
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-h", "-s", "", "-d", "" });
 
             Assert.True(result.ShowHelp);
         }

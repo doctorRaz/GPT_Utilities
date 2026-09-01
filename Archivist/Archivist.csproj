@@ -4,7 +4,6 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<OutputType>Exe</OutputType>
-		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<HostFamily>$(MSBuildProjectName)</HostFamily>
 		<HostCode>_$(MSBuildProjectName)</HostCode>

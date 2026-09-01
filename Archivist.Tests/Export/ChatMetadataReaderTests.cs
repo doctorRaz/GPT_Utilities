@@ -296,8 +296,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         {
             using TempDirectory temp = new();
             string file = temp.Combine("chat.md");
-            var time1 = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
-            var time2 = new DateTimeOffset(2024, 12, 31, 23, 59, 59, TimeSpan.Zero);
+            DateTimeOffset time1 = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
+            DateTimeOffset time2 = new DateTimeOffset(2024, 12, 31, 23, 59, 59, TimeSpan.Zero);
 
             File.WriteAllText(file, $"""
                 ---
@@ -327,7 +327,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         {
             using TempDirectory temp = new();
             string file = temp.Combine("chat.md");
-            var guid = Guid.Parse("12345678-1234-5678-1234-567812345678");
+            Guid guid = Guid.Parse("12345678-1234-5678-1234-567812345678");
 
             File.WriteAllText(file, $"""
                 ---
@@ -398,7 +398,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         {
             using TempDirectory temp = new();
             string file = temp.Combine("chat.md");
-            var guid = Guid.Parse("12345678-1234-5678-1234-567812345678");
+            Guid guid = Guid.Parse("12345678-1234-5678-1234-567812345678");
 
             File.WriteAllText(file, $"""
                 ---
@@ -424,7 +424,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         {
             using TempDirectory temp = new();
             string file = temp.Combine("chat.md");
-            var guid = Guid.Parse("12345678-1234-5678-1234-567812345678");
+            Guid guid = Guid.Parse("12345678-1234-5678-1234-567812345678");
 
             File.WriteAllText(file, $"""
                 ---
@@ -450,7 +450,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         {
             using TempDirectory temp = new();
             string file = temp.Combine("chat.md");
-            var guid = Guid.Parse("12345678-1234-5678-1234-567812345678");
+            Guid guid = Guid.Parse("12345678-1234-5678-1234-567812345678");
 
             File.WriteAllText(file, $"""
                 ---

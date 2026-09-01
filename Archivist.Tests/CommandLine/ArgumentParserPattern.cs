@@ -33,29 +33,33 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_AppendsZipExtension_WhenPatternIsAsterisk()
         {
+            string pattern = "*";
+
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
                 {
              "-s", "C:\\source",
              "-d", "C:\\dest",
-             "-p", "*"
+             "-p", pattern
          });
 
-            Assert.Equal("*.zip", result.ZipFilePattern);
+            Assert.Equal(pattern, result.ZipFilePattern);
         }
 
         /// <summary>Parses the appends zip extension when pattern has no extension.</summary>
         [Fact]
         public void Parse_AppendsZipExtension_WhenPatternHasNoExtension()
         {
+            string pattern = "chatgpt-export-markdown*";
+
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
                 {
              "-s", "C:\\source",
              "-d", "C:\\dest",
-             "-p", "chatgpt-export-markdown*"
+             "-p", pattern
          });
 
             Assert.Equal(
-                "chatgpt-export-markdown*.zip",
+                pattern,
                 result.ZipFilePattern);
         }
 
@@ -79,74 +83,85 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
         [Fact]
         public void Parse_AppendsZipExtension_WhenPatternHasOtherExtension()
         {
+            string pattern = "chatgpt-export-markdown*.txt";
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
                 {
              "-s", "C:\\source",
              "-d", "C:\\dest",
-             "-p", "chatgpt-export-markdown*.txt"
+             "-p", pattern
          });
 
             Assert.Equal(
-                "chatgpt-export-markdown*.txt.zip",
+                pattern,
                 result.ZipFilePattern);
         }
 
         /// <summary>Parses the parses zip file pattern with short flag.</summary>
-        [Fact]
-        public void Parse_ParsesZipFilePattern_WithShortFlag()
+        [Theory]
+        [InlineData("chatgpt-export-markdown*.zip", "chatgpt-export-markdown*.zip")]
+        [InlineData("chatgpt-export-markdown*", "chatgpt-export-markdown*")]
+        [InlineData("my-export*.txt", "my-export*.txt")]
+        public void Parse_ParsesZipFilePattern_WithShortFlag(string pattern, string expected)
         {
-            CommandLineOptions result1 = Archivist.CommandLine.CommandLineParser.Parse(new[]
+            CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
                 {
              "-s", "C:\\source",
              "-d", "C:\\dest",
-             "-p", "chatgpt-export-markdown*"
+             "-p", pattern
          });
 
-            CommandLineOptions result2 = Archivist.CommandLine.CommandLineParser.Parse(new[]
-                {
-             "-s", "C:\\source",
-             "-d", "C:\\dest",
-             "-p", "chatgpt-export-markdown*.zip"
-         });
-
-            CommandLineOptions result3 = Archivist.CommandLine.CommandLineParser.Parse(new[]
-                {
-             "-s", "C:\\source",
-             "-d", "C:\\dest",
-             "-p", "chatgpt-export-markdown*.txt"
-         });
-
-            Assert.Equal("chatgpt-export-markdown*.zip", result1.ZipFilePattern);
-            Assert.Equal("chatgpt-export-markdown*.zip", result2.ZipFilePattern);
-            Assert.Equal("chatgpt-export-markdown*.txt.zip", result3.ZipFilePattern);
+            Assert.Equal(expected, result.ZipFilePattern);
         }
 
         /// <summary>Parses the parses zip file pattern with long flag.</summary>
-        [Fact]
-        public void Parse_ParsesZipFilePattern_WithLongFlag()
+        [Theory]
+        [InlineData("chatgpt-export-markdown*.zip", "chatgpt-export-markdown*.zip")]
+        [InlineData("chatgpt-export-markdown*", "chatgpt-export-markdown*")]
+        [InlineData("my-export*.txt", "my-export*.txt")]
+        public void Parse_ParsesZipFilePattern_WithLongFlag(string pattern, string expected)
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
                 {
                     "--source", "C:\\source",
                     "--destination", "C:\\dest",
-                    "--pattern", "my-export*"
+                    "--pattern", pattern
                 });
 
-            Assert.Equal("my-export*.zip", result.ZipFilePattern);
+            Assert.Equal(expected, result.ZipFilePattern);
+        }
+
+        /// <summary>Parses the throws argument exception zip file pattern null.</summary>
+
+        [Theory]
+        [InlineData("-p")]
+        [InlineData("--pattern")]
+        [InlineData("-P")]
+        [InlineData("--PATTERN")]
+        public void Parse_ThrowsArgumentException_ZipFilePattern_Null(string option)
+        {
+            ArgumentException ex = Assert.Throws<ArgumentException>(
+                () => Archivist.CommandLine.CommandLineParser.Parse(new[]
+                {
+                 "--source", "C:\\source",
+                 "--destination", "C:\\dest",
+                 option
+             }));
+
+            Assert.Contains($"Для параметра {option} не указано значение.", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>Parses the is case insensitive for zip file pattern flag.</summary>
         [Fact]
         public void Parse_IsCaseInsensitive_ForZipFilePatternFlag()
         {
-            var result1 = Archivist.CommandLine.CommandLineParser.Parse(new[]
+            CommandLineOptions result1 = Archivist.CommandLine.CommandLineParser.Parse(new[]
                 {
                     "-s", "C:\\source",
                     "-d", "C:\\dest",
                     "-P", "*.ZIP"
                 });
 
-            var result2 = Archivist.CommandLine.CommandLineParser.Parse(new[]
+            CommandLineOptions result2 = Archivist.CommandLine.CommandLineParser.Parse(new[]
                 {
                     "--source", "C:\\source",
                     "--destination", "C:\\dest",

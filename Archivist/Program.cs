@@ -1,88 +1,34 @@
 ﻿using dRz.GPT_Utilities.Archivist.CommandLine;
 using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
-using dRz.GPT_Utilities.Archivist.Localization;
 using System.Text;
 
 namespace dRz.GPT_Utilities.Archivist
 {
+    /*
+     * Parser отвечает за то, что пользователь ввёл.
+     * Main / application layer отвечает за то, можно ли с этими параметрами реально работать.
+     * Processor занимается самой обработкой архивов.
+    */
 
-/*
- * Parser отвечает за то, что пользователь ввёл.
- * Main / application layer отвечает за то, можно ли с этими параметрами реально работать.
- * Processor занимается самой обработкой архивов.
-*/
-    internal class Program
+    internal static class Program
     {
         //[STAThread]
         private static int Main(string[] args)
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            ConsoleSetup.Configure(AppDomain.CurrentDomain.FriendlyName);
+            ConfigureApplication();
 
 #if DEBUG
-            if (!System.Diagnostics.Debugger.IsAttached)
-            {
-                System.Diagnostics.Debugger.Launch();
-            }
-            //ConsoleDemo.Run();
+            LaunchDebugger();
 #endif
 
             try
             {
-                CommandLineOptions options = CommandLineParser.Parse(args);
-
-                if (options.ShowHelp)
-                {
-                    CommandLineParser.PrintHelp();
-
-                    ConsoleWriter.PressAnyKey();
-
-                    return 0;
-                }
-
-                // Source должен существовать.
-                if (!Directory.Exists(options.SourceDirectory))
-                {
-                    throw new DirectoryNotFoundException(
-                        $"Каталог с архивами не найден: " +
-                        $"{options.SourceDirectory}");
-                }
-
-                //todo patern обработаем тут
-                // Pattern
-                //  нормализуем/проверяем здесь
-
-                // Destination может отсутствовать.
-                // сразу проверяем возможность создания, каталога
-                // лучше упасть здесь, чем в процессе обработки.
-                Directory.CreateDirectory(options.DestinationDirectory);
-
-                //идем разбирать zip
-                ChatGptExportProcessor.CopyStatistics totalStatistics = ChatGptExportProcessor.Process(options);
-
-                //total statistics
-                ConsoleWriter.Success($"================ TOTAL STATISTICS =====================");
-
-                ConsoleWriter.Trace($"Обработано всего: {totalStatistics.Total.Of(RussianWords.Files)}");
-
-                ConsoleWriter.Trace($"Из них:");
-
-                ConsoleWriter.Success($"\tДобавлено {totalStatistics.Added.Of(RussianWords.Files)}");
-
-                ConsoleWriter.Warn($"\tДобавлено уникальных {totalStatistics.AddedUnique.Of(RussianWords.Files)}");
-
-                ConsoleWriter.Update($"\tОбновлено {totalStatistics.Updated.Of(RussianWords.Files)}");
-
-                ConsoleWriter.Trace($"\tПропущено {totalStatistics.Skipped.Of(RussianWords.Files)}");
-
-                ConsoleWriter.Info($"Всего заменено и добавлено {(totalStatistics.Added + totalStatistics.AddedUnique + totalStatistics.Updated).Of(RussianWords.Files)}");
-
-                ConsoleWriter.Success($"=======================================================");
-                ConsoleWriter.PressAnyKey();
-
-                return 0;
+                ArchivistApplication application =
+                                                new ArchivistApplication(
+                                                new CommandLineOptionsValidator(),
+                                                new ChatGptExportProcessor());
+                return application.Run(args);
             }
             catch (Exception ex)
             {
@@ -93,5 +39,24 @@ namespace dRz.GPT_Utilities.Archivist
                 return 1;
             }
         }
+
+        private static void ConfigureApplication()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            ConsoleSetup.Configure(AppDomain.CurrentDomain.FriendlyName);
+        }
+
+#if DEBUG
+
+        private static void LaunchDebugger()
+        {
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                _ = System.Diagnostics.Debugger.Launch();
+            }
+        }
+
+#endif
     }
 }

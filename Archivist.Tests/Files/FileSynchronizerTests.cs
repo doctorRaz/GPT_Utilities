@@ -29,7 +29,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 CreateTime.AddHours(1),
                 ConversationA);
             string destination = temp.Combine("dst", "Chat.md");
-            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
             ChatMetadata metadata = ChatMetadataReader.Read(source);
 
@@ -127,7 +127,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         public void CopyIfNewer_ReplacesMatchingUniqueFile_InsteadOfAddingDuplicate()
         {
             using TempDirectory temp = new();
-            MarkdownFactory.Write(
+            _ = MarkdownFactory.Write(
                 temp.Combine("dst", "Chat.md"),
                 CreateTime,
                 CreateTime.AddHours(1),
@@ -159,7 +159,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         public void CopyIfNewer_SkipsNewestMatchingUniqueFile_WhenSeveralExist()
         {
             using TempDirectory temp = new();
-            MarkdownFactory.Write(
+            _ = MarkdownFactory.Write(
                 temp.Combine("dst", "Chat.md"),
                 CreateTime,
                 CreateTime.AddHours(1),
@@ -197,7 +197,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         public void CopyIfNewer_SkipsMatchingUniqueFile_WhenItIsNewer()
         {
             using TempDirectory temp = new();
-            MarkdownFactory.Write(
+            _ = MarkdownFactory.Write(
                 temp.Combine("dst", "Chat.md"),
                 CreateTime,
                 CreateTime.AddHours(1),
@@ -287,7 +287,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         {
             using TempDirectory temp = new();
             string destination = temp.Combine("dst", "Chat.md");
-            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             File.WriteAllText(destination, "not a chatgpt export");
             string source = MarkdownFactory.Write(
                 temp.Combine("src", "Chat.md"),
@@ -315,11 +315,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 updateTime,
                 ConversationA);
             string destination = temp.Combine("dst", "Chat.md");
-            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
             ChatMetadata metadata = ChatMetadataReader.Read(source);
 
-            FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            _ = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
             DateTime expected = updateTime.LocalDateTime;
             DateTime actual = File.GetLastWriteTime(destination);

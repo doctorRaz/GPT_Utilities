@@ -13,7 +13,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Infrastructure
                 System.IO.Path.GetTempPath(),
                 $"ArchivistTests_{Guid.NewGuid():N}");
 
-            Directory.CreateDirectory(Path);
+            _ = Directory.CreateDirectory(Path);
         }
 
         public string Combine(params string[] parts)
