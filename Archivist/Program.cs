@@ -28,12 +28,16 @@ namespace dRz.GPT_Utilities.Archivist
                 // Program является composition root приложения: здесь
                 // собираются конкретные инфраструктурные реализации.
                 IArchivistLogger logger = new ConsoleArchivistLogger();
+                IFileSystem fileSystem = new LocalFileSystem();
+                IUniqueFileNameProvider uniqueFileNameProvider =
+                    new UniqueFileNameProvider(fileSystem);
                 IExportPathBuilder pathBuilder = new ExportPathBuilder();
                 IChatMetadataReader metadataReader = new ChatMetadataReader();
                 IFileSynchronizer fileSynchronizer = new FileSynchronizerService(
                     metadataReader,
                     logger,
-                    new UniqueFileNameProvider());
+                    uniqueFileNameProvider,
+                    fileSystem);
                 IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
                     pathBuilder,
                     metadataReader,

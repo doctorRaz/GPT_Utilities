@@ -33,7 +33,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     new FileSynchronizerService(
                         new ChatMetadataReader(),
                         new ConsoleArchivistLogger(),
-                        new UniqueFileNameProvider()),
+                        new UniqueFileNameProvider(new LocalFileSystem()),
+                        new LocalFileSystem()),
                     new ConsoleArchivistLogger(),
                     new FileNameNormalizer()),
                 new ConsoleArchivistLogger())

@@ -225,7 +225,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new FileSynchronizerService(
                     metadataReader,
                     logger,
-                    new UniqueFileNameProvider()),
+                    new UniqueFileNameProvider(new LocalFileSystem()),
+                    new LocalFileSystem()),
                 logger,
                 new FileNameNormalizer());
 

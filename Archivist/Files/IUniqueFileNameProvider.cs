@@ -14,11 +14,19 @@ internal interface IUniqueFileNameProvider
 /// </summary>
 internal sealed class UniqueFileNameProvider : IUniqueFileNameProvider
 {
+    private readonly IFileSystem _fileSystem;
+
+    public UniqueFileNameProvider(IFileSystem fileSystem)
+    {
+        _fileSystem = fileSystem
+            ?? throw new ArgumentNullException(nameof(fileSystem));
+    }
+
     private const int MaxDuplicateNumber = 100;
 
     public string GetUnique(string filePath)
     {
-        if (!File.Exists(filePath))
+        if (!_fileSystem.FileExists(filePath))
         {
             return filePath;
         }
@@ -33,7 +41,7 @@ internal sealed class UniqueFileNameProvider : IUniqueFileNameProvider
                 directory,
                 $"{fileName} ({number}){extension}");
 
-            if (!File.Exists(candidate))
+            if (!_fileSystem.FileExists(candidate))
             {
                 return candidate;
             }
@@ -56,7 +64,7 @@ internal sealed class UniqueFileNameProvider : IUniqueFileNameProvider
                 directory,
                 $"{fileName} ({number}){extension}");
 
-            if (File.Exists(candidate))
+            if (_fileSystem.FileExists(candidate))
             {
                 yield return candidate;
             }

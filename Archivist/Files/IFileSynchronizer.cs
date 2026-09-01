@@ -22,11 +22,13 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     private readonly IChatMetadataReader _metadataReader;
     private readonly IArchivistLogger _logger;
     private readonly IUniqueFileNameProvider _uniqueFileNameProvider;
+    private readonly IFileSystem _fileSystem;
 
     public FileSynchronizerService(
         IChatMetadataReader metadataReader,
         IArchivistLogger logger,
-        IUniqueFileNameProvider uniqueFileNameProvider)
+        IUniqueFileNameProvider uniqueFileNameProvider,
+        IFileSystem fileSystem)
     {
         _metadataReader = metadataReader
             ?? throw new ArgumentNullException(nameof(metadataReader));
@@ -34,6 +36,8 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             ?? throw new ArgumentNullException(nameof(logger));
         _uniqueFileNameProvider = uniqueFileNameProvider
             ?? throw new ArgumentNullException(nameof(uniqueFileNameProvider));
+        _fileSystem = fileSystem
+            ?? throw new ArgumentNullException(nameof(fileSystem));
     }
 
     public FileOperationResult Synchronize(
@@ -66,11 +70,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
         if (decision != FileCopyDecision.Skip)
         {
-            File.Copy(sourceFilePath, destinationFilePath, overwrite: true);
+            _fileSystem.CopyFile(sourceFilePath, destinationFilePath, overwrite: true);
 
             if (sourceMetadata.UpdateTime.HasValue)
             {
-                File.SetLastWriteTime(
+                _fileSystem.SetLastWriteTime(
                     destinationFilePath,
                     sourceMetadata.UpdateTime.Value.LocalDateTime);
             }
@@ -128,7 +132,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         string destinationFilePath,
         ChatMetadata sourceMetadata)
     {
-        if (!File.Exists(destinationFilePath))
+        if (!_fileSystem.FileExists(destinationFilePath))
         {
             return FileCopyDecision.Add;
         }
