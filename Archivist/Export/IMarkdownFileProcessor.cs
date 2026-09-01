@@ -17,15 +17,25 @@ internal interface IMarkdownFileProcessor
 internal sealed class MarkdownFileProcessor : IMarkdownFileProcessor
 {
     private readonly IExportPathBuilder _pathBuilder;
+    private readonly IChatMetadataReader _metadataReader;
+    private readonly IFileSynchronizer _fileSynchronizer;
+    private readonly IArchivistLogger _logger;
 
-    public MarkdownFileProcessor(IExportPathBuilder pathBuilder)
+    public MarkdownFileProcessor(
+        IExportPathBuilder pathBuilder,
+        IChatMetadataReader metadataReader,
+        IFileSynchronizer fileSynchronizer,
+        IArchivistLogger logger)
     {
-        _pathBuilder = pathBuilder;
+        _pathBuilder = pathBuilder ?? throw new ArgumentNullException(nameof(pathBuilder));
+        _metadataReader = metadataReader ?? throw new ArgumentNullException(nameof(metadataReader));
+        _fileSynchronizer = fileSynchronizer ?? throw new ArgumentNullException(nameof(fileSynchronizer));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public FileCopyDecision Process(string sourceFile, string destinationDirectory)
     {
-        ChatMetadata metadata = ChatMetadataReader.Read(sourceFile);
+        ChatMetadata metadata = _metadataReader.Read(sourceFile);
         string originalName = Path.GetFileNameWithoutExtension(sourceFile);
         string extension = Path.GetExtension(sourceFile);
         string normalizedName = FileNameHelper.Normalize(originalName);
@@ -33,7 +43,7 @@ internal sealed class MarkdownFileProcessor : IMarkdownFileProcessor
         if (string.IsNullOrWhiteSpace(normalizedName))
         {
             normalizedName = originalName;
-            ConsoleWriter.Warn($"КОПИРУЮ КАК ЕСТЬ: пустое имя файла: {sourceFile}");
+            _logger.Warning($"КОПИРУЮ КАК ЕСТЬ: пустое имя файла: {sourceFile}");
         }
 
         string destinationFile = _pathBuilder.Build(
@@ -41,7 +51,7 @@ internal sealed class MarkdownFileProcessor : IMarkdownFileProcessor
             metadata,
             normalizedName + extension);
 
-        return FileSynchronizer.CopyIfNewer(
+        return _fileSynchronizer.Synchronize(
             sourceFile,
             destinationFile,
             metadata);

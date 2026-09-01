@@ -19,6 +19,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
         private readonly IArchiveSelector _archiveSelector;
         private readonly IArchiveExtractor _archiveExtractor;
         private readonly IMarkdownFileProcessor _markdownProcessor;
+        private readonly IArchivistLogger _logger;
 
         /// <summary>
         /// Создаёт процессор с инфраструктурными реализациями по умолчанию.
@@ -27,7 +28,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
             : this(
                 new FileSystemArchiveSelector(),
                 new ZipArchiveExtractor(Encoding.GetEncoding(866)),
-                new MarkdownFileProcessor(new ExportPathBuilder()))
+                new MarkdownFileProcessor(
+                    new ExportPathBuilder(),
+                    new ChatMetadataReaderAdapter(),
+                    new FileSynchronizerAdapter(),
+                    new ConsoleArchivistLogger()),
+                new ConsoleArchivistLogger())
         {
         }
 
@@ -37,7 +43,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
         public ChatGptExportProcessor(
             IArchiveSelector archiveSelector,
             IArchiveExtractor archiveExtractor,
-            IMarkdownFileProcessor markdownProcessor)
+            IMarkdownFileProcessor markdownProcessor,
+            IArchivistLogger logger)
         {
             _archiveSelector = archiveSelector
                 ?? throw new ArgumentNullException(nameof(archiveSelector));
@@ -45,6 +52,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 ?? throw new ArgumentNullException(nameof(archiveExtractor));
             _markdownProcessor = markdownProcessor
                 ?? throw new ArgumentNullException(nameof(markdownProcessor));
+            _logger = logger
+                ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -69,14 +78,14 @@ namespace dRz.GPT_Utilities.Archivist.Export
             ArgumentNullException.ThrowIfNull(request);
 
             IReadOnlyList<FileInfo> archives = _archiveSelector.Select(request);
-            ConsoleWriter.Trace($"Найдено {archives.Count.Of(RussianWords.Archives)} для обработки");
+            _logger.Trace($"Найдено {archives.Count.Of(RussianWords.Archives)} для обработки");
 
             ExportStatistics statistics = new();
 
             foreach (FileInfo archive in archives)
             {
-                ConsoleWriter.Trace($"ZIP: {archive.FullName}");
-                ConsoleWriter.Trace($"\tДата изменения ZIP: {archive.LastWriteTime}");
+                _logger.Trace($"ZIP: {archive.FullName}");
+                _logger.Trace($"\tДата изменения ZIP: {archive.LastWriteTime}");
 
                 ExportStatistics archiveStatistics = ProcessArchive(
                     archive,
@@ -98,7 +107,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
             ExportStatistics statistics = new();
 
             using ExtractedArchive extractedArchive = _archiveExtractor.Extract(archive);
-            ConsoleWriter.Trace(
+            _logger.Trace(
                 $"\tНайдено {extractedArchive.MarkdownFiles.Count.Of(RussianWords.Files)} Markdown");
 
             foreach (string sourceFile in extractedArchive.MarkdownFiles)
@@ -114,7 +123,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 {
                     // Ошибка одного файла не останавливает обработку остальных.
                     statistics.AddFailure();
-                    ConsoleWriter.Error(
+                    _logger.Error(
                         $"Ошибка при обработке файла: {sourceFile}",
                         ex);
                 }
