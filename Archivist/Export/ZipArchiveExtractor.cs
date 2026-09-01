@@ -12,11 +12,6 @@ internal sealed class ZipArchiveExtractor : IArchiveExtractor
     private readonly Encoding _entryNameEncoding;
     private readonly IFileSystem _fileSystem;
 
-    public ZipArchiveExtractor(Encoding entryNameEncoding)
-        : this(entryNameEncoding, new LocalFileSystem())
-    {
-    }
-
     public ZipArchiveExtractor(
         Encoding entryNameEncoding,
         IFileSystem fileSystem)

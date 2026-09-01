@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using NUnit.Framework;
 
@@ -25,7 +26,7 @@ public sealed class ExportArchitectureNUnitTests
         File.SetLastWriteTimeUtc(newer, DateTime.UtcNow);
 
         ExportRequest request = new(source.Path, source.Path, "*.zip", false);
-        FileInfo[] result = new FileSystemArchiveSelector().Select(request).ToArray();
+        FileInfo[] result = new FileSystemArchiveSelector(new LocalFileSystem()).Select(request).ToArray();
 
         Assert.That(result, Has.Length.EqualTo(1));
         Assert.That(result[0].FullName, Is.EqualTo(newer));
@@ -40,7 +41,7 @@ public sealed class ExportArchitectureNUnitTests
             CreateTime = new DateTimeOffset(2024, 3, 22, 14, 20, 15, TimeSpan.Zero)
         };
 
-        string path = new ExportPathBuilder().Build(
+        string path = new ExportPathBuilder(new LocalFileSystem()).Build(
             destination.Path,
             metadata,
             "conversation.md");

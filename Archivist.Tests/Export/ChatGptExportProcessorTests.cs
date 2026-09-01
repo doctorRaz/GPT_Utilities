@@ -21,7 +21,31 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
     /// </summary>
     public sealed class ChatGptExportProcessorTests
     {
-        private readonly IChatGptExportProcessor _processor = new Archivist.Export.ChatGptExportProcessor();
+        private readonly IChatGptExportProcessor _processor;
+
+        public ChatGptExportProcessorTests()
+        {
+            IFileSystem fileSystem = new LocalFileSystem();
+            IArchivistLogger logger = new ConsoleArchivistLogger();
+            IChatMetadataReader metadataReader = new ChatMetadataReader(fileSystem);
+            IFileSynchronizer fileSynchronizer = new FileSynchronizerService(
+                metadataReader,
+                logger,
+                new UniqueFileNameProvider(fileSystem),
+                fileSystem);
+            IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
+                new ExportPathBuilder(fileSystem),
+                metadataReader,
+                fileSynchronizer,
+                logger,
+                new FileNameNormalizer());
+
+            _processor = new ChatGptExportProcessor(
+                new FileSystemArchiveSelector(fileSystem),
+                new ZipArchiveExtractor(Encoding.GetEncoding(866), fileSystem),
+                markdownProcessor,
+                logger);
+        }
         private static readonly DateTimeOffset CreateTime1 = new(2024, 1, 15, 10, 30, 45, 123, TimeSpan.Zero);
         private static readonly DateTimeOffset CreateTime2 = new(2024, 3, 22, 14, 20, 15, 456, TimeSpan.Zero);
         private static readonly DateTimeOffset UpdateTime1 = new(2024, 1, 16, 11, 45, 30, TimeSpan.Zero);
@@ -217,10 +241,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             using TempDirectory source = new();
             using TempDirectory dest = new();
             RecordingLogger logger = new();
-            ChatMetadataReader metadataReader = new();
+            ChatMetadataReader metadataReader = new(new LocalFileSystem());
 
             IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
-                new ExportPathBuilder(),
+                new ExportPathBuilder(new LocalFileSystem()),
                 metadataReader,
                 new FileSynchronizerService(
                     metadataReader,
@@ -231,8 +255,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new FileNameNormalizer());
 
             IChatGptExportProcessor processor = new ChatGptExportProcessor(
-                new FileSystemArchiveSelector(),
-                new ZipArchiveExtractor(Encoding.GetEncoding(866)),
+                new FileSystemArchiveSelector(new LocalFileSystem()),
+                new ZipArchiveExtractor(Encoding.GetEncoding(866), new LocalFileSystem()),
                 markdownProcessor,
                 logger);
 

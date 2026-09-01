@@ -18,11 +18,6 @@ internal sealed class ExtractedArchive : IDisposable
     private readonly string _directory;
     private readonly IFileSystem _fileSystem;
 
-    public ExtractedArchive(string directory)
-        : this(directory, new LocalFileSystem())
-    {
-    }
-
     public ExtractedArchive(string directory, IFileSystem fileSystem)
     {
         _directory = directory;

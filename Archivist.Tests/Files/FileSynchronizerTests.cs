@@ -33,7 +33,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             string destination = temp.Combine("dst", "Chat.md");
             _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
@@ -60,7 +60,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationA,
                 "new");
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
@@ -87,7 +87,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationA,
                 "stale");
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
@@ -113,7 +113,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationB,
                 "second");
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
@@ -148,7 +148,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationB,
                 "new second");
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
@@ -186,7 +186,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationB,
                 "incoming second");
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
@@ -218,7 +218,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationB,
                 "old second");
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
@@ -245,7 +245,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 chatLink: null,
                 body: "new");
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
@@ -275,7 +275,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 chatLink: null,
                 body: "new");
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
@@ -297,7 +297,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 CreateTime.AddHours(1),
                 ConversationA);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
@@ -319,7 +319,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             string destination = temp.Combine("dst", "Chat.md");
             _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
 
             _ = Synchronize(source, destination, metadata);
 
@@ -342,9 +342,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
             RecordingLogger logger = new();
-            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
             IFileSynchronizer synchronizer = new FileSynchronizerService(
-                new ChatMetadataReader(),
+                new ChatMetadataReader(new LocalFileSystem()),
                 logger,
                 new UniqueFileNameProvider(new LocalFileSystem()),
                 new LocalFileSystem());
@@ -388,7 +388,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             ChatMetadata metadata)
         {
             return new FileSynchronizerService(
-                new ChatMetadataReader(),
+                new ChatMetadataReader(new LocalFileSystem()),
                 new ConsoleArchivistLogger(),
                 new UniqueFileNameProvider(new LocalFileSystem()),
                 new LocalFileSystem()).Synchronize(

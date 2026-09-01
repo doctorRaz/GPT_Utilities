@@ -9,11 +9,6 @@ internal sealed class FileSystemArchiveSelector : IArchiveSelector
 {
     private readonly IFileSystem _fileSystem;
 
-    public FileSystemArchiveSelector()
-        : this(new LocalFileSystem())
-    {
-    }
-
     public FileSystemArchiveSelector(IFileSystem fileSystem)
     {
         _fileSystem = fileSystem

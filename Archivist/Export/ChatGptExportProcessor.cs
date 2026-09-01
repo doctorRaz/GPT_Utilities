@@ -1,7 +1,6 @@
 ﻿using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Localization;
-using System.Text;
 
 namespace dRz.GPT_Utilities.Archivist.Export
 {
@@ -19,27 +18,6 @@ namespace dRz.GPT_Utilities.Archivist.Export
         private readonly IArchiveExtractor _archiveExtractor;
         private readonly IMarkdownFileProcessor _markdownProcessor;
         private readonly IArchivistLogger _logger;
-
-        /// <summary>
-        /// Создаёт процессор с инфраструктурными реализациями по умолчанию.
-        /// </summary>
-        public ChatGptExportProcessor()
-            : this(
-                new FileSystemArchiveSelector(),
-                new ZipArchiveExtractor(Encoding.GetEncoding(866)),
-                new MarkdownFileProcessor(
-                    new ExportPathBuilder(),
-                    new ChatMetadataReader(new LocalFileSystem()),
-                    new FileSynchronizerService(
-                        new ChatMetadataReader(new LocalFileSystem()),
-                        new ConsoleArchivistLogger(),
-                        new UniqueFileNameProvider(new LocalFileSystem()),
-                        new LocalFileSystem()),
-                    new ConsoleArchivistLogger(),
-                    new FileNameNormalizer()),
-                new ConsoleArchivistLogger())
-        {
-        }
 
         /// <summary>
         /// Создаёт процессор с заданными зависимостями.

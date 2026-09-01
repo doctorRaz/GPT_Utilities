@@ -32,12 +32,6 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
-        // Временная совместимость со старыми тестами и вызывающим кодом.
-        public ChatMetadataReader()
-            : this(new LocalFileSystem())
-        {
-        }
-
         /// <summary>
         /// Читает и проверяет обязательные метаданные разговора.
         /// </summary>

@@ -17,11 +17,6 @@ internal sealed class ExportPathBuilder : IExportPathBuilder
 {
     private readonly IFileSystem _fileSystem;
 
-    public ExportPathBuilder()
-        : this(new LocalFileSystem())
-    {
-    }
-
     public ExportPathBuilder(IFileSystem fileSystem)
     {
         _fileSystem = fileSystem

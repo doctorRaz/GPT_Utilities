@@ -1,4 +1,5 @@
 using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
 using System.IO;
@@ -33,7 +34,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 CreateTime,
                 UpdateTime);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.CreateTime, Is.EqualTo(CreateTime));
             Assert.That(metadata.UpdateTime, Is.EqualTo(UpdateTime));
@@ -61,7 +62,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.CreateTime, Is.EqualTo(CreateTime));
             Assert.That(metadata.UpdateTime, Is.EqualTo(UpdateTime));
@@ -84,7 +85,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             File.WriteAllText(file, "# just markdown");
 
             FormatException ex = Assert.Throws<FormatException>(
-                () => new ChatMetadataReader().Read(file));
+                () => new ChatMetadataReader(new LocalFileSystem()).Read(file));
 
             Assert.That(ex.Message, Contains.Substring("YAML front matter"));
         }
@@ -106,7 +107,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 """);
 
             FormatException ex = Assert.Throws<FormatException>(
-                () => new ChatMetadataReader().Read(file));
+                () => new ChatMetadataReader(new LocalFileSystem()).Read(file));
 
             Assert.That(ex.Message, Contains.Substring("create_time"));
         }
@@ -128,7 +129,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 """);
 
             FormatException ex = Assert.Throws<FormatException>(
-                () => new ChatMetadataReader().Read(file));
+                () => new ChatMetadataReader(new LocalFileSystem()).Read(file));
 
             Assert.That(ex.Message, Contains.Substring("update_time"));
         }
@@ -255,7 +256,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.CreateTime, Is.EqualTo(new DateTimeOffset(2026, 8, 24, 15, 23, 56, 473, TimeSpan.Zero)));
             Assert.That(metadata.UpdateTime, Is.EqualTo(new DateTimeOffset(2026, 8, 25, 10, 0, 0, 0, TimeSpan.Zero)));
@@ -279,7 +280,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.CreateTime, Is.EqualTo(new DateTimeOffset(2026, 8, 24, 15, 23, 56, TimeSpan.Zero)));
         }
@@ -304,7 +305,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.CreateTime, Is.EqualTo(time1));
             Assert.That(metadata.UpdateTime, Is.EqualTo(time2));
@@ -335,7 +336,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.ConversationId, Is.EqualTo(guid));
         }
@@ -357,7 +358,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.ConversationId, Is.Null);
         }
@@ -380,7 +381,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.ConversationId, Is.Null);
         }
@@ -406,7 +407,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.ConversationId, Is.Null);
         }
@@ -432,7 +433,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.ConversationId, Is.EqualTo(guid));
         }
@@ -458,7 +459,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.ConversationId, Is.EqualTo(guid));
         }
@@ -487,7 +488,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.Title, Is.EqualTo(title));
         }
@@ -513,7 +514,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.Tags, Is.Not.Null);
             Assert.That(metadata.Tags.Count, Is.EqualTo(3));
@@ -542,7 +543,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.ChatLink, Is.EqualTo(chatLink));
         }
@@ -570,7 +571,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             // This should throw because YAML is empty/invalid
             FormatException ex = Assert.Throws<FormatException>(
-                () => new ChatMetadataReader().Read(file));
+                () => new ChatMetadataReader(new LocalFileSystem()).Read(file));
 
             Assert.That(ex.Message, Contains.Substring("YAML"));
         }
@@ -591,7 +592,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 ---
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.CreateTime, Is.EqualTo(CreateTime));
             Assert.That(metadata.UpdateTime, Is.EqualTo(UpdateTime));
@@ -617,7 +618,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.Title, Is.EqualTo(title));
         }
@@ -643,7 +644,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.Title, Contains.Substring("multiline"));
         }
@@ -667,7 +668,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             Assert.That(metadata.Title, Is.Not.Null);
             Assert.That(metadata.ChatLink, Is.Not.Null);
@@ -692,7 +693,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            ChatMetadata metadata = new ChatMetadataReader().Read(file);
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
             // Should correctly parse despite key naming conventions
             Assert.That(metadata.Title, Is.EqualTo("Test Title"));
@@ -714,7 +715,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             File.WriteAllText(file, "# No front matter");
 
             FormatException ex = Assert.Throws<FormatException>(
-                () => new ChatMetadataReader().Read(file));
+                () => new ChatMetadataReader(new LocalFileSystem()).Read(file));
 
             Assert.That(ex.Message, Contains.Substring("test_file.md"));
         }
@@ -737,7 +738,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 """);
 
             FormatException ex = Assert.Throws<FormatException>(
-                () => new ChatMetadataReader().Read(file));
+                () => new ChatMetadataReader(new LocalFileSystem()).Read(file));
 
             Assert.That(ex.Message, Contains.Substring("test_file.md"));
         }
@@ -745,6 +746,54 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         #endregion
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
