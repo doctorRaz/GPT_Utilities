@@ -1,12 +1,12 @@
 using dRz.GPT_Utilities.Archivist.Export;
 using System;
-using Xunit;
+using NUnit.Framework;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Export
 {
     public sealed class ChatMetadataTests
     {
-        [Fact]
+        [Test]
         public void ConversationId_ParsesGuidFromChatLink()
         {
             ChatMetadata metadata = new()
@@ -14,17 +14,17 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 ChatLink = "https://chatgpt.com/c/11111111-1111-1111-1111-111111111111/"
             };
 
-            Assert.Equal(
-                Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                metadata.ConversationId);
+            Assert.That(
+                metadata.ConversationId,
+                Is.EqualTo(Guid.Parse("11111111-1111-1111-1111-111111111111")));
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData("https://example.com/c/11111111-1111-1111-1111-111111111111")]
-        [InlineData("https://chatgpt.com/c/not-a-guid")]
+        [Test]
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        [TestCase("https://example.com/c/11111111-1111-1111-1111-111111111111")]
+        [TestCase("https://chatgpt.com/c/not-a-guid")]
         public void ConversationId_ReturnsNull_WhenChatLinkIsMissingOrInvalid(
             string? chatLink)
         {
@@ -33,7 +33,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 ChatLink = chatLink
             };
 
-            Assert.Null(metadata.ConversationId);
+            Assert.That(metadata.ConversationId, Is.Null);
         }
     }
 }

@@ -10,7 +10,7 @@ using System.IO.Compression;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Xunit;
+using NUnit.Framework;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Export
 {
@@ -35,7 +35,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
-        [Fact]
+        [Test]
         public void Process_ThrowsArgumentNullException_WhenSourceDirectoryIsNull()
         {
             // Код не валидирует параметры - мы просто проверяем, что выбросится какой-то exception
@@ -47,7 +47,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 () => _processor.Process(options));
         }
 
-        [Fact]
+        [Test]
         public void Process_ThrowsArgumentException_WhenSourceDirectoryEmptyString()
         {
             using TempDirectory dest = new();
@@ -60,7 +60,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 () => _processor.Process(options));
         }
 
-        [Fact]
+        [Test]
         public void Process_ThrowsDirectoryNotFoundException_WhenSourceDirectoryNotExists()
         {
             using TempDirectory dest = new();
@@ -74,7 +74,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 () => _processor.Process(options));
         }
 
-        [Fact]
+        [Test]
         public void Process_ThrowsFileNotFoundException_WhenNoZipFilesInSourceDirectory()
         {
             using TempDirectory source = new();
@@ -86,17 +86,17 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             FileNotFoundException ex = Assert.Throws<FileNotFoundException>(
                 () => _processor.Process(options));
 
-            Assert.Contains("ZIP", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.That(ex.Message, Does.Contain("ZIP").IgnoreCase);
         }
 
-        [Fact]
+        [Test]
         public void Process_CreatesDestinationDirectory_IfNotExists()
         {
             using TempDirectory source = new();
             using TempDirectory parent = new();
 
             string newDest = Path.Combine(parent.Path, "new_destination");
-            Assert.False(Directory.Exists(newDest));
+            Assert.That(Directory.Exists(newDest), Is.False);
 
             // Создаём пустой ZIP с одним файлом
             string zipPath = CreateTestZip(source.Path, new[]
@@ -109,10 +109,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             _ = _processor.Process(options);
 
-            Assert.True(Directory.Exists(newDest));
+            Assert.That(Directory.Exists(newDest), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Process_ProcessesLastArchiveOnly_WhenProcessAllArchivesIsFalse()
         {
             using TempDirectory source = new();
@@ -144,10 +144,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             // Файл из второго архива должен быть обработан
             string month2 = CreateTime2.ToString("MM-MMMM", CultureInfo.InvariantCulture);
             string file2Path = Path.Combine(dest.Path, year2, month2, "file2.md");
-            Assert.True(File.Exists(file2Path));
+            Assert.That(File.Exists(file2Path), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Process_ProcessesAllArchives_WhenProcessAllArchivesIsTrue()
         {
             using TempDirectory source = new();
@@ -172,11 +172,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string year1 = CreateTime1.Year.ToString();
             string year2 = CreateTime2.Year.ToString();
 
-            Assert.True(Directory.Exists(Path.Combine(dest.Path, year1)));
-            Assert.True(Directory.Exists(Path.Combine(dest.Path, year2)));
+            Assert.That(Directory.Exists(Path.Combine(dest.Path, year1)), Is.True);
+            Assert.That(Directory.Exists(Path.Combine(dest.Path, year2)), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Process_ContinuesWithNextArchive_WhenOneZipIsUnreadable()
         {
             using TempDirectory source = new();
@@ -206,12 +206,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 month,
                 "valid.md");
 
-            Assert.True(File.Exists(validFile));
-            Assert.Equal(0, result.Failed);
-            Assert.Equal(1, result.ArchiveFailed);
+            Assert.That(File.Exists(validFile), Is.True);
+            Assert.That(result.Failed, Is.EqualTo(0));
+            Assert.That(result.ArchiveFailed, Is.EqualTo(1));
         }
 
-        [Fact]
+        [Test]
         public void Process_ReportsUnreadableZipAsArchiveError()
         {
             using TempDirectory source = new();
@@ -242,12 +242,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             ExportResult result = processor.Process(
                 new ExportRequest(source.Path, dest.Path, "*.zip", true));
 
-            Assert.Equal(0, result.Failed);
-            Assert.Equal(1, result.ArchiveFailed);
-            string error = Assert.Single(logger.Errors);
-            Assert.Contains("ZIP-архива", error);
-            Assert.Contains("broken.zip", error);
-            Assert.DoesNotContain("обработке файла", error);
+            Assert.That(result.Failed, Is.EqualTo(0));
+            Assert.That(result.ArchiveFailed, Is.EqualTo(1));
+            string error = logger.Errors.Single();
+            Assert.That(error, Does.Contain("ZIP-архива"));
+            Assert.That(error, Does.Contain("broken.zip"));
+            Assert.That(error, Does.Not.Contain("обработке файла"));
         }
 
         private sealed class RecordingLogger : IArchivistLogger
@@ -278,7 +278,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
         
 
-        [Fact]
+        [Test]
         public void Process_CreatesYearMonthStructure()
         {
             using TempDirectory source = new();
@@ -299,10 +299,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
             string expectedPath = Path.Combine(dest.Path, year, month);
 
-            Assert.True(Directory.Exists(expectedPath));
+            Assert.That(Directory.Exists(expectedPath), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void Process_NormalizesFileName_ReplacingUnderscoresWithSpaces()
         {
             using TempDirectory source = new();
@@ -323,13 +323,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string monthDir = Path.Combine(dest.Path, year, month);
 
             string[] files = Directory.GetFiles(monthDir, "*.md");
-            _ = Assert.Single(files);
+            Assert.That(files, Has.Length.EqualTo(1));
 
             string fileName = Path.GetFileNameWithoutExtension(files[0]);
-            Assert.Contains(" ", fileName);
+            Assert.That(fileName, Does.Contain(" "));
         }
 
-        [Fact]
+        [Test]
         public void Process_TrimsWhitespace_FromFileNames()
         {
             using TempDirectory source = new();
@@ -350,13 +350,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string monthDir = Path.Combine(dest.Path, year, month);
 
             string[] files = Directory.GetFiles(monthDir, "*.md");
-            _ = Assert.Single(files);
+            Assert.That(files, Has.Length.EqualTo(1));
 
             string fileName = Path.GetFileNameWithoutExtension(files[0]);
-            Assert.Equal("test", fileName);
+            Assert.That(fileName, Is.EqualTo("test"));
         }
 
-        [Fact]
+        [Test]
         public void Process_RemovesExtraSpaces_FromFileNames()
         {
             using TempDirectory source = new();
@@ -377,13 +377,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string monthDir = Path.Combine(dest.Path, year, month);
 
             string[] files = Directory.GetFiles(monthDir, "*.md");
-            _ = Assert.Single(files);
+            Assert.That(files, Has.Length.EqualTo(1));
 
             string fileName = Path.GetFileNameWithoutExtension(files[0]);
-            Assert.Equal("my test file", fileName);
+            Assert.That(fileName, Is.EqualTo("my test file"));
         }
 
-        [Fact]
+        [Test]
         public void Process_ProcessesMultipleFiles_InSingleArchive()
         {
             using TempDirectory source = new();
@@ -406,10 +406,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string monthDir = Path.Combine(dest.Path, year, month);
 
             string[] files = Directory.GetFiles(monthDir, "*.md");
-            Assert.Equal(3, files.Length);
+            Assert.That(files.Length, Is.EqualTo(3));
         }
 
-        [Fact]
+        [Test]
         public void Process_ReturnsStatistics_WithCorrectCounts()
         {
             using TempDirectory source = new();
@@ -426,10 +426,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             ExportResult stats = _processor.Process(options);
 
-            Assert.Equal(2, stats.Added);
-            Assert.Equal(0, stats.Skipped);
-            Assert.Equal(0, stats.Updated);
-            Assert.Equal(2, stats.Total);
+            Assert.That(stats.Added, Is.EqualTo(2));
+            Assert.That(stats.Skipped, Is.EqualTo(0));
+            Assert.That(stats.Updated, Is.EqualTo(0));
+            Assert.That(stats.Total, Is.EqualTo(2));
         }
 
         [NUnit.Framework.TestCase("create_time")]
@@ -455,7 +455,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 global::NUnit.Framework.Does.Contain("Некорректный YAML или дата"));
         }
 
-        [Fact]
+        [Test]
         public void Process_FilesToDifferentMonths_WhenCreateTimeDiffers()
         {
             using TempDirectory source = new();
@@ -480,14 +480,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string month2 = CreateTime2.ToString("MM-MMMM", CultureInfo.InvariantCulture);
             string monthDir2 = Path.Combine(dest.Path, year, month2);
 
-            Assert.True(File.Exists(Path.Combine(monthDir1, "jan file.md")));
-            Assert.True(File.Exists(Path.Combine(monthDir2, "mar file.md")));
+            Assert.That(File.Exists(Path.Combine(monthDir1, "jan file.md")), Is.True);
+            Assert.That(File.Exists(Path.Combine(monthDir2, "mar file.md")), Is.True);
         }
 
 
 
-
-        [Fact]
+        [Test]
         public void Process_HandlesEmptyArchive()
         {
             using TempDirectory source = new();
@@ -501,10 +500,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             ExportResult stats = _processor.Process(options);
 
-            Assert.Equal(0, stats.Total);
+            Assert.That(stats.Total, Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void Process_IgnoresNonMarkdownFiles()
         {
             using TempDirectory source = new();
@@ -522,10 +521,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             ExportResult stats = _processor.Process(options);
 
             // Файл должен быть обработан
-            Assert.True(stats.Total > 0);
+            Assert.That(stats.Total, Is.GreaterThan(0));
         }
 
-        [Fact]
+        [Test]
         public void Process_HandlesRootLevelMarkdownFiles()
         {
             using TempDirectory source = new();
@@ -544,10 +543,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             ExportResult stats = _processor.Process(options);
 
             // Оба файла должны быть обработаны 
-            Assert.Equal(2, stats.Total);
+            Assert.That(stats.Total, Is.EqualTo(2));
         }
 
-        [Fact]
+        [Test]
         public void Process_HandlesUnicodeFileNames()
         {
             using TempDirectory source = new();
@@ -564,7 +563,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             ExportResult stats = _processor.Process(options);
 
-            Assert.Equal(2, stats.Total);
+            Assert.That(stats.Total, Is.EqualTo(2));
         }
 
 

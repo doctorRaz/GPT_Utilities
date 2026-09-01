@@ -1,13 +1,13 @@
 ﻿using dRz.GPT_Utilities.Archivist.CommandLine;
 using System;
-using Xunit;
+using NUnit.Framework;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
     public class ArgumentParserPatternTests
     {
         /// <summary>Проверяет сохранение расширения .zip без изменения регистра.</summary>
-        [Fact]
+        [Test]
         public void Parse_PreservesZipExtensionCase()
         {
             CommandLineOptions result1 = Archivist.CommandLine.CommandLineParser.Parse(new[]
@@ -23,12 +23,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
              "-p", "*.zip"
          });
 
-            Assert.Equal("*.ZIP", result1.ZipFilePattern);
-            Assert.Equal("*.zip", result2.ZipFilePattern);
+            Assert.That(result1.ZipFilePattern, Is.EqualTo("*.ZIP"));
+            Assert.That(result2.ZipFilePattern, Is.EqualTo("*.zip"));
         }
 
         /// <summary>Проверяет сохранение маски из одного символа-заполнителя.</summary>
-        [Fact]
+        [Test]
         public void Parse_PreservesAsteriskPattern()
         {
             string pattern = "*";
@@ -40,11 +40,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
              "-p", pattern
          });
 
-            Assert.Equal(pattern, result.ZipFilePattern);
+            Assert.That(result.ZipFilePattern, Is.EqualTo(pattern));
         }
 
         /// <summary>Проверяет сохранение маски без расширения.</summary>
-        [Fact]
+        [Test]
         public void Parse_PreservesPatternWithoutExtension()
         {
             string pattern = "chatgpt-export-markdown*";
@@ -56,13 +56,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
              "-p", pattern
          });
 
-            Assert.Equal(
-                pattern,
-                result.ZipFilePattern);
+            Assert.That(result.ZipFilePattern, Is.EqualTo(pattern));
         }
 
         /// <summary>Проверяет сохранение маски, уже содержащей расширение .zip.</summary>
-        [Fact]
+        [Test]
         public void Parse_PreservesExistingZipExtension()
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
@@ -72,13 +70,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
              "-p", "chatgpt-export-markdown*.zip"
          });
 
-            Assert.Equal(
-                "chatgpt-export-markdown*.zip",
-                result.ZipFilePattern);
+            Assert.That(result.ZipFilePattern, Is.EqualTo("chatgpt-export-markdown*.zip"));
         }
 
         /// <summary>Проверяет сохранение маски с другим расширением.</summary>
-        [Fact]
+        [Test]
         public void Parse_PreservesOtherExtension()
         {
             string pattern = "chatgpt-export-markdown*.txt";
@@ -89,16 +85,14 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
              "-p", pattern
          });
 
-            Assert.Equal(
-                pattern,
-                result.ZipFilePattern);
+            Assert.That(result.ZipFilePattern, Is.EqualTo(pattern));
         }
 
         /// <summary>Проверяет разбор маски ZIP-файлов через короткий параметр.</summary>
-        [Theory]
-        [InlineData("chatgpt-export-markdown*.zip", "chatgpt-export-markdown*.zip")]
-        [InlineData("chatgpt-export-markdown*", "chatgpt-export-markdown*")]
-        [InlineData("my-export*.txt", "my-export*.txt")]
+        [Test]
+        [TestCase("chatgpt-export-markdown*.zip", "chatgpt-export-markdown*.zip")]
+        [TestCase("chatgpt-export-markdown*", "chatgpt-export-markdown*")]
+        [TestCase("my-export*.txt", "my-export*.txt")]
         public void Parse_ParsesZipFilePattern_WithShortFlag(string pattern, string expected)
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
@@ -108,14 +102,14 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
              "-p", pattern
          });
 
-            Assert.Equal(expected, result.ZipFilePattern);
+            Assert.That(result.ZipFilePattern, Is.EqualTo(expected));
         }
 
         /// <summary>Проверяет разбор маски ZIP-файлов через длинный параметр.</summary>
-        [Theory]
-        [InlineData("chatgpt-export-markdown*.zip", "chatgpt-export-markdown*.zip")]
-        [InlineData("chatgpt-export-markdown*", "chatgpt-export-markdown*")]
-        [InlineData("my-export*.txt", "my-export*.txt")]
+        [Test]
+        [TestCase("chatgpt-export-markdown*.zip", "chatgpt-export-markdown*.zip")]
+        [TestCase("chatgpt-export-markdown*", "chatgpt-export-markdown*")]
+        [TestCase("my-export*.txt", "my-export*.txt")]
         public void Parse_ParsesZipFilePattern_WithLongFlag(string pattern, string expected)
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
@@ -125,16 +119,16 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
                     "--pattern", pattern
                 });
 
-            Assert.Equal(expected, result.ZipFilePattern);
+            Assert.That(result.ZipFilePattern, Is.EqualTo(expected));
         }
 
         /// <summary>Проверяет ошибку при отсутствии значения параметра маски ZIP-файлов.</summary>
 
-        [Theory]
-        [InlineData("-p")]
-        [InlineData("--pattern")]
-        [InlineData("-P")]
-        [InlineData("--PATTERN")]
+        [Test]
+        [TestCase("-p")]
+        [TestCase("--pattern")]
+        [TestCase("-P")]
+        [TestCase("--PATTERN")]
         public void Parse_ThrowsArgumentException_ZipFilePattern_Null(string option)
         {
             ArgumentException ex = Assert.Throws<ArgumentException>(
@@ -145,11 +139,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
                  option
              }));
 
-            Assert.Contains($"Для параметра {option} не указано значение.", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.That(ex.Message, Does.Contain($"Для параметра {option} не указано значение.").IgnoreCase);
         }
 
         /// <summary>Проверяет регистронезависимый разбор параметра маски ZIP-файлов.</summary>
-        [Fact]
+        [Test]
         public void Parse_IsCaseInsensitive_ForZipFilePatternFlag()
         {
             CommandLineOptions result1 = Archivist.CommandLine.CommandLineParser.Parse(new[]
@@ -166,12 +160,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
                     "--PATTERN", "*.ZIP"
                 });
 
-            Assert.Equal("*.ZIP", result1.ZipFilePattern);
-            Assert.Equal("*.ZIP", result2.ZipFilePattern);
+            Assert.That(result1.ZipFilePattern, Is.EqualTo("*.ZIP"));
+            Assert.That(result2.ZipFilePattern, Is.EqualTo("*.ZIP"));
         }
 
         /// <summary>Проверяет поддержку символов подстановки в маске ZIP-файлов.</summary>
-        [Fact]
+        [Test]
         public void Parse_AcceptsWildcardCharacters_InZipFilePattern()
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[]
@@ -179,7 +173,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
                   "-s", @"c:\temp",  "-p", "test*?.zip","-d", @"c:\dest"
                 });
 
-            Assert.Equal("test*?.zip", result.ZipFilePattern);
+            Assert.That(result.ZipFilePattern, Is.EqualTo("test*?.zip"));
         }
     }
 }

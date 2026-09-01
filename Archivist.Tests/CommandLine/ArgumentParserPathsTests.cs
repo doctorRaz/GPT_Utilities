@@ -1,5 +1,5 @@
 ﻿using dRz.GPT_Utilities.Archivist.CommandLine;
-using Xunit;
+using NUnit.Framework;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
@@ -9,37 +9,37 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
     public sealed class ArgumentParserPathsTests
     {
         /// <summary>Проверяет возможность указать один каталог источником и назначением.</summary>
-        [Fact]
+        [Test]
         public void Parse_SourceAndDestCanBeSame()
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\shared", "-d", "C:\\shared" });
 
-            Assert.Equal("C:\\shared", result.SourceDirectory);
-            Assert.Equal("C:\\shared", result.DestinationDirectory);
+            Assert.That(result.SourceDirectory, Is.EqualTo("C:\\shared"));
+            Assert.That(result.DestinationDirectory, Is.EqualTo("C:\\shared"));
         }
 
         /// <summary>Проверяет обработку относительных путей.</summary>
-        [Fact]
+        [Test]
         public void Parse_HandlesRelativePaths()
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "..\\archives", "-d", ".\\output" });
 
-            Assert.Equal("..\\archives", result.SourceDirectory);
-            Assert.Equal(".\\output", result.DestinationDirectory);
+            Assert.That(result.SourceDirectory, Is.EqualTo("..\\archives"));
+            Assert.That(result.DestinationDirectory, Is.EqualTo(".\\output"));
         }
 
         /// <summary>Проверяет обработку UNC-путей.</summary>
-        [Fact]
+        [Test]
         public void Parse_HandlesUNCPaths()
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "\\\\server\\share\\archives", "-d", "\\\\server\\share\\output" });
 
-            Assert.Equal("\\\\server\\share\\archives", result.SourceDirectory);
-            Assert.Equal("\\\\server\\share\\output", result.DestinationDirectory);
+            Assert.That(result.SourceDirectory, Is.EqualTo("\\\\server\\share\\archives"));
+            Assert.That(result.DestinationDirectory, Is.EqualTo("\\\\server\\share\\output"));
         }
 
         /// <summary>Проверяет обработку сложных путей с пробелами и несколькими каталогами.</summary>
-        [Fact]
+        [Test]
         public void Parse_ParsesComplexPaths()
         {
             string source = "D:\\Users\\MyUser\\Documents\\GPT Export";
@@ -47,12 +47,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", source, "-d", dest });
 
-            Assert.Equal(source, result.SourceDirectory);
-            Assert.Equal(dest, result.DestinationDirectory);
+            Assert.That(result.SourceDirectory, Is.EqualTo(source));
+            Assert.That(result.DestinationDirectory, Is.EqualTo(dest));
         }
 
         /// <summary>Проверяет сохранение путей, переданных в кавычках.</summary>
-        [Fact]
+        [Test]
         public void Parse_ParsesQuotedPaths()
         {
             string source = "\"C:\\Program Files\\GPT Export\"";
@@ -60,18 +60,18 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", source, "-d", dest });
 
-            Assert.Equal(source, result.SourceDirectory);
-            Assert.Equal(dest, result.DestinationDirectory);
+            Assert.That(result.SourceDirectory, Is.EqualTo(source));
+            Assert.That(result.DestinationDirectory, Is.EqualTo(dest));
         }
 
         /// <summary>Проверяет обработку путей с завершающим обратным слешем.</summary>
-        [Fact]
+        [Test]
         public void Parse_HandlesPathsWithBackslashAtEnd()
         {
             CommandLineOptions result = Archivist.CommandLine.CommandLineParser.Parse(new[] { "-s", "C:\\source\\", "-d", "C:\\dest\\" });
 
-            Assert.Equal("C:\\source\\", result.SourceDirectory);
-            Assert.Equal("C:\\dest\\", result.DestinationDirectory);
+            Assert.That(result.SourceDirectory, Is.EqualTo("C:\\source\\"));
+            Assert.That(result.DestinationDirectory, Is.EqualTo("C:\\dest\\"));
         }
     }
 }

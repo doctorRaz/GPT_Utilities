@@ -1,35 +1,34 @@
 using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System.IO;
-using Xunit;
+using NUnit.Framework;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Files
 {
     public sealed class FileNamerTests
     {
-        [Theory]
-        [InlineData("Моя_тема", "Моя тема")]
-        [InlineData("Проверка___Staged__Diff", "Проверка Staged Diff")]
-        [InlineData("  Тема  ", "Тема")]
-        [InlineData("Тема\tс\tтабами", "Тема с табами")]
-        [InlineData("Один пробел", "Один пробел")]
+        [TestCase("Моя_тема", "Моя тема")]
+        [TestCase("Проверка___Staged__Diff", "Проверка Staged Diff")]
+        [TestCase("  Тема  ", "Тема")]
+        [TestCase("Тема\tс\tтабами", "Тема с табами")]
+        [TestCase("Один пробел", "Один пробел")]
         public void Normalize_CollapsesUnderscoresAndWhitespace(
             string input,
             string expected)
         {
-            Assert.Equal(expected, FileNameHelper.Normalize(input));
+            Assert.That(FileNameHelper.Normalize(input), Is.EqualTo(expected));
         }
 
-        [Fact]
+        [Test]
         public void GetUnique_ReturnsOriginalPath_WhenFileDoesNotExist()
         {
             using TempDirectory temp = new();
             string path = temp.Combine("Test.md");
 
-            Assert.Equal(path, FileNameHelper.GetUnique(path));
+            Assert.That(FileNameHelper.GetUnique(path), Is.EqualTo(path));
         }
 
-        [Fact]
+        [Test]
         public void GetUnique_AppendsNumber_WhenFileExists()
         {
             using TempDirectory temp = new();
@@ -38,10 +37,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             string unique = FileNameHelper.GetUnique(path);
 
-            Assert.Equal(temp.Combine("Test (1).md"), unique);
+            Assert.That(unique, Is.EqualTo(temp.Combine("Test (1).md")));
         }
 
-        [Fact]
+        [Test]
         public void GetUnique_SkipsOccupiedSuffixes()
         {
             using TempDirectory temp = new();
@@ -51,10 +50,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             string unique = FileNameHelper.GetUnique(temp.Combine("Test.md"));
 
-            Assert.Equal(temp.Combine("Test (3).md"), unique);
+            Assert.That(unique, Is.EqualTo(temp.Combine("Test (3).md")));
         }
 
-        [Fact]
+        [Test]
         public void GetUnique_Throws_WhenAllSuffixesAreTaken()
         {
             using TempDirectory temp = new();
@@ -68,7 +67,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             IOException ex = Assert.Throws<IOException>(
                 () => FileNameHelper.GetUnique(temp.Combine("Test.md")));
 
-            Assert.Contains("(100)", ex.Message);
+            Assert.That(ex.Message, Contains.Substring("(100)"));
         }
     }
 }

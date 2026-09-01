@@ -5,7 +5,7 @@ using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Xunit;
+using NUnit.Framework;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Files
 {
@@ -21,7 +21,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             "https://chatgpt.com/c/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 
         /// <summary>Copies if newer adds file when destination does not exist.</summary>
-        [Fact]
+        [Test]
         public void CopyIfNewer_AddsFile_WhenDestinationDoesNotExist()
         {
             using TempDirectory temp = new();
@@ -37,13 +37,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileCopyDecision decision = Synchronize(source, destination, metadata);
 
-            Assert.Equal(FileCopyDecision.Add, decision);
-            Assert.True(File.Exists(destination));
-            Assert.Equal(File.ReadAllText(source), File.ReadAllText(destination));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.Add));
+            Assert.That(File.Exists(destination), Is.True);
+            Assert.That(File.ReadAllText(destination), Is.EqualTo(File.ReadAllText(source)));
         }
 
         /// <summary>Copies if newer replaces file when source is newer.</summary>
-        [Fact]
+        [Test]
         public void CopyIfNewer_ReplacesFile_WhenSourceIsNewer()
         {
             using TempDirectory temp = new();
@@ -64,13 +64,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileCopyDecision decision = Synchronize(source, destination, metadata);
 
-            Assert.Equal(FileCopyDecision.Replace, decision);
-            Assert.Contains("new", File.ReadAllText(destination));
-            Assert.DoesNotContain(" (1)", destination);
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.Replace));
+            Assert.That(File.ReadAllText(destination), Does.Contain("new"));
+            Assert.That(destination, Does.Not.Contain(" (1)"));
         }
 
         /// <summary>Copies if newer skips file when source is older or equal.</summary>
-        [Fact]
+        [Test]
         public void CopyIfNewer_SkipsFile_WhenSourceIsOlderOrEqual()
         {
             using TempDirectory temp = new();
@@ -91,12 +91,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileCopyDecision decision = Synchronize(source, destination, metadata);
 
-            Assert.Equal(FileCopyDecision.Skip, decision);
-            Assert.Contains("kept", File.ReadAllText(destination));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.Skip));
+            Assert.That(File.ReadAllText(destination), Does.Contain("kept"));
         }
 
         /// <summary>Copies if newer adds unique file when conversation ids differ.</summary>
-        [Fact]
+        [Test]
         public void CopyIfNewer_AddsUniqueFile_WhenConversationIdsDiffer()
         {
             using TempDirectory temp = new();
@@ -119,13 +119,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             string unique = temp.Combine("dst", "Chat (1).md");
 
-            Assert.Equal(FileCopyDecision.AddUnique, decision);
-            Assert.Contains("first", File.ReadAllText(destination));
-            Assert.True(File.Exists(unique));
-            Assert.Contains("second", File.ReadAllText(unique));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.AddUnique));
+            Assert.That(File.ReadAllText(destination), Does.Contain("first"));
+            Assert.That(File.Exists(unique), Is.True);
+            Assert.That(File.ReadAllText(unique), Does.Contain("second"));
         }
 
-        [Fact]
+        [Test]
         public void CopyIfNewer_ReplacesMatchingUniqueFile_InsteadOfAddingDuplicate()
         {
             using TempDirectory temp = new();
@@ -152,12 +152,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileCopyDecision decision = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
-            Assert.Equal(FileCopyDecision.Replace, decision);
-            Assert.Contains("new second", File.ReadAllText(matchingDestination));
-            Assert.False(File.Exists(temp.Combine("dst", "Chat (2).md")));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.Replace));
+            Assert.That(File.ReadAllText(matchingDestination), Does.Contain("new second"));
+            Assert.That(temp.Combine("dst", "Chat (2).md"), Does.Not.Exist);
         }
 
-        [Fact]
+        [Test]
         public void CopyIfNewer_SkipsNewestMatchingUniqueFile_WhenSeveralExist()
         {
             using TempDirectory temp = new();
@@ -190,12 +190,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileCopyDecision decision = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
-            Assert.Equal(FileCopyDecision.Skip, decision);
-            Assert.Contains("stale second", File.ReadAllText(staleMatch));
-            Assert.Contains("newest second", File.ReadAllText(newestMatch));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.Skip));
+            Assert.That(File.ReadAllText(staleMatch), Does.Contain("stale second"));
+            Assert.That(File.ReadAllText(newestMatch), Does.Contain("newest second"));
         }
 
-        [Fact]
+        [Test]
         public void CopyIfNewer_SkipsMatchingUniqueFile_WhenItIsNewer()
         {
             using TempDirectory temp = new();
@@ -222,13 +222,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileCopyDecision decision = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
-            Assert.Equal(FileCopyDecision.Skip, decision);
-            Assert.Contains("new second", File.ReadAllText(matchingDestination));
-            Assert.False(File.Exists(temp.Combine("dst", "Chat (2).md")));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.Skip));
+            Assert.That(File.ReadAllText(matchingDestination), Does.Contain("new second"));
+            Assert.That(temp.Combine("dst", "Chat (2).md"), Does.Not.Exist);
         }
 
         /// <summary>Copies if newer adds unique file when both conversation ids are missing.</summary>
-        [Fact]
+        [Test]
         public void CopyIfNewer_AddsUniqueFile_WhenBothConversationIdsAreMissing()
         {
             using TempDirectory temp = new();
@@ -251,14 +251,14 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             string unique = temp.Combine("dst", "Chat (1).md");
 
-            Assert.Equal(FileCopyDecision.AddUnique, decision);
-            Assert.Contains("old", File.ReadAllText(destination));
-            Assert.True(File.Exists(unique));
-            Assert.Contains("new", File.ReadAllText(unique));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.AddUnique));
+            Assert.That(File.ReadAllText(destination), Does.Contain("old"));
+            Assert.That(File.Exists(unique), Is.True);
+            Assert.That(File.ReadAllText(unique), Does.Contain("new"));
         }
 
         /// <summary>Copies if newer adds unique file when one conversation identifier is missing.</summary>
-        [Fact]
+        [Test]
         public void CopyIfNewer_AddsUniqueFile_WhenOneConversationIdIsMissing()
         {
             using TempDirectory temp = new();
@@ -279,12 +279,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileCopyDecision decision = Synchronize(source, destination, metadata);
 
-            Assert.Equal(FileCopyDecision.AddUnique, decision);
-            Assert.Contains("kept", File.ReadAllText(destination));
-            Assert.True(File.Exists(temp.Combine("dst", "Chat (1).md")));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.AddUnique));
+            Assert.That(File.ReadAllText(destination), Does.Contain("kept"));
+            Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
         }
 
-        [Fact]
+        [Test]
         public void CopyIfNewer_AddsUniqueFile_WhenDestinationMetadataIsUnreadable()
         {
             using TempDirectory temp = new();
@@ -301,12 +301,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileCopyDecision decision = Synchronize(source, destination, metadata);
 
-            Assert.Equal(FileCopyDecision.AddUnique, decision);
-            Assert.Equal("not a chatgpt export", File.ReadAllText(destination));
-            Assert.True(File.Exists(temp.Combine("dst", "Chat (1).md")));
+            Assert.That(decision, Is.EqualTo(FileCopyDecision.AddUnique));
+            Assert.That(File.ReadAllText(destination), Is.EqualTo("not a chatgpt export"));
+            Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
         }
 
-        [Fact]
+        [Test]
         public void CopyIfNewer_SetsLastWriteTimeFromUpdateTime()
         {
             using TempDirectory temp = new();
@@ -326,10 +326,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             DateTime expected = updateTime.LocalDateTime;
             DateTime actual = File.GetLastWriteTime(destination);
 
-            Assert.Equal(expected, actual, TimeSpan.FromSeconds(2));
+            Assert.That(actual, Is.EqualTo(expected).Within(TimeSpan.FromSeconds(2)));
         }
 
-        [NUnit.Framework.Test]
+        [Test]
         public void Synchronize_WritesOperationToLogger()
         {
             using TempDirectory temp = new();
