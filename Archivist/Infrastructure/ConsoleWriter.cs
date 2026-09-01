@@ -17,7 +17,7 @@
         {
             Info("");
             Info("Press any key...");
-            Console.ReadKey();
+            _ = Console.ReadKey();
         }
 
         public static void Trace(string message) => WriteLine(message, ConsoleColor.DarkGray);

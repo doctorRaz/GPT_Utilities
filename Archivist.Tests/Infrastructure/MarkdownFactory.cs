@@ -14,25 +14,25 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Infrastructure
             string? chatLink = "https://chatgpt.com/c/11111111-1111-1111-1111-111111111111",
             string body = "body")
         {
-            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(filePath)!);
+            _ = Directory.CreateDirectory(System.IO.Path.GetDirectoryName(filePath)!);
 
             StringBuilder yaml = new();
-            yaml.AppendLine("---");
-            yaml.AppendLine($"create_time: {Format(createTime)}");
+            _ = yaml.AppendLine("---");
+            _ = yaml.AppendLine($"create_time: {Format(createTime)}");
 
             if (updateTime.HasValue)
             {
-                yaml.AppendLine($"update_time: {Format(updateTime.Value)}");
+                _ = yaml.AppendLine($"update_time: {Format(updateTime.Value)}");
             }
 
             if (chatLink is not null)
             {
-                yaml.AppendLine($"chat_link: {chatLink}");
+                _ = yaml.AppendLine($"chat_link: {chatLink}");
             }
 
-            yaml.AppendLine("---");
-            yaml.AppendLine();
-            yaml.AppendLine(body);
+            _ = yaml.AppendLine("---");
+            _ = yaml.AppendLine();
+            _ = yaml.AppendLine(body);
 
             File.WriteAllText(filePath, yaml.ToString());
 

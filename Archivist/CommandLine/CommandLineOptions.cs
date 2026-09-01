@@ -17,6 +17,13 @@
         public string DestinationDirectory { get; init; } = string.Empty;
 
         /// <summary>
+        /// Маска файлов ZIP-архивов, которые следует обрабатывать.
+        ///
+        /// Например: chatgpt-export-markdown*.zip
+        /// </summary>
+        public string ZipFilePattern { get; init; } = string.Empty;
+
+        /// <summary>
         /// Признак обработки всех найденных архивов.
         ///
         /// false — обрабатывается только последний архив.
