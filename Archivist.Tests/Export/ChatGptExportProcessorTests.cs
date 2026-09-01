@@ -207,7 +207,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 "valid.md");
 
             Assert.True(File.Exists(validFile));
-            Assert.Equal(1, result.Failed);
+            Assert.Equal(0, result.Failed);
+            Assert.Equal(1, result.ArchiveFailed);
         }
 
         [Fact]
@@ -236,7 +237,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             ExportResult result = processor.Process(
                 new ExportRequest(source.Path, dest.Path, "*.zip", true));
 
-            Assert.Equal(1, result.Failed);
+            Assert.Equal(0, result.Failed);
+            Assert.Equal(1, result.ArchiveFailed);
             string error = Assert.Single(logger.Errors);
             Assert.Contains("ZIP-архива", error);
             Assert.Contains("broken.zip", error);

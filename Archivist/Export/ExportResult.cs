@@ -9,7 +9,8 @@ internal sealed record ExportResult(
     int Added,
     int AddedUnique,
     int Updated,
-    int Failed)
+    int Failed,
+    int ArchiveFailed)
 {
     /// <summary>
     /// Общее количество успешно добавленных или обновлённых файлов.

@@ -86,6 +86,9 @@ namespace dRz.GPT_Utilities.Archivist
             ConsoleWriter.Error(
                 $"\tОшибок {statistics.Failed.Of(RussianWords.Files)}");
 
+            ConsoleWriter.Error(
+                $"\tОшибок архивов {statistics.ArchiveFailed.Of(RussianWords.Archives)}");
+
             int addedOrUpdated =
                 statistics.Added +
                 statistics.AddedUnique +

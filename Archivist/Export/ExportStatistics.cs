@@ -24,6 +24,11 @@ internal sealed class ExportStatistics
     public int Failed { get; private set; }
 
     /// <summary>
+    /// Количество архивов, которые не удалось прочитать или распаковать.
+    /// </summary>
+    public int ArchiveFailed { get; private set; }
+
+    /// <summary>
     /// Добавляет результат обработки одного Markdown-файла.
     /// </summary>
     public void Add(FileCopyDecision decision)
@@ -88,7 +93,7 @@ internal sealed class ExportStatistics
     /// </summary>
     public void AddArchiveFailure()
     {
-        Failed++;
+        ArchiveFailed++;
     }
 
     /// <summary>
@@ -102,8 +107,9 @@ internal sealed class ExportStatistics
         AddedUnique += statistics.AddedUnique;
         Updated += statistics.Updated;
         Failed += statistics.Failed;
+        ArchiveFailed += statistics.ArchiveFailed;
     }
 
     public ExportResult ToResult() =>
-        new(Total, Skipped, Added, AddedUnique, Updated, Failed);
+        new(Total, Skipped, Added, AddedUnique, Updated, Failed, ArchiveFailed);
 }
