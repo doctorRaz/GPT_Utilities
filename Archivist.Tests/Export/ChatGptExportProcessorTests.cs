@@ -262,6 +262,14 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             {
             }
 
+            public void Success(string message)
+            {
+            }
+
+            public void Update(string message)
+            {
+            }
+
             public void Error(string message, Exception? exception = null)
             {
                 Errors.Add(message);

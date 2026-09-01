@@ -59,10 +59,12 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
             if (matchingPath is null)
             {
-                return CopyToUniqueName(
+                FileOperationResult uniqueResult = CopyToUniqueName(
                     sourceFilePath,
                     destinationFilePath,
                     sourceMetadata);
+                WriteOperationResult(uniqueResult);
+                return uniqueResult;
             }
 
             else
@@ -78,10 +80,12 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             {
                 // Файл появился после проверки. Не перезаписываем его,
                 // а продолжаем обработку как конфликт имён.
-                return CopyToUniqueName(
+                FileOperationResult uniqueResult = CopyToUniqueName(
                     sourceFilePath,
                     destinationFilePath,
                     sourceMetadata);
+                WriteOperationResult(uniqueResult);
+                return uniqueResult;
             }
 
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
@@ -92,13 +96,16 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
         }
 
-        return new FileOperationResult(
+        FileOperationResult result = new(
             ToStatus(decision),
             sourceFilePath,
             destinationFilePath,
             decision == FileCopyDecision.Skip
                 ? "Файл не требует обновления."
                 : null);
+
+        WriteOperationResult(result);
+        return result;
     }
 
     private FileOperationResult CopyToUniqueName(
@@ -129,6 +136,37 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 sourceFilePath,
                 candidate,
                 null);
+        }
+    }
+
+    private void WriteOperationResult(FileOperationResult result)
+    {
+        string sourceFileName = Path.GetFileName(result.SourcePath);
+        string description =
+            $"{sourceFileName}\n\t\tto->{result.DestinationPath}";
+
+        switch (result.Status)
+        {
+            case FileOperationStatus.Skipped:
+                _logger.Trace($"\tПропущен: {description}");
+                break;
+            case FileOperationStatus.Added:
+                _logger.Success($"\tДобавлен: {description}");
+                break;
+            case FileOperationStatus.AddedUnique:
+                _logger.Warning($"\tДобавлен уникальный: {description}");
+                break;
+            case FileOperationStatus.Updated:
+                _logger.Update($"\tОбновлён: {description}");
+                break;
+            case FileOperationStatus.Failed:
+                _logger.Error($"\tОшибка: {description}", result.Error);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(result.Status),
+                    result.Status,
+                    null);
         }
     }
 

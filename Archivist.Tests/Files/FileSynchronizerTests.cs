@@ -3,6 +3,7 @@ using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Xunit;
 
@@ -326,6 +327,55 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             DateTime actual = File.GetLastWriteTime(destination);
 
             Assert.Equal(expected, actual, TimeSpan.FromSeconds(2));
+        }
+
+        [NUnit.Framework.Test]
+        public void Synchronize_WritesOperationToLogger()
+        {
+            using TempDirectory temp = new();
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(1),
+                ConversationA);
+            string destination = temp.Combine("dst", "Chat.md");
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+
+            RecordingLogger logger = new();
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
+            IFileSynchronizer synchronizer = new FileSynchronizerService(
+                new ChatMetadataReader(),
+                logger,
+                new UniqueFileNameProvider(new LocalFileSystem()),
+                new LocalFileSystem());
+
+            FileOperationResult result = synchronizer.Synchronize(
+                source,
+                destination,
+                metadata);
+
+            global::NUnit.Framework.Assert.That(
+                result.Status,
+                global::NUnit.Framework.Is.EqualTo(FileOperationStatus.Added));
+            global::NUnit.Framework.Assert.That(
+                logger.Messages,
+                global::NUnit.Framework.Has.Some.Contains("Добавлен"));
+        }
+
+        private sealed class RecordingLogger : IArchivistLogger
+        {
+            public List<string> Messages { get; } = new();
+
+            public void Trace(string message) => Messages.Add(message);
+
+            public void Warning(string message) => Messages.Add(message);
+
+            public void Success(string message) => Messages.Add(message);
+
+            public void Update(string message) => Messages.Add(message);
+
+            public void Error(string message, Exception? exception = null) =>
+                Messages.Add(message);
         }
 
         /// <summary>
