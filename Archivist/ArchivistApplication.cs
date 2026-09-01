@@ -45,7 +45,7 @@ namespace dRz.GPT_Utilities.Archivist
 
             PrintStatistics(statistics);
 
-            //ConsoleWriter.PressAnyKey();
+            ConsoleWriter.PressAnyKey();//todo только при debug
 
             return SuccessExitCode;
         }
@@ -103,7 +103,7 @@ namespace dRz.GPT_Utilities.Archivist
         private static void ShowHelp()
         {
             CommandLineHelp.Print();
-            //ConsoleWriter.PressAnyKey();
+            ConsoleWriter.PressAnyKey();//todo только при debug
         }
 
         private const int ErrorExitCode = 1;
