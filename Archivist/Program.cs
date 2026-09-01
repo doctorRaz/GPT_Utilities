@@ -29,8 +29,8 @@ namespace dRz.GPT_Utilities.Archivist
                 // собираются конкретные инфраструктурные реализации.
                 IArchivistLogger logger = new ConsoleArchivistLogger();
                 IExportPathBuilder pathBuilder = new ExportPathBuilder();
-                IChatMetadataReader metadataReader = new ChatMetadataReaderAdapter();
-                IFileSynchronizer fileSynchronizer = new FileSynchronizerAdapter();
+                IChatMetadataReader metadataReader = new ChatMetadataReaderService();
+                IFileSynchronizer fileSynchronizer = new FileSynchronizerService();
                 IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
                     pathBuilder,
                     metadataReader,
@@ -53,7 +53,7 @@ namespace dRz.GPT_Utilities.Archivist
             {
                 ConsoleWriter.Fatal(ex, $"Ошибка: ");
 
-                ConsoleWriter.PressAnyKey();
+                //ConsoleWriter.PressAnyKey();
 
                 return 1;
             }

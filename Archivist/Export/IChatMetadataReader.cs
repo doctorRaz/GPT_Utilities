@@ -9,9 +9,9 @@ internal interface IChatMetadataReader
 }
 
 /// <summary>
-/// Адаптер над текущим YAML-читалем метаданных.
+/// Сервис чтения YAML-метаданных.
 /// </summary>
-internal sealed class ChatMetadataReaderAdapter : IChatMetadataReader
+internal sealed class ChatMetadataReaderService : IChatMetadataReader
 {
     public ChatMetadata Read(string filePath) => ChatMetadataReader.Read(filePath);
 }

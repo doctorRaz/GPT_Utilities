@@ -14,13 +14,12 @@ internal interface IFileSynchronizer
 }
 
 /// <summary>
-/// Адаптер над текущей реализацией синхронизации файлов.
+/// Сервис синхронизации, использующий текущую файловую политику.
 /// </summary>
 /// <remarks>
-/// Адаптер позволяет постепенно перевести существующий статический код
-/// на внедрение зависимостей без изменения его проверенной логики.
+/// Сервис изолирует процессор от статической точки входа файловой политики.
 /// </remarks>
-internal sealed class FileSynchronizerAdapter : IFileSynchronizer
+internal sealed class FileSynchronizerService : IFileSynchronizer
 {
     public FileCopyDecision Synchronize(
         string sourceFilePath,
