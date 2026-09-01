@@ -7,6 +7,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 {
     public sealed class FileNamerTests
     {
+        private readonly IFileNameNormalizer _normalizer = new FileNameNormalizer();
+
+        private static IUniqueFileNameProvider CreateProvider() =>
+            new UniqueFileNameProvider(new LocalFileSystem());
+
         [TestCase("Моя_тема", "Моя тема")]
         [TestCase("Проверка___Staged__Diff", "Проверка Staged Diff")]
         [TestCase("  Тема  ", "Тема")]
@@ -16,7 +21,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             string input,
             string expected)
         {
-            Assert.That(FileNameHelper.Normalize(input), Is.EqualTo(expected));
+            Assert.That(_normalizer.Normalize(input), Is.EqualTo(expected));
         }
 
         [Test]
@@ -25,7 +30,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             using TempDirectory temp = new();
             string path = temp.Combine("Test.md");
 
-            Assert.That(FileNameHelper.GetUnique(path), Is.EqualTo(path));
+            Assert.That(CreateProvider().GetUnique(path), Is.EqualTo(path));
         }
 
         [Test]
@@ -35,7 +40,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             string path = temp.Combine("Test.md");
             File.WriteAllText(path, "exists");
 
-            string unique = FileNameHelper.GetUnique(path);
+            string unique = CreateProvider().GetUnique(path);
 
             Assert.That(unique, Is.EqualTo(temp.Combine("Test (1).md")));
         }
@@ -48,7 +53,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             File.WriteAllText(temp.Combine("Test (1).md"), "1");
             File.WriteAllText(temp.Combine("Test (2).md"), "2");
 
-            string unique = FileNameHelper.GetUnique(temp.Combine("Test.md"));
+            string unique = CreateProvider().GetUnique(temp.Combine("Test.md"));
 
             Assert.That(unique, Is.EqualTo(temp.Combine("Test (3).md")));
         }
@@ -65,7 +70,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             }
 
             IOException ex = Assert.Throws<IOException>(
-                () => FileNameHelper.GetUnique(temp.Combine("Test.md")));
+                () => CreateProvider().GetUnique(temp.Combine("Test.md")));
 
             Assert.That(ex.Message, Contains.Substring("(100)"));
         }
