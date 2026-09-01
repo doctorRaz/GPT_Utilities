@@ -320,7 +320,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
-            Archivist.Export.ChatGptExportProcessor.CopyStatistics stats = _processor.Process(options);
+            ExportResult stats = _processor.Process(options);
 
             Assert.Equal(2, stats.Added);
             Assert.Equal(0, stats.Skipped);
@@ -372,7 +372,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
-            Archivist.Export.ChatGptExportProcessor.CopyStatistics stats = _processor.Process(options);
+            ExportResult stats = _processor.Process(options);
 
             Assert.Equal(0, stats.Total);
         }
@@ -392,7 +392,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
-            Archivist.Export.ChatGptExportProcessor.CopyStatistics stats = _processor.Process(options);
+            ExportResult stats = _processor.Process(options);
 
             // Файл должен быть обработан
             Assert.True(stats.Total > 0);
@@ -414,7 +414,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
-            Archivist.Export.ChatGptExportProcessor.CopyStatistics stats = _processor.Process(options);
+            ExportResult stats = _processor.Process(options);
 
             // Оба файла должны быть обработаны 
             Assert.Equal(2, stats.Total);
@@ -435,7 +435,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
-            Archivist.Export.ChatGptExportProcessor.CopyStatistics stats = _processor.Process(options);
+            ExportResult stats = _processor.Process(options);
 
             Assert.Equal(2, stats.Total);
         }

@@ -14,8 +14,8 @@ namespace dRz.GPT_Utilities.Archivist
         /// <param name="validator">The validator.</param>
         /// <param name="processor">The processor.</param>
         public ArchivistApplication(
-            CommandLineOptionsValidator validator,
-            IChatGptExportProcessor processor)
+                                CommandLineOptionsValidator validator,
+                                IChatGptExportProcessor processor)
         {
             _validator = validator;
             _processor = processor;
@@ -35,8 +35,13 @@ namespace dRz.GPT_Utilities.Archivist
             options = _validator.Validate(options);
 
             ValidateDirectories(options);
+            ExportRequest request = new(
+                options.SourceDirectory,
+                options.DestinationDirectory,
+                options.ZipFilePattern,
+                options.ExtractAll);
 
-            ChatGptExportProcessor.CopyStatistics statistics = _processor.Process(options);
+            ExportResult statistics = _processor.Process(request);
 
             PrintStatistics(statistics);
 
@@ -57,7 +62,7 @@ namespace dRz.GPT_Utilities.Archivist
             _ = Directory.CreateDirectory(options.DestinationDirectory);
         }
 
-        private static void PrintStatistics(ChatGptExportProcessor.CopyStatistics statistics)
+        private static void PrintStatistics(ExportResult statistics)
         {
             ConsoleWriter.Success("================ TOTAL STATISTICS =====================");
 
@@ -77,6 +82,9 @@ namespace dRz.GPT_Utilities.Archivist
 
             ConsoleWriter.Trace(
                 $"\tПропущено {statistics.Skipped.Of(RussianWords.Files)}");
+
+            ConsoleWriter.Error(
+                $"\tОшибок {statistics.Failed.Of(RussianWords.Files)}");
 
             int addedOrUpdated =
                 statistics.Added +

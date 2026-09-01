@@ -58,7 +58,21 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// <returns>
         /// Количество скопированных Markdown-файлов.
         /// </returns>
-        public CopyStatistics Process(CommandLineOptions options)
+        public ExportResult Process(CommandLineOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            return Process(new ExportRequest(
+                options.SourceDirectory,
+                options.DestinationDirectory,
+                options.ZipFilePattern,
+                options.ExtractAll));
+        }
+
+        /// <summary>
+        /// Обрабатывает экспорт, не связывая orchestration с CLI-моделью.
+        /// </summary>
+        public ExportResult Process(ExportRequest request)
         {
             // -------------------------------------------------------------
             // 1. Получаем ZIP-архивы.
@@ -66,10 +80,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
             // Сортировка выполняется по дате последнего изменения:
             // от старых к новым
             // -------------------------------------------------------------
+            ArgumentNullException.ThrowIfNull(request);
+
             List<FileInfo> zipFiles = Directory
                                             .EnumerateFiles(
-                                            options.SourceDirectory,
-                                            options.ZipFilePattern,
+                                            request.SourceDirectory,
+                                            request.ZipFilePattern,
                                             SearchOption.TopDirectoryOnly)
                                             .Select(path => new FileInfo(path))
                                             .OrderBy(file => file.LastWriteTimeUtc)
@@ -78,12 +94,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
             if (zipFiles.Count == 0)
             {
                 throw new FileNotFoundException(
-                    $"В каталоге не найден ни один ZIP-архив: {options.SourceDirectory}");
+                    $"В каталоге не найден ни один ZIP-архив: {request.SourceDirectory}");
             }
 
             // Если требуется обработать только последний архив,
             // оставляем последний элемент отсортированного списка.
-            if (!options.ExtractAll)
+            if (!request.ProcessAllArchives)
             {
                 zipFiles = zipFiles
                            .TakeLast(1)
@@ -99,7 +115,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
             //  если
 
             //обработано копий
-            CopyStatistics statistics = new CopyStatistics();
+            ExportStatistics statistics = new ExportStatistics();
 
             //отправляем архивы  на обработку
             foreach (FileInfo zipFile in zipFiles)
@@ -108,13 +124,13 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
                 ConsoleWriter.Trace($"\tДата изменения ZIP: {zipFile.LastWriteTime}");
 
-                CopyStatistics archiveStatistics = ProcessArchive(zipFile.FullName, options.DestinationDirectory);//по текущему архиву возвращаем статистику по обработанным файлам
+                ExportStatistics archiveStatistics = ProcessArchive(zipFile.FullName, request.DestinationDirectory);//по текущему архиву возвращаем статистику по обработанным файлам
                 //суммирование статистики по каждому zip
                 statistics.Add(archiveStatistics);
             }
 
             // общая статистика
-            return statistics;
+            return statistics.ToResult();
         }
 
         /// <summary>
@@ -127,9 +143,9 @@ namespace dRz.GPT_Utilities.Archivist.Export
         /// Каталог назначения.
         /// </param>
         /// <returns>
-        /// Количество скопированных Markdown-файлов.
+        /// Статистика обработки архива.
         /// </returns>
-        private CopyStatistics ProcessArchive(
+        private ExportStatistics ProcessArchive(
             string archiveFilePath,
             string destinationDirectory)
         {
@@ -162,7 +178,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
                 ConsoleWriter.Trace($"\tНайдено {markdownFiles.Count.Of(RussianWords.Files)} Markdown");
 
-                CopyStatistics statistics = new CopyStatistics();
+                ExportStatistics statistics = new ExportStatistics();
 
                 foreach (string sourceFile in markdownFiles)
                 {
@@ -177,6 +193,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     {
                         // Ошибка одного файла не останавливает обработку
                         // остальных файлов текущего архива.
+                        statistics.AddFailure();
                         ConsoleWriter.Error($"Ошибка при обработке файла: {sourceFile}", ex);
                     }
                 }
@@ -249,7 +266,13 @@ namespace dRz.GPT_Utilities.Archivist.Export
             string destinationFile = Path.Combine(monthDirectory, fileName + extension);
 
             // Проверяем, требуется ли копирование и в методе копируем файл, если нужно.
-            FileCopyDecision copyDecision = CopyIfNewer(sourceFile, destinationFile, sourceMetadata);
+            // Синхронизатор отвечает только за политику добавления,
+            // обновления и пропуска файла. Процессор лишь передаёт ему
+            // подготовленные пути и метаданные.
+            FileCopyDecision copyDecision = FileSynchronizer.CopyIfNewer(
+                sourceFile,
+                destinationFile,
+                sourceMetadata);
 
             //прокидываем статистику в ProcessArchive, чтобы суммировать количество обработанных файлов
             return copyDecision;
@@ -283,59 +306,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
             }
         }
 
-        internal sealed class CopyStatistics
-        {
-            public int Total { get; private set; }
-
-            public int Skipped { get; private set; }
-
-            public int Added { get; private set; }
-
-            public int Updated { get; private set; }
-
-            public int AddedUnique { get; private set; }
-
-            public void Add(FileCopyDecision decision)
-            {
-                Total++;
-
-                switch (decision)
-                {
-                    case FileCopyDecision.Skip:
-                        Skipped++;
-                        break;
-
-                    case FileCopyDecision.Add:
-                        Added++;
-                        break;
-
-                    case FileCopyDecision.AddUnique:
-                        AddedUnique++;
-                        break;
-
-                    case FileCopyDecision.Replace:
-                        Updated++;
-                        break;
-
-                    default:
-                        throw new ArgumentOutOfRangeException(
-                            nameof(decision),
-                            decision,
-                            null);
-                }
-            }
-
-            /// <summary>
-            /// Добавляет статистику другого объекта.
-            /// </summary>
-            public void Add(CopyStatistics statistics)
-            {
-                Total += statistics.Total;
-                Skipped += statistics.Skipped;
-                Added += statistics.Added;
-                AddedUnique += statistics.AddedUnique;
-                Updated += statistics.Updated;
-            }
-        }
+        // Статистика перемещена в отдельные модели ExportStatistics/ExportResult.
+        // Локальная реализация оставлена пустой, если в проекте определены
+        // внешние модели - они будут использоваться.
     }
 }
