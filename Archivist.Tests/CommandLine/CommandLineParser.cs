@@ -1,3 +1,4 @@
+using System;
 using dRz.GPT_Utilities.Archivist.CommandLine;
 using Xunit;
 
@@ -9,7 +10,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
     /// </summary>
     public sealed class CommandLineParser
     {
-        /// <summary>Parses the is case insensitive for all flags.</summary>
+        /// <summary>Проверяет регистронезависимый разбор всех параметров.</summary>
         [Theory]
         [InlineData("-S", "C:\\source", "-D", "C:\\dest", "-A", "-P", "test*test")]
         [InlineData("--SOURCE", "C:\\source", "--DESTINATION", "C:\\dest", "--ALL", "--PATTERN", "test*test")]
@@ -23,7 +24,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result.ExtractAll);
         }
 
-        /// <summary>Parses the allows all flags in any order.</summary>
+        /// <summary>Проверяет обработку параметров в любом порядке.</summary>
         [Fact]
         public void Parse_AllowsAllFlagsInAnyOrder()
         {
@@ -44,7 +45,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result3.ExtractAll);
         }
 
-        /// <summary>Parses the mixes short and long flags.</summary>
+        /// <summary>Проверяет совместное использование коротких и длинных параметров.</summary>
         [Fact]
         public void Parse_MixesShortAndLongFlags()
         {
@@ -55,7 +56,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result.ExtractAll);
         }
 
-        /// <summary>Parses the mixes short and long flags alternative.</summary>
+        /// <summary>Проверяет альтернативную комбинацию коротких и длинных параметров.</summary>
         [Fact]
         public void Parse_MixesShortAndLongFlagsAlternative()
         {
@@ -66,7 +67,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result.ExtractAll);
         }
 
-        /// <summary>Parses the returns correct default values.</summary>
+        /// <summary>Проверяет значения параметров по умолчанию.</summary>
         [Fact]
         public void Parse_ReturnsCorrectDefaultValues()
         {
@@ -76,6 +77,17 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.NotNull(result.DestinationDirectory);
             Assert.False(result.ShowHelp);
             Assert.False(result.ExtractAll);
+        }
+
+        /// <summary>
+        /// Проверяет выброс ArgumentNullException при передаче null
+        /// вместо массива аргументов.
+        /// </summary>
+        [Fact]
+        public void Parse_ThrowsArgumentNullException_WhenArgumentsAreNull()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => Archivist.CommandLine.CommandLineParser.Parse(null!));
         }
     }
 }

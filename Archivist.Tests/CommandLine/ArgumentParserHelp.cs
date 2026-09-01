@@ -19,7 +19,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Empty(result.DestinationDirectory);
         }
 
-        /// <summary>Parses the returns show help when help flag short.</summary>
+        /// <summary>Проверяет показ справки по короткому параметру.</summary>
         [Fact]
         public void Parse_ReturnsShowHelp_WhenHelpFlagShort()
         {
@@ -28,7 +28,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result.ShowHelp);
         }
 
-        /// <summary>Parses the returns show help when help flag long.</summary>
+        /// <summary>Проверяет показ справки по длинному параметру.</summary>
         [Fact]
         public void Parse_ReturnsShowHelp_WhenHelpFlagLong()
         {
@@ -37,7 +37,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result.ShowHelp);
         }
 
-        /// <summary>Parses the returns show help when help flag windows.</summary>
+        /// <summary>Проверяет показ справки по стандартному параметру Windows /?.</summary>
         [Fact]
         public void Parse_ReturnsShowHelp_WhenHelpFlagWindows()
         {
@@ -46,7 +46,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result.ShowHelp);
         }
 
-        /// <summary>Parses the is case insensitive for help flag.</summary>
+        /// <summary>Проверяет регистронезависимый разбор параметра справки.</summary>
         [Fact]
         public void Parse_IsCaseInsensitive_ForHelpFlag()
         {
@@ -59,7 +59,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result3.ShowHelp);
         }
 
-        /// <summary>Parses the help flag immediately returns.</summary>
+        /// <summary>Проверяет немедленный возврат результата при обнаружении параметра справки.</summary>
         [Fact]
         public void Parse_HelpFlagImmediatelyReturns()
         {

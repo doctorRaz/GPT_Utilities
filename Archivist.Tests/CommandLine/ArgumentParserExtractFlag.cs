@@ -5,7 +5,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
     public class ArgumentParserExtractFlag
     {
-        /// <summary>Parses the parses extract all with short flag.</summary>
+        /// <summary>Проверяет включение обработки всех архивов коротким параметром.</summary>
         [Fact]
         public void Parse_ParsesExtractAll_WithShortFlag()
         {
@@ -14,7 +14,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result.ExtractAll);
         }
 
-        /// <summary>Parses the parses extract all with long flag.</summary>
+        /// <summary>Проверяет включение обработки всех архивов длинным параметром.</summary>
         [Fact]
         public void Parse_ParsesExtractAll_WithLongFlag()
         {
@@ -23,7 +23,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.True(result.ExtractAll);
         }
 
-        /// <summary>Parses the extract all default is false.</summary>
+        /// <summary>Проверяет, что обработка всех архивов по умолчанию отключена.</summary>
         [Fact]
         public void Parse_ExtractAllDefaultIsFalse()
         {
@@ -32,7 +32,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.False(result.ExtractAll);
         }
 
-        /// <summary>Parses the handles multiple extract all flags.</summary>
+        /// <summary>Проверяет корректную обработку повторного параметра обработки всех архивов.</summary>
         [Fact]
         public void Parse_HandlesMultipleExtractAllFlags()
         {

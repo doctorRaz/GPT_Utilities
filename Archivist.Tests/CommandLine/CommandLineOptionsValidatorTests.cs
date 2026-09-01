@@ -10,6 +10,10 @@ public sealed class CommandLineOptionsValidatorTests
     private readonly CommandLineOptionsValidator _validator =
         new CommandLineOptionsValidator();
 
+    /// <summary>
+    /// Проверяет, что передача null вместо параметров приводит
+    /// к выбросу ArgumentNullException.
+    /// </summary>
     [Test]
     public void Validate_ThrowsArgumentNullException_WhenOptionsIsNull()
     {
@@ -20,6 +24,9 @@ public sealed class CommandLineOptionsValidatorTests
             Throws.TypeOf<ArgumentNullException>());
     }
 
+    /// <summary>
+    /// Проверяет обязательность исходного каталога.
+    /// </summary>
     [TestCase(null)]
     [TestCase("")]
     [TestCase(" ")]
@@ -35,6 +42,9 @@ public sealed class CommandLineOptionsValidatorTests
             Throws.TypeOf<ArgumentException>());
     }
 
+    /// <summary>
+    /// Проверяет обязательность каталога назначения.
+    /// </summary>
     [TestCase(null)]
     [TestCase("")]
     [TestCase(" ")]
@@ -50,6 +60,9 @@ public sealed class CommandLineOptionsValidatorTests
             Throws.TypeOf<ArgumentException>());
     }
 
+    /// <summary>
+    /// Проверяет использование маски ZIP-файлов по умолчанию.
+    /// </summary>
     [Test]
     public void Validate_UsesDefaultPattern_WhenPatternIsMissing()
     {
@@ -61,6 +74,10 @@ public sealed class CommandLineOptionsValidatorTests
         Assert.That(result.ZipFilePattern, Is.EqualTo("*.zip"));
     }
 
+    /// <summary>
+    /// Проверяет использование маски по умолчанию,
+    /// если передана пустая или пробельная строка.
+    /// </summary>
     [TestCase("")]
     [TestCase(" ")]
     [TestCase("\t")]
@@ -75,6 +92,9 @@ public sealed class CommandLineOptionsValidatorTests
         Assert.That(result.ZipFilePattern, Is.EqualTo("*.zip"));
     }
 
+    /// <summary>
+    /// Проверяет удаление пробелов и добавление расширения .zip.
+    /// </summary>
     [TestCase("backup", "backup.zip")]
     [TestCase("backup*", "backup*.zip")]
     [TestCase("backup.zip", "backup.zip")]
@@ -94,6 +114,9 @@ public sealed class CommandLineOptionsValidatorTests
             Is.EqualTo(expectedPattern));
     }
 
+    /// <summary>
+    /// Проверяет отклонение маски, содержащей недопустимый символ.
+    /// </summary>
     [TestCase('\\')]
     [TestCase('/')]
     [TestCase(':')]
@@ -112,6 +135,9 @@ public sealed class CommandLineOptionsValidatorTests
             Throws.TypeOf<ArgumentException>());
     }
 
+    /// <summary>
+    /// Проверяет сохранение остальных параметров после валидации.
+    /// </summary>
     [Test]
     public void Validate_PreservesOtherOptions()
     {

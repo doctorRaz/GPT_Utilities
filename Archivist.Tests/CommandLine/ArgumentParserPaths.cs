@@ -8,7 +8,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
     /// </summary>
     public sealed class ArgumentParserPaths
     {
-        /// <summary>Parses the source and dest can be same.</summary>
+        /// <summary>Проверяет возможность указать один каталог источником и назначением.</summary>
         [Fact]
         public void Parse_SourceAndDestCanBeSame()
         {
@@ -18,7 +18,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Equal("C:\\shared", result.DestinationDirectory);
         }
 
-        /// <summary>Parses the handles relative paths.</summary>
+        /// <summary>Проверяет обработку относительных путей.</summary>
         [Fact]
         public void Parse_HandlesRelativePaths()
         {
@@ -28,7 +28,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Equal(".\\output", result.DestinationDirectory);
         }
 
-        /// <summary>Parses the handles unc paths.</summary>
+        /// <summary>Проверяет обработку UNC-путей.</summary>
         [Fact]
         public void Parse_HandlesUNCPaths()
         {
@@ -38,7 +38,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Equal("\\\\server\\share\\output", result.DestinationDirectory);
         }
 
-        /// <summary>Parses the parses complex paths.</summary>
+        /// <summary>Проверяет обработку сложных путей с пробелами и несколькими каталогами.</summary>
         [Fact]
         public void Parse_ParsesComplexPaths()
         {
@@ -51,7 +51,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Equal(dest, result.DestinationDirectory);
         }
 
-        /// <summary>Parses the parses quoted paths.</summary>
+        /// <summary>Проверяет сохранение путей, переданных в кавычках.</summary>
         [Fact]
         public void Parse_ParsesQuotedPaths()
         {
@@ -64,7 +64,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Equal(dest, result.DestinationDirectory);
         }
 
-        /// <summary>Parses the handles paths with backslash at end.</summary>
+        /// <summary>Проверяет обработку путей с завершающим обратным слешем.</summary>
         [Fact]
         public void Parse_HandlesPathsWithBackslashAtEnd()
         {

@@ -8,7 +8,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
     /// </summary>
     public sealed class ArgumentParserSource
     {
-        /// <summary>Parses the parses source directory with short flag.</summary>
+        /// <summary>Проверяет разбор исходного каталога через короткий параметр.</summary>
         [Fact]
         public void Parse_ParsesSourceDirectory_WithShortFlag()
         {
@@ -18,7 +18,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Equal("C:\\dest", result.DestinationDirectory);
         }
 
-        /// <summary>Parses the parses source directory with long flag.</summary>
+        /// <summary>Проверяет разбор исходного каталога через длинный параметр.</summary>
         [Fact]
         public void Parse_ParsesSourceDirectory_WithLongFlag()
         {

@@ -8,7 +8,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
     /// </summary>
     public sealed class ArgumentParserThrowsArgumentException
     {
-        /// <summary>Parses the throws argument exception when source directory empty.</summary>
+        /// <summary>Проверяет ошибку при передаче пустого исходного каталога.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenSourceDirectoryEmpty()
         {
@@ -18,7 +18,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("Для параметра -s не указано значение.", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>Parses the throws argument exception when destination directory empty.</summary>
+        /// <summary>Проверяет ошибку при передаче пустого каталога назначения.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenDestinationDirectoryEmpty()
         {
@@ -28,7 +28,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("Для параметра -d не указано значение.", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>Parses the throws argument exception when source value missing.</summary>
+        /// <summary>Проверяет ошибку при отсутствии значения исходного каталога.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenSourceValueMissing()
         {
@@ -38,7 +38,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("-s", ex.Message);
         }
 
-        /// <summary>Parses the throws argument exception when destination value missing.</summary>
+        /// <summary>Проверяет ошибку при отсутствии значения каталога назначения.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenDestinationValueMissing()
         {
@@ -48,7 +48,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("-d", ex.Message);
         }
 
-        /// <summary>Parses the throws argument exception when unknown flag provided.</summary>
+        /// <summary>Проверяет ошибку при передаче неизвестного короткого параметра.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenUnknownFlagProvided()
         {
@@ -59,7 +59,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("-x", ex.Message);
         }
 
-        /// <summary>Parses the throws argument exception when unknown long flag provided.</summary>
+        /// <summary>Проверяет ошибку при передаче неизвестного длинного параметра.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenUnknownLongFlagProvided()
         {
@@ -69,7 +69,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("неизвестный", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>Parses the throws argument exception when source value is another flag.</summary>
+        /// <summary>Проверяет ошибку, если вместо исходного каталога указан другой параметр.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenSourceValueIsAnotherFlag()
         {
@@ -79,7 +79,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("-s", ex.Message);
         }
 
-        /// <summary>Parses the throws argument exception when destination value is another flag.</summary>
+        /// <summary>Проверяет ошибку, если вместо каталога назначения указан другой параметр.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenDestinationValueIsAnotherFlag()
         {
@@ -89,7 +89,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("-d", ex.Message);
         }
 
-        /// <summary>Parses the throws argument exception when long source flag has no value.</summary>
+        /// <summary>Проверяет ошибку при отсутствии значения длинного параметра источника.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenLongSourceFlagHasNoValue()
         {
@@ -99,7 +99,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
             Assert.Contains("--source", ex.Message);
         }
 
-        /// <summary>Parses the throws argument exception when long destination flag has no value.</summary>
+        /// <summary>Проверяет ошибку при отсутствии значения длинного параметра назначения.</summary>
         [Fact]
         public void Parse_ThrowsArgumentException_WhenLongDestinationFlagHasNoValue()
         {
