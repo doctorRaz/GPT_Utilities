@@ -74,11 +74,35 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 _logger.Trace($"ZIP: {archive.FullName}");
                 _logger.Trace($"\tДата изменения ZIP: {archive.LastWriteTime}");
 
-                ExportStatistics archiveStatistics = ProcessArchive(
-                    archive,
-                    request.DestinationDirectory);
+                try
+                {
+                    ExportStatistics archiveStatistics = ProcessArchive(
+                        archive,
+                        request.DestinationDirectory);
 
-                statistics.Add(archiveStatistics);
+                    statistics.Add(archiveStatistics);
+                }
+                catch (InvalidDataException exception)
+                {
+                    statistics.AddArchiveFailure();
+                    _logger.Error(
+                        $"Ошибка чтения ZIP-архива: {archive.FullName}",
+                        exception);
+                }
+                catch (IOException exception)
+                {
+                    statistics.AddArchiveFailure();
+                    _logger.Error(
+                        $"Ошибка доступа к ZIP-архиву: {archive.FullName}",
+                        exception);
+                }
+                catch (UnauthorizedAccessException exception)
+                {
+                    statistics.AddArchiveFailure();
+                    _logger.Error(
+                        $"Нет доступа к ZIP-архиву: {archive.FullName}",
+                        exception);
+                }
             }
 
             return statistics.ToResult();

@@ -172,6 +172,40 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.True(Directory.Exists(Path.Combine(dest.Path, year2)));
         }
 
+        [Fact]
+        public void Process_ContinuesWithNextArchive_WhenOneZipIsUnreadable()
+        {
+            using TempDirectory source = new();
+            using TempDirectory dest = new();
+
+            // Первый архив корректен и должен быть обработан.
+            _ = CreateTestZip(source.Path, new[]
+            {
+                new TestMarkdownFile("valid.md", CreateTime1, UpdateTime1)
+            });
+
+            // Второй файл имеет расширение ZIP, но не является архивом.
+            string brokenArchive = Path.Combine(source.Path, "broken.zip");
+            File.WriteAllBytes(brokenArchive, new byte[] { 0x01, 0x02, 0x03 });
+
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
+                sourceDirectory: source.Path,
+                destinationDirectory: dest.Path,
+                extractAll: true);
+
+            ExportResult result = _processor.Process(options);
+
+            string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
+            string validFile = Path.Combine(
+                dest.Path,
+                CreateTime1.Year.ToString(),
+                month,
+                "valid.md");
+
+            Assert.True(File.Exists(validFile));
+            Assert.Equal(1, result.Failed);
+        }
+
         //todo test : выбор по маске
 
         [Fact]

@@ -82,6 +82,16 @@ internal sealed class ExportStatistics
     }
 
     /// <summary>
+    /// Регистрирует ошибку архива, в котором не удалось начать обработку.
+    /// Количество Markdown-файлов не увеличивается, поскольку они не были
+    /// обработаны.
+    /// </summary>
+    public void AddArchiveFailure()
+    {
+        Failed++;
+    }
+
+    /// <summary>
     /// Объединяет статистику отдельного архива с общей статистикой.
     /// </summary>
     public void Add(ExportStatistics statistics)
