@@ -1,5 +1,6 @@
 ﻿using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Files;
+using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
 using System.IO;
@@ -33,7 +34,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = Synchronize(source, destination, metadata);
 
             Assert.Equal(FileCopyDecision.Add, decision);
             Assert.True(File.Exists(destination));
@@ -60,7 +61,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = Synchronize(source, destination, metadata);
 
             Assert.Equal(FileCopyDecision.Replace, decision);
             Assert.Contains("new", File.ReadAllText(destination));
@@ -87,7 +88,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = Synchronize(source, destination, metadata);
 
             Assert.Equal(FileCopyDecision.Skip, decision);
             Assert.Contains("kept", File.ReadAllText(destination));
@@ -113,7 +114,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = Synchronize(source, destination, metadata);
 
             string unique = temp.Combine("dst", "Chat (1).md");
 
@@ -148,7 +149,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
+            FileCopyDecision decision = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
             Assert.Equal(FileCopyDecision.Replace, decision);
             Assert.Contains("new second", File.ReadAllText(matchingDestination));
@@ -186,7 +187,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
+            FileCopyDecision decision = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
             Assert.Equal(FileCopyDecision.Skip, decision);
             Assert.Contains("stale second", File.ReadAllText(staleMatch));
@@ -218,7 +219,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
+            FileCopyDecision decision = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
             Assert.Equal(FileCopyDecision.Skip, decision);
             Assert.Contains("new second", File.ReadAllText(matchingDestination));
@@ -245,7 +246,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = Synchronize(source, destination, metadata);
 
             string unique = temp.Combine("dst", "Chat (1).md");
 
@@ -275,7 +276,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = Synchronize(source, destination, metadata);
 
             Assert.Equal(FileCopyDecision.AddUnique, decision);
             Assert.Contains("kept", File.ReadAllText(destination));
@@ -297,7 +298,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            FileCopyDecision decision = Synchronize(source, destination, metadata);
 
             Assert.Equal(FileCopyDecision.AddUnique, decision);
             Assert.Equal("not a chatgpt export", File.ReadAllText(destination));
@@ -319,12 +320,38 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
-            _ = FileSynchronizer.CopyIfNewer(source, destination, metadata);
+            _ = Synchronize(source, destination, metadata);
 
             DateTime expected = updateTime.LocalDateTime;
             DateTime actual = File.GetLastWriteTime(destination);
 
             Assert.Equal(expected, actual, TimeSpan.FromSeconds(2));
+        }
+
+        /// <summary>
+        /// Сохраняет компактные проверки старого enum-контракта,
+        /// выполняя операции через новый экземплярный сервис.
+        /// </summary>
+        private static FileCopyDecision Synchronize(
+            string source,
+            string destination,
+            ChatMetadata metadata)
+        {
+            FileOperationResult result = new FileSynchronizerService(
+                new ChatMetadataReader(),
+                new ConsoleArchivistLogger()).Synchronize(
+                    source,
+                    destination,
+                    metadata);
+
+            return result.Status switch
+            {
+                FileOperationStatus.Skipped => FileCopyDecision.Skip,
+                FileOperationStatus.Added => FileCopyDecision.Add,
+                FileOperationStatus.AddedUnique => FileCopyDecision.AddUnique,
+                FileOperationStatus.Updated => FileCopyDecision.Replace,
+                _ => throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null)
+            };
         }
     }
 }
