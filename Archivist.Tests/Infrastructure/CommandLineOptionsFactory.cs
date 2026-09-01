@@ -1,27 +1,21 @@
 ﻿using dRz.GPT_Utilities.Archivist.CommandLine;
+using dRz.GPT_Utilities.Archivist.Export;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Infrastructure
 {
     internal class CommandLineOptionsFactory
     {
-        internal static CommandLineOptions CreateOptions(string? sourceDirectory = null,
+        internal static ExportRequest CreateOptions(string? sourceDirectory = null,
                                                         string? destinationDirectory = null,
                                                         string? zipFilePattern = "*",
                                                         bool extractAll = false,
                                                         bool showHelp = false)
         {
-            return new CommandLineOptions
-            {
-                SourceDirectory = sourceDirectory,
-
-                DestinationDirectory = destinationDirectory,
-
-                ZipFilePattern = zipFilePattern,
-
-                ExtractAll = extractAll,
-
-                ShowHelp = showHelp
-            };
+            return new ExportRequest(
+                sourceDirectory!,
+                destinationDirectory!,
+                zipFilePattern!,
+                extractAll);
         }
     }
 }

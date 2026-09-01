@@ -35,7 +35,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         public void Process_ThrowsArgumentNullException_WhenSourceDirectoryIsNull()
         {
             // Код не валидирует параметры - мы просто проверяем, что выбросится какой-то exception
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
             sourceDirectory: null!, destinationDirectory: "dest");
 
 
@@ -48,7 +48,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         {
             using TempDirectory dest = new();
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
             sourceDirectory: string.Empty, destinationDirectory: dest.Path);
 
             // Пустая строка приведёт к ArgumentException
@@ -62,7 +62,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             using TempDirectory dest = new();
             string nonExistentSource = Path.Combine(dest.Path, "nonexistent");
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
             sourceDirectory: nonExistentSource, destinationDirectory: dest.Path);
 
             // Несуществующий каталог приведёт к DirectoryNotFoundException
@@ -76,7 +76,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             using TempDirectory source = new();
             using TempDirectory dest = new();
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             FileNotFoundException ex = Assert.Throws<FileNotFoundException>(
@@ -100,7 +100,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("test.md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                     sourceDirectory: source.Path, destinationDirectory: newDest);
 
             _ = _processor.Process(options);
@@ -129,7 +129,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             File.SetLastWriteTimeUtc(zip1Path, DateTime.UtcNow.AddHours(-1));
             File.SetLastWriteTimeUtc(zip2Path, DateTime.UtcNow);
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path, extractAll: false);
 
             _ = _processor.Process(options);
@@ -159,7 +159,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file2.md", CreateTime2, UpdateTime2)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path, extractAll: true);
 
             _ = _processor.Process(options);
@@ -185,7 +185,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("test.md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             _ = _processor.Process(options);
@@ -209,7 +209,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file_with_underscores.md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             _ = _processor.Process(options);
@@ -236,7 +236,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("  test  .md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             _ = _processor.Process(options);
@@ -263,7 +263,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("my   test   file.md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             _ = _processor.Process(options);
@@ -292,7 +292,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file3.md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             _ = _processor.Process(options);
@@ -317,7 +317,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file2.md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             ExportResult stats = _processor.Process(options);
@@ -340,7 +340,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("mar_file.md", CreateTime2, UpdateTime2)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             _ = _processor.Process(options);
@@ -369,7 +369,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             // Создаём пустой ZIP (без файлов)
             CreateEmptyZip(source.Path);
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             ExportResult stats = _processor.Process(options);
@@ -389,7 +389,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("test.md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             ExportResult stats = _processor.Process(options);
@@ -411,7 +411,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("file2.md", CreateTime2, UpdateTime2)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             ExportResult stats = _processor.Process(options);
@@ -432,7 +432,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 new TestMarkdownFile("文件.md", CreateTime1, UpdateTime1)
             });
 
-            CommandLineOptions options = CommandLineOptionsFactory.CreateOptions(
+            ExportRequest options = CommandLineOptionsFactory.CreateOptions(
                 sourceDirectory: source.Path, destinationDirectory: dest.Path);
 
             ExportResult stats = _processor.Process(options);

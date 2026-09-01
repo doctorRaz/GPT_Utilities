@@ -1,5 +1,4 @@
-﻿using dRz.GPT_Utilities.Archivist.CommandLine;
-using dRz.GPT_Utilities.Archivist.Files;
+﻿using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Localization;
 using System.Text;
@@ -54,20 +53,6 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 ?? throw new ArgumentNullException(nameof(markdownProcessor));
             _logger = logger
                 ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        /// <summary>
-        /// Переходная перегрузка для клиентов, работающих с CLI-моделью.
-        /// </summary>
-        public ExportResult Process(CommandLineOptions options)
-        {
-            ArgumentNullException.ThrowIfNull(options);
-
-            return Process(new ExportRequest(
-                options.SourceDirectory,
-                options.DestinationDirectory,
-                options.ZipFilePattern,
-                options.ExtractAll));
         }
 
         /// <summary>
