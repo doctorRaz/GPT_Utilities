@@ -87,21 +87,30 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 }
                 catch (InvalidDataException exception)
                 {
-                    statistics.AddArchiveFailure();
+                    statistics.AddArchiveError(CreateError(
+                        archive.FullName,
+                        "Архив",
+                        exception));
                     _logger.Error(
                         $"Ошибка чтения ZIP-архива: {archive.FullName}",
                         exception);
                 }
                 catch (IOException exception)
                 {
-                    statistics.AddArchiveFailure();
+                    statistics.AddArchiveError(CreateError(
+                        archive.FullName,
+                        "Архив",
+                        exception));
                     _logger.Error(
                         $"Ошибка доступа к ZIP-архиву: {archive.FullName}",
                         exception);
                 }
                 catch (UnauthorizedAccessException exception)
                 {
-                    statistics.AddArchiveFailure();
+                    statistics.AddArchiveError(CreateError(
+                        archive.FullName,
+                        "Архив",
+                        exception));
                     _logger.Error(
                         $"Нет доступа к ZIP-архиву: {archive.FullName}",
                         exception);
@@ -133,10 +142,28 @@ namespace dRz.GPT_Utilities.Archivist.Export
                         destinationDirectory);
                     statistics.Add(result);
                 }
-                catch (Exception ex)
+                catch (FormatException ex)
                 {
-                    // Ошибка одного файла не останавливает обработку остальных.
-                    statistics.AddFailure();
+                    statistics.AddMarkdownError(CreateError(
+                        sourceFile,
+                        "Markdown",
+                        ex));
+                    _logger.Error($"Ошибка при обработке файла: {sourceFile}", ex);
+                }
+                catch (IOException ex)
+                {
+                    statistics.AddMarkdownError(CreateError(
+                        sourceFile,
+                        "Markdown",
+                        ex));
+                    _logger.Error($"Ошибка при обработке файла: {sourceFile}", ex);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    statistics.AddMarkdownError(CreateError(
+                        sourceFile,
+                        "Markdown",
+                        ex));
                     _logger.Error(
                         $"Ошибка при обработке файла: {sourceFile}",
                         ex);
@@ -145,5 +172,11 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
             return statistics;
         }
+
+    private static ExportError CreateError(
+        string path,
+        string stage,
+        Exception exception) =>
+        new(path, exception.GetType().Name, exception.Message, stage);
     }
 }

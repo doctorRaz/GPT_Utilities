@@ -11,6 +11,9 @@ namespace dRz.GPT_Utilities.Archivist.Export;
 /// </remarks>
 internal sealed class ExportStatistics
 {
+    private readonly List<ExportError> _archiveErrors = new();
+    private readonly List<ExportError> _markdownErrors = new();
+
     public int Total { get; private set; }
 
     public int Skipped { get; private set; }
@@ -27,6 +30,10 @@ internal sealed class ExportStatistics
     /// Количество архивов, которые не удалось прочитать или распаковать.
     /// </summary>
     public int ArchiveFailed { get; private set; }
+
+    public IReadOnlyList<ExportError> ArchiveErrors => _archiveErrors;
+
+    public IReadOnlyList<ExportError> MarkdownErrors => _markdownErrors;
 
     /// <summary>
     /// Добавляет результат обработки одного Markdown-файла.
@@ -96,6 +103,21 @@ internal sealed class ExportStatistics
         ArchiveFailed++;
     }
 
+    public void AddArchiveError(ExportError error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        ArchiveFailed++;
+        _archiveErrors.Add(error);
+    }
+
+    public void AddMarkdownError(ExportError error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        Failed++;
+        Total++;
+        _markdownErrors.Add(error);
+    }
+
     /// <summary>
     /// Объединяет статистику отдельного архива с общей статистикой.
     /// </summary>
@@ -108,8 +130,19 @@ internal sealed class ExportStatistics
         Updated += statistics.Updated;
         Failed += statistics.Failed;
         ArchiveFailed += statistics.ArchiveFailed;
+        _archiveErrors.AddRange(statistics.ArchiveErrors);
+        _markdownErrors.AddRange(statistics.MarkdownErrors);
     }
 
     public ExportResult ToResult() =>
-        new(Total, Skipped, Added, AddedUnique, Updated, Failed, ArchiveFailed);
+        new(
+            Total,
+            Skipped,
+            Added,
+            AddedUnique,
+            Updated,
+            Failed,
+            ArchiveFailed,
+            ArchiveErrors.ToArray(),
+            MarkdownErrors.ToArray());
 }
