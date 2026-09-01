@@ -244,6 +244,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             Assert.That(result.Failed, Is.EqualTo(0));
             Assert.That(result.ArchiveFailed, Is.EqualTo(1));
+            Assert.That(result.ArchiveErrors, Has.Count.EqualTo(1));
+            Assert.That(result.MarkdownErrors, Is.Empty);
+            Assert.That(result.Errors, Has.Count.EqualTo(1));
+            Assert.That(result.ArchiveErrors[0].Path, Is.EqualTo(brokenArchive));
+            Assert.That(result.ArchiveErrors[0].Stage, Is.EqualTo("Архив"));
+            Assert.That(result.ArchiveErrors[0].ExceptionType, Is.EqualTo(nameof(InvalidDataException)));
             string error = logger.Errors.Single();
             Assert.That(error, Does.Contain("ZIP-архива"));
             Assert.That(error, Does.Contain("broken.zip"));
@@ -453,6 +459,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             global::NUnit.Framework.Assert.That(
                 result.MarkdownErrors[0].Message,
                 global::NUnit.Framework.Does.Contain("Некорректный YAML или дата"));
+            global::NUnit.Framework.Assert.That(result.ArchiveErrors, global::NUnit.Framework.Is.Empty);
+            global::NUnit.Framework.Assert.That(result.Errors, global::NUnit.Framework.Has.Count.EqualTo(1));
+            global::NUnit.Framework.Assert.That(result.Errors[0], global::NUnit.Framework.Is.EqualTo(result.MarkdownErrors[0]));
+            global::NUnit.Framework.Assert.That(result.MarkdownErrors[0].Path, global::NUnit.Framework.Does.EndWith("malformed.md"));
+            global::NUnit.Framework.Assert.That(result.MarkdownErrors[0].Stage, global::NUnit.Framework.Is.EqualTo("Markdown"));
         }
 
         [Test]
