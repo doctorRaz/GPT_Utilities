@@ -30,7 +30,9 @@ namespace dRz.GPT_Utilities.Archivist
                 IArchivistLogger logger = new ConsoleArchivistLogger();
                 IExportPathBuilder pathBuilder = new ExportPathBuilder();
                 IChatMetadataReader metadataReader = new ChatMetadataReaderService();
-                IFileSynchronizer fileSynchronizer = new FileSynchronizerService();
+                IFileSynchronizer fileSynchronizer = new FileSynchronizerService(
+                    metadataReader,
+                    logger);
                 IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
                     pathBuilder,
                     metadataReader,

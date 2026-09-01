@@ -30,7 +30,9 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 new MarkdownFileProcessor(
                     new ExportPathBuilder(),
                     new ChatMetadataReaderService(),
-                    new FileSynchronizerService(),
+                    new FileSynchronizerService(
+                        new ChatMetadataReaderService(),
+                        new ConsoleArchivistLogger()),
                     new ConsoleArchivistLogger()),
                 new ConsoleArchivistLogger())
         {
