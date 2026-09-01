@@ -61,7 +61,7 @@ namespace dRz.GPT_Utilities.Archivist
             {
                 ConsoleWriter.Fatal(ex, $"Ошибка: ");
 
-                ConsoleWriter.PressAnyKey();//todo только при debug
+                ConsoleWriter.PressAnyKey();
 
                 return 1;
             }

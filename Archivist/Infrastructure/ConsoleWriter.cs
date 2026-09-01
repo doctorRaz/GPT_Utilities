@@ -15,6 +15,11 @@
 
         public static void PressAnyKey()
         {
+            if (Console.IsInputRedirected || Console.IsOutputRedirected)
+            {
+                return;
+            }
+
             Info("");
             Info("Press any key...");
             _ = Console.ReadKey();
