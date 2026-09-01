@@ -29,9 +29,9 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 new ZipArchiveExtractor(Encoding.GetEncoding(866)),
                 new MarkdownFileProcessor(
                     new ExportPathBuilder(),
-                    new ChatMetadataReaderService(),
+                    new ChatMetadataReader(),
                     new FileSynchronizerService(
-                        new ChatMetadataReaderService(),
+                        new ChatMetadataReader(),
                         new ConsoleArchivistLogger()),
                     new ConsoleArchivistLogger()),
                 new ConsoleArchivistLogger())

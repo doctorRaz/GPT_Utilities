@@ -1,10 +1,14 @@
 using dRz.GPT_Utilities.Archivist.CommandLine;
 using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Files;
+using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using System;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -204,6 +208,57 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             Assert.True(File.Exists(validFile));
             Assert.Equal(1, result.Failed);
+        }
+
+        [Fact]
+        public void Process_ReportsUnreadableZipAsArchiveError()
+        {
+            using TempDirectory source = new();
+            using TempDirectory dest = new();
+            RecordingLogger logger = new();
+            ChatMetadataReader metadataReader = new();
+
+            IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
+                new ExportPathBuilder(),
+                metadataReader,
+                new FileSynchronizerService(metadataReader, logger),
+                logger);
+
+            IChatGptExportProcessor processor = new ChatGptExportProcessor(
+                new FileSystemArchiveSelector(),
+                new ZipArchiveExtractor(Encoding.GetEncoding(866)),
+                markdownProcessor,
+                logger);
+
+            string brokenArchive = Path.Combine(source.Path, "broken.zip");
+            File.WriteAllBytes(brokenArchive, new byte[] { 0x01, 0x02, 0x03 });
+
+            ExportResult result = processor.Process(
+                new ExportRequest(source.Path, dest.Path, "*.zip", true));
+
+            Assert.Equal(1, result.Failed);
+            string error = Assert.Single(logger.Errors);
+            Assert.Contains("ZIP-архива", error);
+            Assert.Contains("broken.zip", error);
+            Assert.DoesNotContain("обработке файла", error);
+        }
+
+        private sealed class RecordingLogger : IArchivistLogger
+        {
+            public List<string> Errors { get; } = new();
+
+            public void Trace(string message)
+            {
+            }
+
+            public void Warning(string message)
+            {
+            }
+
+            public void Error(string message, Exception? exception = null)
+            {
+                Errors.Add(message);
+            }
         }
 
         //todo test : выбор по маске

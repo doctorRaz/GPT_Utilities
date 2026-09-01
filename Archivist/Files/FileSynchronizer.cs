@@ -69,7 +69,7 @@ namespace dRz.GPT_Utilities.Archivist.Files
             {
                 try
                 {
-                    ChatMetadata duplicateMetadata = ChatMetadataReader.Read(duplicateFilePath);
+                    ChatMetadata duplicateMetadata = new ChatMetadataReader().Read(duplicateFilePath);
                     if (duplicateMetadata.ConversationId == sourceId &&
                     (matchingFilePath is null ||
                     matchingUpdateTime is null ||
@@ -99,7 +99,7 @@ namespace dRz.GPT_Utilities.Archivist.Files
             try
             {
                 // Читаем metadata существующего файла.
-                ChatMetadata destinationMetadata = ChatMetadataReader.Read(destinationFilePath);
+                ChatMetadata destinationMetadata = new ChatMetadataReader().Read(destinationFilePath);
 
                 Guid? sourceId = sourceMetadata.ConversationId;
                 Guid? destinationId = destinationMetadata.ConversationId;

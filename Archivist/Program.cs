@@ -29,7 +29,7 @@ namespace dRz.GPT_Utilities.Archivist
                 // собираются конкретные инфраструктурные реализации.
                 IArchivistLogger logger = new ConsoleArchivistLogger();
                 IExportPathBuilder pathBuilder = new ExportPathBuilder();
-                IChatMetadataReader metadataReader = new ChatMetadataReaderService();
+                IChatMetadataReader metadataReader = new ChatMetadataReader();
                 IFileSynchronizer fileSynchronizer = new FileSynchronizerService(
                     metadataReader,
                     logger);

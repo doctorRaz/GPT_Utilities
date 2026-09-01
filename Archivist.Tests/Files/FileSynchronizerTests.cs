@@ -31,7 +31,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             string destination = temp.Combine("dst", "Chat.md");
             _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
@@ -58,7 +58,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationA,
                 "new");
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
@@ -85,7 +85,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationA,
                 "stale");
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
@@ -111,7 +111,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationB,
                 "second");
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
@@ -146,7 +146,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationB,
                 "new second");
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
 
@@ -184,7 +184,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationB,
                 "incoming second");
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
 
@@ -216,7 +216,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 ConversationB,
                 "old second");
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, temp.Combine("dst", "Chat.md"), metadata);
 
@@ -243,7 +243,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 chatLink: null,
                 body: "new");
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
@@ -273,7 +273,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 chatLink: null,
                 body: "new");
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
@@ -295,7 +295,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 CreateTime.AddHours(1),
                 ConversationA);
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             FileCopyDecision decision = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
@@ -317,7 +317,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             string destination = temp.Combine("dst", "Chat.md");
             _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
-            ChatMetadata metadata = ChatMetadataReader.Read(source);
+            ChatMetadata metadata = new ChatMetadataReader().Read(source);
 
             _ = FileSynchronizer.CopyIfNewer(source, destination, metadata);
 
