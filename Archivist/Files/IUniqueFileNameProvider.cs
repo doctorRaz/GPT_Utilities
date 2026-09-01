@@ -6,6 +6,10 @@ namespace dRz.GPT_Utilities.Archivist.Files;
 internal interface IUniqueFileNameProvider
 {
     string GetUnique(string filePath);
+
+    string GetUnique(
+        string filePath,
+        IReadOnlySet<string> excludedPaths);
     IEnumerable<string> GetExistingDuplicates(string filePath);
 }
 
@@ -25,8 +29,15 @@ internal sealed class UniqueFileNameProvider : IUniqueFileNameProvider
     private const int MaxDuplicateNumber = 100;
 
     public string GetUnique(string filePath)
+        => GetUnique(filePath, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+
+    public string GetUnique(
+        string filePath,
+        IReadOnlySet<string> excludedPaths)
     {
-        if (!_fileSystem.FileExists(filePath))
+        ArgumentNullException.ThrowIfNull(excludedPaths);
+
+        if (!_fileSystem.FileExists(filePath) && !excludedPaths.Contains(filePath))
         {
             return filePath;
         }
@@ -41,7 +52,7 @@ internal sealed class UniqueFileNameProvider : IUniqueFileNameProvider
                 directory,
                 $"{fileName} ({number}){extension}");
 
-            if (!_fileSystem.FileExists(candidate))
+            if (!_fileSystem.FileExists(candidate) && !excludedPaths.Contains(candidate))
             {
                 return candidate;
             }

@@ -59,8 +59,12 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
             if (matchingPath is null)
             {
-                destinationFilePath = _uniqueFileNameProvider.GetUnique(destinationFilePath);
+                return CopyToUniqueName(
+                    sourceFilePath,
+                    destinationFilePath,
+                    sourceMetadata);
             }
+
             else
             {
                 destinationFilePath = matchingPath;
@@ -68,16 +72,24 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             }
         }
 
-        if (decision != FileCopyDecision.Skip)
+        if (decision == FileCopyDecision.Add)
+        {
+            if (!_fileSystem.TryCopyFile(sourceFilePath, destinationFilePath))
+            {
+                // Файл появился после проверки. Не перезаписываем его,
+                // а продолжаем обработку как конфликт имён.
+                return CopyToUniqueName(
+                    sourceFilePath,
+                    destinationFilePath,
+                    sourceMetadata);
+            }
+
+            SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
+        }
+        else if (decision != FileCopyDecision.Skip)
         {
             _fileSystem.CopyFile(sourceFilePath, destinationFilePath, overwrite: true);
-
-            if (sourceMetadata.UpdateTime.HasValue)
-            {
-                _fileSystem.SetLastWriteTime(
-                    destinationFilePath,
-                    sourceMetadata.UpdateTime.Value.LocalDateTime);
-            }
+            SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
         }
 
         return new FileOperationResult(
@@ -87,6 +99,49 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             decision == FileCopyDecision.Skip
                 ? "Файл не требует обновления."
                 : null);
+    }
+
+    private FileOperationResult CopyToUniqueName(
+        string sourceFilePath,
+        string destinationFilePath,
+        ChatMetadata sourceMetadata)
+    {
+        HashSet<string> attemptedPaths = new(StringComparer.OrdinalIgnoreCase);
+
+        while (true)
+        {
+            string candidate = _uniqueFileNameProvider.GetUnique(
+                destinationFilePath,
+                attemptedPaths);
+
+            attemptedPaths.Add(candidate);
+
+            if (!_fileSystem.TryCopyFile(sourceFilePath, candidate))
+            {
+                // Имя заняли после проверки. Выбираем следующий кандидат.
+                continue;
+            }
+
+            SetLastWriteTimeIfPresent(candidate, sourceMetadata);
+
+            return new FileOperationResult(
+                FileOperationStatus.AddedUnique,
+                sourceFilePath,
+                candidate,
+                null);
+        }
+    }
+
+    private void SetLastWriteTimeIfPresent(
+        string destinationFilePath,
+        ChatMetadata sourceMetadata)
+    {
+        if (sourceMetadata.UpdateTime.HasValue)
+        {
+            _fileSystem.SetLastWriteTime(
+                destinationFilePath,
+                sourceMetadata.UpdateTime.Value.LocalDateTime);
+        }
     }
 
     private string? FindMatchingDuplicate(

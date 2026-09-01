@@ -11,6 +11,11 @@ internal interface IFileSystem
 
     void CopyFile(string sourcePath, string destinationPath, bool overwrite);
 
+    /// <summary>
+    /// Пытается создать файл без перезаписи существующего файла.
+    /// </summary>
+    bool TryCopyFile(string sourcePath, string destinationPath);
+
     void SetLastWriteTime(string path, DateTime lastWriteTime);
 
     bool DirectoryExists(string path);
@@ -36,6 +41,20 @@ internal sealed class LocalFileSystem : IFileSystem
 
     public void CopyFile(string sourcePath, string destinationPath, bool overwrite) =>
         File.Copy(sourcePath, destinationPath, overwrite);
+
+    public bool TryCopyFile(string sourcePath, string destinationPath)
+    {
+        try
+        {
+            File.Copy(sourcePath, destinationPath, overwrite: false);
+            return true;
+        }
+        catch (IOException) when (File.Exists(destinationPath))
+        {
+            // Другой процесс успел занять имя между проверкой и копированием.
+            return false;
+        }
+    }
 
     public void SetLastWriteTime(string path, DateTime lastWriteTime) =>
         File.SetLastWriteTime(path, lastWriteTime);
