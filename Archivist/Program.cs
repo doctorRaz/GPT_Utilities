@@ -32,12 +32,14 @@ namespace dRz.GPT_Utilities.Archivist
                 IChatMetadataReader metadataReader = new ChatMetadataReader();
                 IFileSynchronizer fileSynchronizer = new FileSynchronizerService(
                     metadataReader,
-                    logger);
+                    logger,
+                    new UniqueFileNameProvider());
                 IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
                     pathBuilder,
                     metadataReader,
                     fileSynchronizer,
-                    logger);
+                    logger,
+                    new FileNameNormalizer());
 
                 IChatGptExportProcessor processor = new ChatGptExportProcessor(
                     new FileSystemArchiveSelector(),

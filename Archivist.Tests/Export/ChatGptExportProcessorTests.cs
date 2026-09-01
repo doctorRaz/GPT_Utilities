@@ -222,8 +222,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
                 new ExportPathBuilder(),
                 metadataReader,
-                new FileSynchronizerService(metadataReader, logger),
-                logger);
+                new FileSynchronizerService(
+                    metadataReader,
+                    logger,
+                    new UniqueFileNameProvider()),
+                logger,
+                new FileNameNormalizer());
 
             IChatGptExportProcessor processor = new ChatGptExportProcessor(
                 new FileSystemArchiveSelector(),

@@ -339,7 +339,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         {
             FileOperationResult result = new FileSynchronizerService(
                 new ChatMetadataReader(),
-                new ConsoleArchivistLogger()).Synchronize(
+                new ConsoleArchivistLogger(),
+                new UniqueFileNameProvider()).Synchronize(
                     source,
                     destination,
                     metadata);

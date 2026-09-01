@@ -21,15 +21,19 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 {
     private readonly IChatMetadataReader _metadataReader;
     private readonly IArchivistLogger _logger;
+    private readonly IUniqueFileNameProvider _uniqueFileNameProvider;
 
     public FileSynchronizerService(
         IChatMetadataReader metadataReader,
-        IArchivistLogger logger)
+        IArchivistLogger logger,
+        IUniqueFileNameProvider uniqueFileNameProvider)
     {
         _metadataReader = metadataReader
             ?? throw new ArgumentNullException(nameof(metadataReader));
         _logger = logger
             ?? throw new ArgumentNullException(nameof(logger));
+        _uniqueFileNameProvider = uniqueFileNameProvider
+            ?? throw new ArgumentNullException(nameof(uniqueFileNameProvider));
     }
 
     public FileOperationResult Synchronize(
@@ -51,7 +55,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
             if (matchingPath is null)
             {
-                destinationFilePath = FileNameHelper.GetUnique(destinationFilePath);
+                destinationFilePath = _uniqueFileNameProvider.GetUnique(destinationFilePath);
             }
             else
             {
@@ -93,7 +97,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         string? matchingPath = null;
         DateTimeOffset? matchingUpdateTime = null;
 
-        foreach (string duplicatePath in FileNameHelper.GetExistingDuplicates(destinationFilePath))
+        foreach (string duplicatePath in _uniqueFileNameProvider.GetExistingDuplicates(destinationFilePath))
         {
             try
             {
