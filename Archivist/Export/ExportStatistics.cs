@@ -50,6 +50,29 @@ internal sealed class ExportStatistics
     }
 
     /// <summary>
+    /// Добавляет структурированный результат операции.
+    /// </summary>
+    public void Add(FileOperationResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        if (result.Status == FileOperationStatus.Failed)
+        {
+            AddFailure();
+            return;
+        }
+
+        Add(result.Status switch
+        {
+            FileOperationStatus.Skipped => FileCopyDecision.Skip,
+            FileOperationStatus.Added => FileCopyDecision.Add,
+            FileOperationStatus.AddedUnique => FileCopyDecision.AddUnique,
+            FileOperationStatus.Updated => FileCopyDecision.Replace,
+            _ => throw new ArgumentOutOfRangeException(nameof(result), result.Status, null)
+        });
+    }
+
+    /// <summary>
     /// Регистрирует ошибку обработки файла.
     /// </summary>
     public void AddFailure()

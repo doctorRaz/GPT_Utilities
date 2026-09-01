@@ -8,7 +8,7 @@ namespace dRz.GPT_Utilities.Archivist.Export;
 /// </summary>
 internal interface IMarkdownFileProcessor
 {
-    FileCopyDecision Process(string sourceFile, string destinationDirectory);
+    FileOperationResult Process(string sourceFile, string destinationDirectory);
 }
 
 /// <summary>
@@ -33,7 +33,7 @@ internal sealed class MarkdownFileProcessor : IMarkdownFileProcessor
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public FileCopyDecision Process(string sourceFile, string destinationDirectory)
+    public FileOperationResult Process(string sourceFile, string destinationDirectory)
     {
         ChatMetadata metadata = _metadataReader.Read(sourceFile);
         string originalName = Path.GetFileNameWithoutExtension(sourceFile);

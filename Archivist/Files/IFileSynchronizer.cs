@@ -7,7 +7,7 @@ namespace dRz.GPT_Utilities.Archivist.Files;
 /// </summary>
 internal interface IFileSynchronizer
 {
-    FileCopyDecision Synchronize(
+    FileOperationResult Synchronize(
         string sourceFilePath,
         string destinationFilePath,
         ChatMetadata sourceMetadata);
@@ -21,12 +21,31 @@ internal interface IFileSynchronizer
 /// </remarks>
 internal sealed class FileSynchronizerService : IFileSynchronizer
 {
-    public FileCopyDecision Synchronize(
+    public FileOperationResult Synchronize(
         string sourceFilePath,
         string destinationFilePath,
         ChatMetadata sourceMetadata) =>
-        FileSynchronizer.CopyIfNewer(
+        CreateResult(FileSynchronizer.CopyIfNewer(
             sourceFilePath,
             destinationFilePath,
-            sourceMetadata);
+            sourceMetadata),
+            sourceFilePath,
+            destinationFilePath);
+
+    private static FileOperationResult CreateResult(
+        FileCopyDecision decision,
+        string sourcePath,
+        string destinationPath) =>
+        new(
+            decision switch
+            {
+                FileCopyDecision.Skip => FileOperationStatus.Skipped,
+                FileCopyDecision.Add => FileOperationStatus.Added,
+                FileCopyDecision.AddUnique => FileOperationStatus.AddedUnique,
+                FileCopyDecision.Replace => FileOperationStatus.Updated,
+                _ => throw new ArgumentOutOfRangeException(nameof(decision), decision, null)
+            },
+            sourcePath,
+            destinationPath,
+            decision == FileCopyDecision.Skip ? "Файл не требует обновления." : null);
 }

@@ -99,10 +99,10 @@ namespace dRz.GPT_Utilities.Archivist.Export
             {
                 try
                 {
-                    FileCopyDecision decision = _markdownProcessor.Process(
+                    FileOperationResult result = _markdownProcessor.Process(
                         sourceFile,
                         destinationDirectory);
-                    statistics.Add(decision);
+                    statistics.Add(result);
                 }
                 catch (Exception ex)
                 {
