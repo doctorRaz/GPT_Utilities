@@ -28,6 +28,7 @@
                 SourceDirectory = options.SourceDirectory,
                 DestinationDirectory = options.DestinationDirectory,
                 ExtractAll = options.ExtractAll,
+                ShowHelp = options.ShowHelp,
                 ZipFilePattern = pattern
             };
         }
