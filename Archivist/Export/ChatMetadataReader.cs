@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using dRz.GPT_Utilities.Archivist.Files;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -22,12 +23,26 @@ namespace dRz.GPT_Utilities.Archivist.Export
             @"\A---\s*\r?\n(?<yaml>.*?)\r?\n---\s*(?:\r?\n|$)",
             RegexOptions.Compiled | RegexOptions.Singleline);
 
+        private readonly IFileSystem _fileSystem;
+
+        public ChatMetadataReader(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem
+                ?? throw new ArgumentNullException(nameof(fileSystem));
+        }
+
+        // Временная совместимость со старыми тестами и вызывающим кодом.
+        public ChatMetadataReader()
+            : this(new LocalFileSystem())
+        {
+        }
+
         /// <summary>
         /// Читает и проверяет обязательные метаданные разговора.
         /// </summary>
         public ChatMetadata Read(string filePath)
         {
-            string content = File.ReadAllText(filePath);
+            string content = _fileSystem.ReadAllText(filePath);
             Match match = FrontMatterRegex.Match(content);
 
             if (!match.Success)

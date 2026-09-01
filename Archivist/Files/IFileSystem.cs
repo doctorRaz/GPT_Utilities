@@ -7,9 +7,22 @@ internal interface IFileSystem
 {
     bool FileExists(string path);
 
+    string ReadAllText(string path);
+
     void CopyFile(string sourcePath, string destinationPath, bool overwrite);
 
     void SetLastWriteTime(string path, DateTime lastWriteTime);
+
+    bool DirectoryExists(string path);
+
+    void CreateDirectory(string path);
+
+    void DeleteDirectory(string path, bool recursive);
+
+    IEnumerable<string> EnumerateFiles(
+        string path,
+        string searchPattern,
+        SearchOption searchOption);
 }
 
 /// <summary>
@@ -19,9 +32,24 @@ internal sealed class LocalFileSystem : IFileSystem
 {
     public bool FileExists(string path) => File.Exists(path);
 
+    public string ReadAllText(string path) => File.ReadAllText(path);
+
     public void CopyFile(string sourcePath, string destinationPath, bool overwrite) =>
         File.Copy(sourcePath, destinationPath, overwrite);
 
     public void SetLastWriteTime(string path, DateTime lastWriteTime) =>
         File.SetLastWriteTime(path, lastWriteTime);
+
+    public bool DirectoryExists(string path) => Directory.Exists(path);
+
+    public void CreateDirectory(string path) => Directory.CreateDirectory(path);
+
+    public void DeleteDirectory(string path, bool recursive) =>
+        Directory.Delete(path, recursive);
+
+    public IEnumerable<string> EnumerateFiles(
+        string path,
+        string searchPattern,
+        SearchOption searchOption) =>
+        Directory.EnumerateFiles(path, searchPattern, searchOption);
 }

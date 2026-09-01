@@ -32,7 +32,7 @@ namespace dRz.GPT_Utilities.Archivist
                 IUniqueFileNameProvider uniqueFileNameProvider =
                     new UniqueFileNameProvider(fileSystem);
                 IExportPathBuilder pathBuilder = new ExportPathBuilder();
-                IChatMetadataReader metadataReader = new ChatMetadataReader();
+                IChatMetadataReader metadataReader = new ChatMetadataReader(fileSystem);
                 IFileSynchronizer fileSynchronizer = new FileSynchronizerService(
                     metadataReader,
                     logger,
