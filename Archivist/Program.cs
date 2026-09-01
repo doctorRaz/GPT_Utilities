@@ -19,7 +19,7 @@ namespace dRz.GPT_Utilities.Archivist
             ConfigureApplication();
 
 #if DEBUG
-            LaunchDebugger();
+            //LaunchDebugger();
 #endif
 
             try
