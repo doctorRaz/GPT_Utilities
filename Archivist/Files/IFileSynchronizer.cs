@@ -47,11 +47,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     {
         ArgumentNullException.ThrowIfNull(sourceMetadata);
 
-        FileCopyDecision decision = GetCopyDecision(
+        FileOperationStatus status = GetOperationStatus(
             destinationFilePath,
             sourceMetadata);
 
-        if (decision == FileCopyDecision.AddUnique)
+        if (status == FileOperationStatus.AddedUnique)
         {
             string? matchingPath = FindMatchingDuplicate(
                 destinationFilePath,
@@ -70,11 +70,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             else
             {
                 destinationFilePath = matchingPath;
-                decision = GetCopyDecision(destinationFilePath, sourceMetadata);
+                status = GetOperationStatus(destinationFilePath, sourceMetadata);
             }
         }
 
-        if (decision == FileCopyDecision.Add)
+        if (status == FileOperationStatus.Added)
         {
             if (!_fileSystem.TryCopyFile(sourceFilePath, destinationFilePath))
             {
@@ -90,17 +90,17 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
         }
-        else if (decision != FileCopyDecision.Skip)
+        else if (status != FileOperationStatus.Skipped)
         {
             _fileSystem.CopyFile(sourceFilePath, destinationFilePath, overwrite: true);
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
         }
 
         FileOperationResult result = new(
-            ToStatus(decision),
+            status,
             sourceFilePath,
             destinationFilePath,
-            decision == FileCopyDecision.Skip
+            status == FileOperationStatus.Skipped
                 ? "Файл не требует обновления."
                 : null);
 
@@ -221,13 +221,13 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         return matchingPath;
     }
 
-    private FileCopyDecision GetCopyDecision(
+    private FileOperationStatus GetOperationStatus(
         string destinationFilePath,
         ChatMetadata sourceMetadata)
     {
         if (!_fileSystem.FileExists(destinationFilePath))
         {
-            return FileCopyDecision.Add;
+            return FileOperationStatus.Added;
         }
 
         try
@@ -240,41 +240,32 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 destinationId is null ||
                 sourceId != destinationId)
             {
-                return FileCopyDecision.AddUnique;
+                return FileOperationStatus.AddedUnique;
             }
 
             if (!destinationMetadata.UpdateTime.HasValue)
             {
-                return FileCopyDecision.Replace;
+                return FileOperationStatus.Updated;
             }
 
             if (!sourceMetadata.UpdateTime.HasValue)
             {
-                return FileCopyDecision.Skip;
+                return FileOperationStatus.Skipped;
             }
 
             return sourceMetadata.UpdateTime.Value > destinationMetadata.UpdateTime.Value
-                ? FileCopyDecision.Replace
-                : FileCopyDecision.Skip;
+                ? FileOperationStatus.Updated
+                : FileOperationStatus.Skipped;
         }
         catch (FormatException exception)
         {
             _logger.Error($"Не удалось прочитать метаданные: {destinationFilePath}", exception);
-            return FileCopyDecision.AddUnique;
+            return FileOperationStatus.AddedUnique;
         }
         catch (IOException exception)
         {
             _logger.Error($"Не удалось прочитать файл: {destinationFilePath}", exception);
-            return FileCopyDecision.AddUnique;
+            return FileOperationStatus.AddedUnique;
         }
     }
-
-    private static FileOperationStatus ToStatus(FileCopyDecision decision) => decision switch
-    {
-        FileCopyDecision.Skip => FileOperationStatus.Skipped,
-        FileCopyDecision.Add => FileOperationStatus.Added,
-        FileCopyDecision.AddUnique => FileOperationStatus.AddedUnique,
-        FileCopyDecision.Replace => FileOperationStatus.Updated,
-        _ => throw new ArgumentOutOfRangeException(nameof(decision), decision, null)
-    };
 }

@@ -36,32 +36,6 @@ internal sealed class ExportStatistics
     public IReadOnlyList<ExportError> MarkdownErrors => _markdownErrors;
 
     /// <summary>
-    /// Добавляет результат обработки одного Markdown-файла.
-    /// </summary>
-    public void Add(FileCopyDecision decision)
-    {
-        Total++;
-
-        switch (decision)
-        {
-            case FileCopyDecision.Skip:
-                Skipped++;
-                break;
-            case FileCopyDecision.Add:
-                Added++;
-                break;
-            case FileCopyDecision.AddUnique:
-                AddedUnique++;
-                break;
-            case FileCopyDecision.Replace:
-                Updated++;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(decision), decision, null);
-        }
-    }
-
-    /// <summary>
     /// Добавляет структурированный результат операции.
     /// </summary>
     public void Add(FileOperationResult result)
@@ -74,14 +48,24 @@ internal sealed class ExportStatistics
             return;
         }
 
-        Add(result.Status switch
+        Total++;
+        switch (result.Status)
         {
-            FileOperationStatus.Skipped => FileCopyDecision.Skip,
-            FileOperationStatus.Added => FileCopyDecision.Add,
-            FileOperationStatus.AddedUnique => FileCopyDecision.AddUnique,
-            FileOperationStatus.Updated => FileCopyDecision.Replace,
-            _ => throw new ArgumentOutOfRangeException(nameof(result), result.Status, null)
-        });
+            case FileOperationStatus.Skipped:
+                Skipped++;
+                break;
+            case FileOperationStatus.Added:
+                Added++;
+                break;
+            case FileOperationStatus.AddedUnique:
+                AddedUnique++;
+                break;
+            case FileOperationStatus.Updated:
+                Updated++;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result), result.Status, null);
+        }
     }
 
     /// <summary>
