@@ -6,7 +6,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
     /// <summary>
     /// Тесты для парсера аргументов командной строки, связанных с директорией назначения.
     /// </summary>
-    public sealed class ArgumentParserPaths
+    public sealed class ArgumentParserPathsTests
     {
         /// <summary>Проверяет возможность указать один каталог источником и назначением.</summary>
         [Fact]

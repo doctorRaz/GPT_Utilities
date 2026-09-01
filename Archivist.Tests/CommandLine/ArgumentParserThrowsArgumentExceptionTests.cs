@@ -6,7 +6,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
     /// <summary>
     /// Тесты для парсера аргументов командной строки, связанных с директорией назначения.
     /// </summary>
-    public sealed class ArgumentParserThrowsArgumentException
+    public sealed class ArgumentParserThrowsArgumentExceptionTests
     {
         /// <summary>Проверяет ошибку при передаче пустого исходного каталога.</summary>
         [Fact]

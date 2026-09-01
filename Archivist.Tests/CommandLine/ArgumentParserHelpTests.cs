@@ -3,7 +3,7 @@ using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
-    public class ArgumentParserHelp
+    public class ArgumentParserHelpTests
     {
         /// <summary>
         /// Тестирует возврат справки, когда аргументы не переданы.

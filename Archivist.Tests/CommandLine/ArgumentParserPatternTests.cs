@@ -4,7 +4,7 @@ using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
-    public class ArgumentParserPattern
+    public class ArgumentParserPatternTests
     {
         /// <summary>Проверяет сохранение расширения .zip без изменения регистра.</summary>
         [Fact]

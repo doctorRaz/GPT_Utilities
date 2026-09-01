@@ -5,10 +5,10 @@ using Xunit;
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
     /// <summary>
-    /// Тесты для CommandLineParser.
+    /// Тесты для CommandLineParserTests.
     /// Проверяют парсинг аргументов командной строки приложения GPT_Archivist.
     /// </summary>
-    public sealed class CommandLineParser
+    public sealed class CommandLineParserTests
     {
         /// <summary>Проверяет регистронезависимый разбор всех параметров.</summary>
         [Theory]

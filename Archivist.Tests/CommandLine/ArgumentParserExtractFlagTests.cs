@@ -3,7 +3,7 @@ using Xunit;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.CommandLine
 {
-    public class ArgumentParserExtractFlag
+    public class ArgumentParserExtractFlagTests
     {
         /// <summary>Проверяет включение обработки всех архивов коротким параметром.</summary>
         [Fact]

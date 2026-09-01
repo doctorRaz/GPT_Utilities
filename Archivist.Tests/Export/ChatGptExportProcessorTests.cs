@@ -12,10 +12,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 {
 
     /// <summary>
-    /// Тесты для ChatGptExportProcessor.
+    /// Тесты для ChatGptExportProcessorTests.
     /// Проверяют обработку ZIP-архивов экспорта ChatGPT и распределение файлов по временным периодам.
     /// </summary>
-    public sealed class ChatGptExportProcessor
+    public sealed class ChatGptExportProcessorTests
     {
         private readonly IChatGptExportProcessor _processor = new Archivist.Export.ChatGptExportProcessor();
         private static readonly DateTimeOffset CreateTime1 = new(2024, 1, 15, 10, 30, 45, 123, TimeSpan.Zero);
@@ -25,7 +25,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
 
 
-        static ChatGptExportProcessor()
+        static ChatGptExportProcessorTests()
         {
             // Регистрируем кодировку 866 для работы на всех платформах
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
