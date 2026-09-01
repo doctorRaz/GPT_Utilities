@@ -1,5 +1,6 @@
 ﻿using dRz.GPT_Utilities.Archivist.CommandLine;
 using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using System.Text;
 
@@ -24,10 +25,28 @@ namespace dRz.GPT_Utilities.Archivist
 
             try
             {
+                // Program является composition root приложения: здесь
+                // собираются конкретные инфраструктурные реализации.
+                IArchivistLogger logger = new ConsoleArchivistLogger();
+                IExportPathBuilder pathBuilder = new ExportPathBuilder();
+                IChatMetadataReader metadataReader = new ChatMetadataReaderAdapter();
+                IFileSynchronizer fileSynchronizer = new FileSynchronizerAdapter();
+                IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
+                    pathBuilder,
+                    metadataReader,
+                    fileSynchronizer,
+                    logger);
+
+                IChatGptExportProcessor processor = new ChatGptExportProcessor(
+                    new FileSystemArchiveSelector(),
+                    new ZipArchiveExtractor(Encoding.GetEncoding(866)),
+                    markdownProcessor,
+                    logger);
+
                 ArchivistApplication application =
-                                                new ArchivistApplication(
-                                                new CommandLineOptionsValidator(),
-                                                new ChatGptExportProcessor());
+                    new ArchivistApplication(
+                        new CommandLineOptionsValidator(),
+                        processor);
                 return application.Run(args);
             }
             catch (Exception ex)
