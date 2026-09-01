@@ -23,12 +23,14 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     private readonly IArchivistLogger _logger;
     private readonly IUniqueFileNameProvider _uniqueFileNameProvider;
     private readonly IFileSystem _fileSystem;
+    private readonly IConversationIndex _conversationIndex;
 
     public FileSynchronizerService(
         IChatMetadataReader metadataReader,
         IArchivistLogger logger,
         IUniqueFileNameProvider uniqueFileNameProvider,
-        IFileSystem fileSystem)
+        IFileSystem fileSystem,
+        IConversationIndex? conversationIndex = null)
     {
         _metadataReader = metadataReader
             ?? throw new ArgumentNullException(nameof(metadataReader));
@@ -38,6 +40,10 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             ?? throw new ArgumentNullException(nameof(uniqueFileNameProvider));
         _fileSystem = fileSystem
             ?? throw new ArgumentNullException(nameof(fileSystem));
+        _conversationIndex = conversationIndex ?? new ConversationIndex(
+            fileSystem,
+            metadataReader,
+            logger);
     }
 
     public FileOperationResult Synchronize(
@@ -46,6 +52,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         ChatMetadata sourceMetadata)
     {
         ArgumentNullException.ThrowIfNull(sourceMetadata);
+
+        string destinationDirectory = Path.GetDirectoryName(destinationFilePath)
+            ?? throw new InvalidOperationException(
+                $"Не удалось определить каталог: {destinationFilePath}");
+        _conversationIndex.EnsureIndexed(destinationDirectory);
 
         FileOperationStatus status = GetOperationStatus(
             destinationFilePath,
@@ -89,11 +100,13 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             }
 
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
+            _conversationIndex.Track(destinationFilePath, sourceMetadata);
         }
         else if (status != FileOperationStatus.Skipped)
         {
             _fileSystem.CopyFile(sourceFilePath, destinationFilePath, overwrite: true);
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
+            _conversationIndex.Track(destinationFilePath, sourceMetadata);
         }
 
         FileOperationResult result = new(
@@ -130,6 +143,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             }
 
             SetLastWriteTimeIfPresent(candidate, sourceMetadata);
+            _conversationIndex.Track(candidate, sourceMetadata);
 
             return new FileOperationResult(
                 FileOperationStatus.AddedUnique,
@@ -194,27 +208,23 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         string? matchingPath = null;
         DateTimeOffset? matchingUpdateTime = null;
 
-        foreach (string duplicatePath in _uniqueFileNameProvider.GetExistingDuplicates(destinationFilePath))
+        string directory = Path.GetDirectoryName(destinationFilePath)
+            ?? throw new InvalidOperationException(
+                $"Не удалось определить каталог: {destinationFilePath}");
+
+        foreach (string duplicatePath in _conversationIndex.FindPaths(
+            sourceId.Value,
+            directory))
         {
-            try
+            if (!_conversationIndex.TryGet(duplicatePath, out ChatMetadata metadata))
             {
-                ChatMetadata metadata = _metadataReader.Read(duplicatePath);
-                if (metadata.ConversationId == sourceId &&
-                    (matchingPath is null ||
-                     matchingUpdateTime is null ||
-                     metadata.UpdateTime > matchingUpdateTime))
-                {
-                    matchingPath = duplicatePath;
-                    matchingUpdateTime = metadata.UpdateTime;
-                }
+                continue;
             }
-            catch (FormatException exception)
+
+            if (metadata.UpdateTime > matchingUpdateTime || matchingPath is null)
             {
-                _logger.Error($"Не удалось прочитать метаданные: {duplicatePath}", exception);
-            }
-            catch (IOException exception)
-            {
-                _logger.Error($"Не удалось прочитать файл: {duplicatePath}", exception);
+                matchingPath = duplicatePath;
+                matchingUpdateTime = metadata.UpdateTime;
             }
         }
 
@@ -232,7 +242,12 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
         try
         {
-            ChatMetadata destinationMetadata = _metadataReader.Read(destinationFilePath);
+            ChatMetadata destinationMetadata;
+            if (!_conversationIndex.TryGet(destinationFilePath, out destinationMetadata!))
+            {
+                destinationMetadata = _metadataReader.Read(destinationFilePath);
+                _conversationIndex.Track(destinationFilePath, destinationMetadata);
+            }
             Guid? sourceId = sourceMetadata.ConversationId;
             Guid? destinationId = destinationMetadata.ConversationId;
 
