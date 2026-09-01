@@ -12,9 +12,19 @@ internal interface IExportPathBuilder
 
 /// <summary>
 /// Формирует структуру назначения <c>YYYY\MM-MMMM</c>.
+///
+/// Правила формирования пути:
+/// <list type="bullet">
+/// <item>время нормализуется к UTC;</item>
+/// <item>название месяца форматируется через <see cref="CultureInfo.InvariantCulture"/>;</item>
+/// <item>используется стабильный английский формат, например <c>2024\03-March</c>.</item>
+/// </list>
 /// </summary>
 internal sealed class ExportPathBuilder : IExportPathBuilder
 {
+    private const string YearFormat = "yyyy";
+    private const string MonthFormat = "MM-MMMM";
+
     private readonly IFileSystem _fileSystem;
 
     public ExportPathBuilder(IFileSystem fileSystem)
@@ -33,8 +43,8 @@ internal sealed class ExportPathBuilder : IExportPathBuilder
         DateTimeOffset createTime = metadata.CreateTime.ToUniversalTime();
         string monthDirectory = Path.Combine(
             destinationDirectory,
-            createTime.ToString("yyyy"),
-            createTime.ToString("MM-MMMM", System.Globalization.CultureInfo.InvariantCulture));
+            createTime.ToString(YearFormat, System.Globalization.CultureInfo.InvariantCulture),
+            createTime.ToString(MonthFormat, System.Globalization.CultureInfo.InvariantCulture));
 
         _fileSystem.CreateDirectory(monthDirectory);
         return Path.Combine(monthDirectory, fileName);

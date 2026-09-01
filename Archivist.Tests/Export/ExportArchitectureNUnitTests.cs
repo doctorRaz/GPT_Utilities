@@ -50,4 +50,23 @@ public sealed class ExportArchitectureNUnitTests
         Assert.That(path, Is.EqualTo(Path.Combine(expectedDirectory, "conversation.md")));
         Assert.That(Directory.Exists(expectedDirectory), Is.True);
     }
+
+    [Test]
+    public void PathBuilder_UsesUtcAndInvariantEnglishMonthName()
+    {
+        using TempDirectory destination = new();
+        ChatMetadata metadata = new()
+        {
+            // Локальное смещение +02:00 соответствует марту в UTC.
+            CreateTime = new DateTimeOffset(2024, 4, 1, 0, 30, 0, TimeSpan.FromHours(2))
+        };
+
+        string path = new ExportPathBuilder(new LocalFileSystem()).Build(
+            destination.Path,
+            metadata,
+            "conversation.md");
+
+        string expectedDirectory = Path.Combine(destination.Path, "2024", "03-March");
+        Assert.That(path, Is.EqualTo(Path.Combine(expectedDirectory, "conversation.md")));
+    }
 }
