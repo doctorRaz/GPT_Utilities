@@ -432,6 +432,29 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.Equal(2, stats.Total);
         }
 
+        [NUnit.Framework.TestCase("create_time")]
+        [NUnit.Framework.TestCase("update_time")]
+        public void Process_ReportsInvalidMetadataDate_WithoutCrashing(string invalidField)
+        {
+            using TempDirectory source = new();
+            using TempDirectory dest = new();
+
+            _ = CreateMalformedMetadataZip(source.Path, invalidField);
+
+            ExportResult result = _processor.Process(
+                new ExportRequest(source.Path, dest.Path, "*.zip", true));
+
+            global::NUnit.Framework.Assert.That(
+                result.Failed,
+                global::NUnit.Framework.Is.EqualTo(1));
+            global::NUnit.Framework.Assert.That(
+                result.MarkdownErrors,
+                global::NUnit.Framework.Has.Count.EqualTo(1));
+            global::NUnit.Framework.Assert.That(
+                result.MarkdownErrors[0].Message,
+                global::NUnit.Framework.Does.Contain("Некорректный YAML или дата"));
+        }
+
         [Fact]
         public void Process_FilesToDifferentMonths_WhenCreateTimeDiffers()
         {
@@ -568,6 +591,29 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                     writer.WriteLine();
                     writer.WriteLine($"Content of {file.FileName}");
                 }
+            }
+
+            return zipPath;
+        }
+
+        private static string CreateMalformedMetadataZip(
+            string sourceDirectory,
+            string invalidField)
+        {
+            string zipPath = Path.Combine(
+                sourceDirectory,
+                $"malformed_{Guid.NewGuid():N}.zip");
+
+            using (ZipArchive archive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            {
+                ZipArchiveEntry entry = archive.CreateEntry("malformed.md");
+                using StreamWriter writer = new(entry.Open(), Encoding.UTF8);
+                writer.WriteLine("---");
+                writer.WriteLine("create_time: 2024-01-15T10:30:45.000Z");
+                writer.WriteLine("update_time: 2024-01-16T11:45:30.000Z");
+                writer.WriteLine($"{invalidField}: not-a-date");
+                writer.WriteLine("chat_link: https://chatgpt.com/c/11111111-1111-1111-1111-111111111111");
+                writer.WriteLine("---");
             }
 
             return zipPath;

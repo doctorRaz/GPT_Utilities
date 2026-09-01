@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using dRz.GPT_Utilities.Archivist.Files;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -51,8 +52,19 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     $"В файле отсутствует YAML front matter: {filePath}");
             }
 
-            ChatMetadata? metadata = YamlDeserializer.Deserialize<ChatMetadata>(
-                match.Groups["yaml"].Value);
+            ChatMetadata? metadata;
+
+            try
+            {
+                metadata = YamlDeserializer.Deserialize<ChatMetadata>(
+                    match.Groups["yaml"].Value);
+            }
+            catch (YamlException exception)
+            {
+                throw new FormatException(
+                    $"Некорректный YAML или дата в файле: {filePath}",
+                    exception);
+            }
 
             if (metadata is null)
             {
