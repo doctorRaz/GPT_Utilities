@@ -1,3 +1,5 @@
+using dRz.GPT_Utilities.Archivist.Files;
+
 namespace dRz.GPT_Utilities.Archivist.Export;
 
 /// <summary>
@@ -13,6 +15,19 @@ internal interface IExportPathBuilder
 /// </summary>
 internal sealed class ExportPathBuilder : IExportPathBuilder
 {
+    private readonly IFileSystem _fileSystem;
+
+    public ExportPathBuilder()
+        : this(new LocalFileSystem())
+    {
+    }
+
+    public ExportPathBuilder(IFileSystem fileSystem)
+    {
+        _fileSystem = fileSystem
+            ?? throw new ArgumentNullException(nameof(fileSystem));
+    }
+
     public string Build(
         string destinationDirectory,
         ChatMetadata metadata,
@@ -26,7 +41,7 @@ internal sealed class ExportPathBuilder : IExportPathBuilder
             createTime.ToString("yyyy"),
             createTime.ToString("MM-MMMM", System.Globalization.CultureInfo.InvariantCulture));
 
-        Directory.CreateDirectory(monthDirectory);
+        _fileSystem.CreateDirectory(monthDirectory);
         return Path.Combine(monthDirectory, fileName);
     }
 }

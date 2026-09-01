@@ -1,3 +1,5 @@
+using dRz.GPT_Utilities.Archivist.Files;
+
 namespace dRz.GPT_Utilities.Archivist.Export;
 
 /// <summary>
@@ -14,11 +16,19 @@ internal interface IArchiveExtractor
 internal sealed class ExtractedArchive : IDisposable
 {
     private readonly string _directory;
+    private readonly IFileSystem _fileSystem;
 
     public ExtractedArchive(string directory)
+        : this(directory, new LocalFileSystem())
+    {
+    }
+
+    public ExtractedArchive(string directory, IFileSystem fileSystem)
     {
         _directory = directory;
-        MarkdownFiles = Directory
+        _fileSystem = fileSystem
+            ?? throw new ArgumentNullException(nameof(fileSystem));
+        MarkdownFiles = _fileSystem
             .EnumerateFiles(directory, "*.md", SearchOption.AllDirectories)
             .ToArray();
     }
@@ -27,14 +37,14 @@ internal sealed class ExtractedArchive : IDisposable
 
     public void Dispose()
     {
-        if (!Directory.Exists(_directory))
+        if (!_fileSystem.DirectoryExists(_directory))
         {
             return;
         }
 
         try
         {
-            Directory.Delete(_directory, recursive: true);
+            _fileSystem.DeleteDirectory(_directory, recursive: true);
         }
         catch (IOException)
         {

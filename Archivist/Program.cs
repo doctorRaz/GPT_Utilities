@@ -31,7 +31,7 @@ namespace dRz.GPT_Utilities.Archivist
                 IFileSystem fileSystem = new LocalFileSystem();
                 IUniqueFileNameProvider uniqueFileNameProvider =
                     new UniqueFileNameProvider(fileSystem);
-                IExportPathBuilder pathBuilder = new ExportPathBuilder();
+                IExportPathBuilder pathBuilder = new ExportPathBuilder(fileSystem);
                 IChatMetadataReader metadataReader = new ChatMetadataReader(fileSystem);
                 IFileSynchronizer fileSynchronizer = new FileSynchronizerService(
                     metadataReader,
@@ -46,8 +46,8 @@ namespace dRz.GPT_Utilities.Archivist
                     new FileNameNormalizer());
 
                 IChatGptExportProcessor processor = new ChatGptExportProcessor(
-                    new FileSystemArchiveSelector(),
-                    new ZipArchiveExtractor(Encoding.GetEncoding(866)),
+                    new FileSystemArchiveSelector(fileSystem),
+                    new ZipArchiveExtractor(Encoding.GetEncoding(866), fileSystem),
                     markdownProcessor,
                     logger);
 

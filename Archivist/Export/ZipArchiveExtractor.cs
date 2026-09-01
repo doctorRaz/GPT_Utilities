@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text;
+using dRz.GPT_Utilities.Archivist.Files;
 
 namespace dRz.GPT_Utilities.Archivist.Export;
 
@@ -9,10 +10,20 @@ namespace dRz.GPT_Utilities.Archivist.Export;
 internal sealed class ZipArchiveExtractor : IArchiveExtractor
 {
     private readonly Encoding _entryNameEncoding;
+    private readonly IFileSystem _fileSystem;
 
     public ZipArchiveExtractor(Encoding entryNameEncoding)
+        : this(entryNameEncoding, new LocalFileSystem())
+    {
+    }
+
+    public ZipArchiveExtractor(
+        Encoding entryNameEncoding,
+        IFileSystem fileSystem)
     {
         _entryNameEncoding = entryNameEncoding;
+        _fileSystem = fileSystem
+            ?? throw new ArgumentNullException(nameof(fileSystem));
     }
 
     public ExtractedArchive Extract(FileInfo archive)
@@ -23,7 +34,7 @@ internal sealed class ZipArchiveExtractor : IArchiveExtractor
             Path.GetTempPath(),
             $"GPT_Archivist_{Guid.NewGuid():N}");
 
-        Directory.CreateDirectory(directory);
+        _fileSystem.CreateDirectory(directory);
 
         try
         {
@@ -32,7 +43,7 @@ internal sealed class ZipArchiveExtractor : IArchiveExtractor
                 directory,
                 _entryNameEncoding);
 
-            return new ExtractedArchive(directory);
+            return new ExtractedArchive(directory, _fileSystem);
         }
         catch
         {
@@ -40,7 +51,7 @@ internal sealed class ZipArchiveExtractor : IArchiveExtractor
             // должен быть удалён до передачи исключения вызывающему коду.
             try
             {
-                Directory.Delete(directory, recursive: true);
+                _fileSystem.DeleteDirectory(directory, recursive: true);
             }
             catch (IOException)
             {

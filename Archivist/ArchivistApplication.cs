@@ -1,6 +1,7 @@
 ﻿using dRz.GPT_Utilities.Archivist.CommandLine;
 using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
+using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Localization;
 
 namespace dRz.GPT_Utilities.Archivist
@@ -9,6 +10,7 @@ namespace dRz.GPT_Utilities.Archivist
     {
         private readonly CommandLineOptionsValidator _validator;
         private readonly IChatGptExportProcessor _processor;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>Initializes a new instance of the <see cref="ArchivistApplication"/> class.</summary>
         /// <param name="validator">The validator.</param>
@@ -16,9 +18,19 @@ namespace dRz.GPT_Utilities.Archivist
         public ArchivistApplication(
                                 CommandLineOptionsValidator validator,
                                 IChatGptExportProcessor processor)
+            : this(validator, processor, new LocalFileSystem())
+        {
+        }
+
+        public ArchivistApplication(
+                                CommandLineOptionsValidator validator,
+                                IChatGptExportProcessor processor,
+                                IFileSystem fileSystem)
         {
             _validator = validator;
             _processor = processor;
+            _fileSystem = fileSystem
+                ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         internal int Run(string[] args)
@@ -50,16 +62,16 @@ namespace dRz.GPT_Utilities.Archivist
             return SuccessExitCode;
         }
 
-        private static void ValidateDirectories(CommandLineOptions options)
+        private void ValidateDirectories(CommandLineOptions options)
         {
-            if (!Directory.Exists(options.SourceDirectory))
+            if (!_fileSystem.DirectoryExists(options.SourceDirectory))
             {
                 throw new DirectoryNotFoundException(
                     $"Каталог с архивами не найден: {options.SourceDirectory}");
             }
 
             // Каталог назначения может отсутствовать.
-            _ = Directory.CreateDirectory(options.DestinationDirectory);
+            _fileSystem.CreateDirectory(options.DestinationDirectory);
         }
 
         private static void PrintStatistics(ExportResult statistics)
