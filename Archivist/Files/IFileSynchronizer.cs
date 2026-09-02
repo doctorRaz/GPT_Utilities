@@ -180,7 +180,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         Guid sourceConversationId,
         string destinationDirectory)
     {
-        DateTimeOffset sourceUpdateTime = sourceMetadata.UpdateTime ?? default;
+        DateTimeOffset sourceUpdateTime = NormalizeUpdateTime(sourceMetadata.UpdateTime);
         List<string> stalePaths = new();
         bool hasNewerVersion = false;
 
@@ -194,7 +194,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 _conversationIndex.Track(path, existingMetadata);
             }
 
-            DateTimeOffset existingUpdateTime = existingMetadata.UpdateTime ?? default;
+            DateTimeOffset existingUpdateTime = NormalizeUpdateTime(existingMetadata.UpdateTime);
             if (existingUpdateTime <= sourceUpdateTime)
             {
                 stalePaths.Add(path);
@@ -294,6 +294,13 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 actualDestinationPath);
         WriteOperationResult(result);
         return result;
+    }
+
+    private static DateTimeOffset NormalizeUpdateTime(DateTimeOffset? updateTime)
+    {
+        DateTimeOffset utc = (updateTime ?? default).ToUniversalTime();
+        long ticks = utc.Ticks - utc.Ticks % TimeSpan.TicksPerMillisecond;
+        return new DateTimeOffset(ticks, TimeSpan.Zero);
     }
 
     private void DeleteStaleVersions(
@@ -490,7 +497,8 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 return FileOperationStatus.Skipped;
             }
 
-            return sourceMetadata.UpdateTime.Value > destinationMetadata.UpdateTime.Value
+            return NormalizeUpdateTime(sourceMetadata.UpdateTime) >
+                   NormalizeUpdateTime(destinationMetadata.UpdateTime)
                 ? FileOperationStatus.Updated
                 : FileOperationStatus.Skipped;
         }

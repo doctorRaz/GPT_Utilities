@@ -422,6 +422,57 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         }
 
         [Test]
+        public void Synchronize_TruncatesFractionalSecondsBeforeComparing()
+        {
+            using TempDirectory temp = new();
+            DateTimeOffset baseTime = new(2026, 9, 1, 9, 8, 3, 422, TimeSpan.Zero);
+            string destination = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                baseTime,
+                ConversationA,
+                "old");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                baseTime,
+                ConversationA,
+                "replacement");
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
+            metadata.UpdateTime = baseTime.AddTicks(9_130);
+
+            FileOperationResult result = Synchronize(source, destination, metadata);
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.ReadAllText(destination), Does.Contain("replacement"));
+        }
+
+        [Test]
+        public void Synchronize_ConvertsOffsetsToUtcBeforeComparing()
+        {
+            using TempDirectory temp = new();
+            DateTimeOffset destinationTime = new(2026, 9, 1, 12, 8, 3, 422, TimeSpan.FromHours(3));
+            string destination = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                destinationTime,
+                ConversationA,
+                "old");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                destinationTime.ToUniversalTime(),
+                ConversationA,
+                "replacement");
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
+
+            FileOperationResult result = Synchronize(source, destination, metadata);
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.ReadAllText(destination), Does.Contain("replacement"));
+        }
+
+        [Test]
         public void Synchronize_ReplacesVersion_WhenSourceUpdateTimeIsMissing()
         {
             using TempDirectory temp = new();
