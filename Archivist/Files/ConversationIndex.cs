@@ -40,15 +40,30 @@ internal interface IConversationIndex
     void Track(string path, ChatMetadata metadata);
 }
 
+/// <summary>
+/// Реализация индекса Markdown-файлов для быстрого поиска по идентификатору разговора.
+/// </summary>
 internal sealed class ConversationIndex : IConversationIndex
 {
+    /// <summary>Система файловых операций.</summary>
     private readonly IFileSystem _fileSystem;
+    /// <summary>Средство чтения метаданных.</summary>
     private readonly IChatMetadataReader _metadataReader;
+    /// <summary>Журналировщик.</summary>
     private readonly IArchivistLogger _logger;
+    /// <summary>Набор уже проиндексированных каталогов.</summary>
     private readonly HashSet<string> _indexedDirectories = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>Словарь метаданных, индексируемый по пути к файлу.</summary>
     private readonly Dictionary<string, ChatMetadata> _byPath = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>Словарь путей к файлам, индексируемый по идентификатору разговора.</summary>
     private readonly Dictionary<Guid, HashSet<string>> _byConversation = new();
 
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ConversationIndex"/>.
+    /// </summary>
+    /// <param name="fileSystem">Система файловых операций.</param>
+    /// <param name="metadataReader">Средство чтения метаданных.</param>
+    /// <param name="logger">Журналировщик.</param>
     public ConversationIndex(
         IFileSystem fileSystem,
         IChatMetadataReader metadataReader,
@@ -59,6 +74,10 @@ internal sealed class ConversationIndex : IConversationIndex
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Проверяет, проиндексирован ли каталог, и выполняет индексацию при необходимости.
+    /// </summary>
+    /// <param name="directory">Путь к каталогу.</param>
     public void EnsureIndexed(string directory)
     {
         if (string.IsNullOrWhiteSpace(directory))
@@ -90,9 +109,21 @@ internal sealed class ConversationIndex : IConversationIndex
         }
     }
 
+    /// <summary>
+    /// Пытается извлечь метаданные для указанного пути.
+    /// </summary>
+    /// <param name="path">Путь к файлу.</param>
+    /// <param name="metadata">Выходной параметр с метаданными.</param>
+    /// <returns>True, если метаданные найдены.</returns>
     public bool TryGet(string path, out ChatMetadata metadata) =>
         _byPath.TryGetValue(Normalize(path), out metadata!);
 
+    /// <summary>
+    /// Находит все пути к файлам, принадлежащим указанному разговору, в пределах заданного каталога.
+    /// </summary>
+    /// <param name="conversationId">ID разговора.</param>
+    /// <param name="directory">Каталог поиска.</param>
+    /// <returns>Коллекция путей к файлам.</returns>
     public IEnumerable<string> FindPaths(Guid conversationId, string directory)
     {
         if (!_byConversation.TryGetValue(conversationId, out HashSet<string>? paths))
@@ -106,6 +137,11 @@ internal sealed class ConversationIndex : IConversationIndex
             normalizedDirectory, StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <summary>
+    /// Добавляет файл и его метаданные в индекс.
+    /// </summary>
+    /// <param name="path">Путь к файлу.</param>
+    /// <param name="metadata">Метаданные файла.</param>
     public void Track(string path, ChatMetadata metadata)
     {
         ArgumentNullException.ThrowIfNull(metadata);
@@ -131,5 +167,10 @@ internal sealed class ConversationIndex : IConversationIndex
         }
     }
 
+    /// <summary>
+    /// Нормализует путь, преобразуя его в полный путь.
+    /// </summary>
+    /// <param name="path">Путь для нормализации.</param>
+    /// <returns>Полный путь.</returns>
     private static string Normalize(string path) => Path.GetFullPath(path);
 }

@@ -5,11 +5,28 @@ namespace dRz.GPT_Utilities.Archivist.Files;
 /// </summary>
 internal interface IUniqueFileNameProvider
 {
+    /// <summary>
+    /// Возвращает уникальный путь для файла. Если файл существует, добавляется числовой суффикс.
+    /// </summary>
+    /// <param name="filePath">Путь к файлу.</param>
+    /// <returns>Уникальный путь.</returns>
     string GetUnique(string filePath);
 
+    /// <summary>
+    /// Возвращает уникальный путь, исключая заданный набор путей.
+    /// </summary>
+    /// <param name="filePath">Путь к файлу.</param>
+    /// <param name="excludedPaths">Набор исключаемых путей.</param>
+    /// <returns>Уникальный путь.</returns>
     string GetUnique(
         string filePath,
         IReadOnlySet<string> excludedPaths);
+
+    /// <summary>
+    /// Находит все существующие файлы-дубликаты для указанного пути.
+    /// </summary>
+    /// <param name="filePath">Путь к исходному файлу.</param>
+    /// <returns>Коллекция путей к дубликатам.</returns>
     IEnumerable<string> GetExistingDuplicates(string filePath);
 }
 
@@ -20,12 +37,17 @@ internal sealed class UniqueFileNameProvider : IUniqueFileNameProvider
 {
     private readonly IFileSystem _fileSystem;
 
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="UniqueFileNameProvider"/>.
+    /// </summary>
+    /// <param name="fileSystem">Система файловых операций.</param>
     public UniqueFileNameProvider(IFileSystem fileSystem)
     {
         _fileSystem = fileSystem
             ?? throw new ArgumentNullException(nameof(fileSystem));
     }
 
+    /// <summary>Максимальное количество попыток подбора суффикса.</summary>
     private const int MaxDuplicateNumber = 100;
 
     public string GetUnique(string filePath)
@@ -82,6 +104,11 @@ internal sealed class UniqueFileNameProvider : IUniqueFileNameProvider
         }
     }
 
+    /// <summary>
+    /// Извлекает путь к каталогу из полного пути к файлу.
+    /// </summary>
+    /// <param name="filePath">Путь к файлу.</param>
+    /// <returns>Путь к каталогу.</returns>
     private static string GetDirectory(string filePath) =>
         Path.GetDirectoryName(filePath)
         ?? throw new InvalidOperationException(

@@ -8,6 +8,13 @@ namespace dRz.GPT_Utilities.Archivist.Files;
 /// </summary>
 internal interface IFileSynchronizer
 {
+    /// <summary>
+    /// Синхронизирует исходный файл с целевым, применяя соответствующую политику (добавление, обновление или пропуск).
+    /// </summary>
+    /// <param name="sourceFilePath">Путь к исходному файлу.</param>
+    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
+    /// <param name="sourceMetadata">Метаданные исходного файла.</param>
+    /// <returns>Результат операции синхронизации.</returns>
     FileOperationResult Synchronize(
         string sourceFilePath,
         string destinationFilePath,
@@ -19,12 +26,25 @@ internal interface IFileSynchronizer
 /// </summary>
 internal sealed class FileSynchronizerService : IFileSynchronizer
 {
+    /// <summary>Средство чтения метаданных.</summary>
     private readonly IChatMetadataReader _metadataReader;
+    /// <summary>Журналировщик.</summary>
     private readonly IArchivistLogger _logger;
+    /// <summary>Провайдер уникальных имен.</summary>
     private readonly IUniqueFileNameProvider _uniqueFileNameProvider;
+    /// <summary>Система файловых операций.</summary>
     private readonly IFileSystem _fileSystem;
+    /// <summary>Индекс разговоров.</summary>
     private readonly IConversationIndex _conversationIndex;
 
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="FileSynchronizerService"/>.
+    /// </summary>
+    /// <param name="metadataReader">Средство чтения метаданных.</param>
+    /// <param name="logger">Журналировщик.</param>
+    /// <param name="uniqueFileNameProvider">Провайдер уникальных имен.</param>
+    /// <param name="fileSystem">Система файловых операций.</param>
+    /// <param name="conversationIndex">Индекс разговоров (необязательно).</param>
     public FileSynchronizerService(
         IChatMetadataReader metadataReader,
         IArchivistLogger logger,
@@ -46,6 +66,13 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             logger);
     }
 
+    /// <summary>
+    /// Синхронизирует исходный файл с целевым, обрабатывая конфликты имен и обеспечивая консистентность индекса.
+    /// </summary>
+    /// <param name="sourceFilePath">Путь к исходному файлу.</param>
+    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
+    /// <param name="sourceMetadata">Метаданные исходного файла.</param>
+    /// <returns>Результат операции синхронизации.</returns>
     public FileOperationResult Synchronize(
         string sourceFilePath,
         string destinationFilePath,
@@ -121,6 +148,13 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         return result;
     }
 
+    /// <summary>
+    /// Копирует файл, пытаясь подобрать уникальное имя, если целевое занято или приводит к дубликату.
+    /// </summary>
+    /// <param name="sourceFilePath">Путь к исходному файлу.</param>
+    /// <param name="destinationFilePath">Базовый путь назначения.</param>
+    /// <param name="sourceMetadata">Метаданные исходного файла.</param>
+    /// <returns>Результат операции с уникальным путем.</returns>
     private FileOperationResult CopyToUniqueName(
         string sourceFilePath,
         string destinationFilePath,
@@ -184,6 +218,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         }
     }
 
+    /// <summary>
+    /// Устанавливает время последней записи файла, если в метаданных указана дата создания.
+    /// </summary>
+    /// <param name="destinationFilePath">Путь к файлу.</param>
+    /// <param name="sourceMetadata">Метаданные файла.</param>
     private void SetLastWriteTimeIfPresent(
         string destinationFilePath,
         ChatMetadata sourceMetadata)
@@ -196,6 +235,18 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         }
     }
 
+    /// <summary>
+    /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
+    /// </summary>
+    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
+    /// <param name="sourceId">ID разговора.</param>
+    /// <returns>Путь к найденному дубликату или null, если не найден.</returns>
+    /// <summary>
+    /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
+    /// </summary>
+    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
+    /// <param name="sourceId">ID разговора.</param>
+    /// <returns>Путь к найденному дубликату или null, если не найден.</returns>
     private string? FindMatchingDuplicate(
         string destinationFilePath,
         Guid? sourceId)
@@ -231,6 +282,12 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         return matchingPath;
     }
 
+    /// <summary>
+    /// Определяет статус операции на основе состояния целевого файла и метаданных.
+    /// </summary>
+    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
+    /// <param name="sourceMetadata">Метаданные исходного файла.</param>
+    /// <returns>Статус операции.</returns>
     private FileOperationStatus GetOperationStatus(
         string destinationFilePath,
         ChatMetadata sourceMetadata)

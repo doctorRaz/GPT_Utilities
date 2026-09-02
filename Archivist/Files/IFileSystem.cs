@@ -5,27 +5,59 @@ namespace dRz.GPT_Utilities.Archivist.Files;
 /// </summary>
 internal interface IFileSystem
 {
+    /// <summary>Проверяет, существует ли файл.</summary>
+    /// <param name="path">Путь к файлу.</param>
+    /// <returns>True, если файл существует.</returns>
     bool FileExists(string path);
 
+    /// <summary>Читает весь текст из файла.</summary>
+    /// <param name="path">Путь к файлу.</param>
+    /// <returns>Содержимое файла.</returns>
     string ReadAllText(string path);
 
+    /// <summary>Читает строки из файла.</summary>
+    /// <param name="path">Путь к файлу.</param>
+    /// <returns>Перечисление строк.</returns>
     IEnumerable<string> ReadLines(string path);
 
+    /// <summary>Копирует файл.</summary>
+    /// <param name="sourcePath">Путь к исходному файлу.</param>
+    /// <param name="destinationPath">Путь к целевому файлу.</param>
+    /// <param name="overwrite">Разрешить перезапись.</param>
     void CopyFile(string sourcePath, string destinationPath, bool overwrite);
 
     /// <summary>
     /// Пытается создать файл без перезаписи существующего файла.
     /// </summary>
+    /// <param name="sourcePath">Путь к исходному файлу.</param>
+    /// <param name="destinationPath">Путь к целевому файлу.</param>
+    /// <returns>True, если копирование прошло успешно.</returns>
     bool TryCopyFile(string sourcePath, string destinationPath);
 
+    /// <summary>Устанавливает время последней записи файла.</summary>
+    /// <param name="path">Путь к файлу.</param>
+    /// <param name="lastWriteTime">Новое время записи.</param>
     void SetLastWriteTime(string path, DateTime lastWriteTime);
 
+    /// <summary>Проверяет, существует ли каталог.</summary>
+    /// <param name="path">Путь к каталогу.</param>
+    /// <returns>True, если каталог существует.</returns>
     bool DirectoryExists(string path);
 
+    /// <summary>Создает каталог.</summary>
+    /// <param name="path">Путь к каталогу.</param>
     void CreateDirectory(string path);
 
+    /// <summary>Удаляет каталог.</summary>
+    /// <param name="path">Путь к каталогу.</param>
+    /// <param name="recursive">Удалять ли содержимое рекурсивно.</param>
     void DeleteDirectory(string path, bool recursive);
 
+    /// <summary>Перечисляет файлы в каталоге.</summary>
+    /// <param name="path">Путь к каталогу.</param>
+    /// <param name="searchPattern">Шаблон поиска.</param>
+    /// <param name="searchOption">Параметры поиска (подкаталоги или только текущий).</param>
+    /// <returns>Перечисление путей к файлам.</returns>
     IEnumerable<string> EnumerateFiles(
         string path,
         string searchPattern,
