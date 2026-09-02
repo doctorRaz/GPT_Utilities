@@ -119,7 +119,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             string unique = temp.Combine("dst", "Chat (1).md");
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.AddedUnique));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Added));
             Assert.That(File.ReadAllText(destination), Does.Contain("first"));
             Assert.That(File.Exists(unique), Is.True);
             Assert.That(File.ReadAllText(unique), Does.Contain("second"));
@@ -152,9 +152,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
-            Assert.That(File.ReadAllText(matchingDestination), Does.Contain("new second"));
-            Assert.That(temp.Combine("dst", "Chat (2).md"), Does.Not.Exist);
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Added));
+            Assert.That(File.Exists(matchingDestination), Is.False);
+            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("new second"));
         }
 
         [Test]
@@ -191,7 +191,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), metadata);
 
             Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
-            Assert.That(File.ReadAllText(staleMatch), Does.Contain("stale second"));
+            Assert.That(File.Exists(staleMatch), Is.False);
             Assert.That(File.ReadAllText(newestMatch), Does.Contain("newest second"));
         }
 
@@ -301,7 +301,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.AddedUnique));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Added));
             Assert.That(File.ReadAllText(destination), Is.EqualTo("not a chatgpt export"));
             Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
         }
@@ -327,6 +327,122 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             DateTime actual = File.GetLastWriteTime(destination);
 
             Assert.That(actual, Is.EqualTo(expected).Within(TimeSpan.FromSeconds(2)));
+        }
+
+        [Test]
+        public void Synchronize_RemovesAllVersionsNotNewer_WhenSourceIsNewest()
+        {
+            using TempDirectory temp = new();
+            _ = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(1),
+                ConversationA,
+                "old");
+            string staleVersion = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat (1).md"),
+                CreateTime,
+                CreateTime.AddHours(2),
+                ConversationA,
+                "stale");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(3),
+                ConversationA,
+                "new");
+            string destination = temp.Combine("dst", "Chat.md");
+
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
+            FileOperationResult result = Synchronize(source, destination, metadata);
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(destination), Is.True);
+            Assert.That(File.ReadAllText(destination), Does.Contain("new"));
+            Assert.That(File.Exists(staleVersion), Is.False);
+        }
+
+        [Test]
+        public void Synchronize_RemovesStaleVersionsAndSkips_WhenNewerVersionExists()
+        {
+            using TempDirectory temp = new();
+            string staleVersion = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(1),
+                ConversationA,
+                "stale");
+            string newestVersion = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat (1).md"),
+                CreateTime,
+                CreateTime.AddHours(3),
+                ConversationA,
+                "newest");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(2),
+                ConversationA,
+                "incoming");
+
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
+            FileOperationResult result = Synchronize(
+                source,
+                temp.Combine("dst", "Chat.md"),
+                metadata);
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
+            Assert.That(File.Exists(staleVersion), Is.False);
+            Assert.That(File.ReadAllText(newestVersion), Does.Contain("newest"));
+        }
+
+        [Test]
+        public void Synchronize_ReplacesVersion_WhenUpdateTimesAreEqual()
+        {
+            using TempDirectory temp = new();
+            DateTimeOffset updateTime = CreateTime.AddHours(1);
+            string destination = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                updateTime,
+                ConversationA,
+                "old");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                updateTime,
+                ConversationA,
+                "replacement");
+
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
+            FileOperationResult result = Synchronize(source, destination, metadata);
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.ReadAllText(destination), Does.Contain("replacement"));
+        }
+
+        [Test]
+        public void Synchronize_ReplacesVersion_WhenSourceUpdateTimeIsMissing()
+        {
+            using TempDirectory temp = new();
+            string destination = MarkdownFactory.Write(
+                temp.Combine("dst", "Chat.md"),
+                CreateTime,
+                updateTime: null,
+                chatLink: ConversationA,
+                body: "old");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(1),
+                ConversationA,
+                "replacement");
+
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
+            FileOperationResult result = Synchronize(source, destination, metadata);
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.ReadAllText(destination), Does.Contain("replacement"));
         }
 
         [Test]

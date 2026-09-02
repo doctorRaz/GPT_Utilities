@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using dRz.GPT_Utilities.Archivist.Files;
 using YamlDotNet.Core;
@@ -34,8 +35,23 @@ namespace dRz.GPT_Utilities.Archivist.Export
         }
 
         /// <summary>
-        /// Читает и проверяет обязательные метаданные разговора.
+        /// Читает и проверяет metadata файла.
         /// </summary>
+        private sealed class RawChatMetadata
+        {
+            public DateTimeOffset CreateTime { get; set; }
+
+            public string? UpdateTime { get; set; }
+
+            public string? DateExport { get; set; }
+
+            public string? ChatLink { get; set; }
+
+            public string? Title { get; set; }
+
+            public List<string?>? Tags { get; set; }
+        }
+
         public ChatMetadata Read(string filePath)
         {
             StringBuilder frontMatter = new();
@@ -59,11 +75,11 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     $"В файле отсутствует YAML front matter: {filePath}");
             }
 
-            ChatMetadata? metadata;
+            RawChatMetadata? rawMetadata;
 
             try
             {
-                metadata = YamlDeserializer.Deserialize<ChatMetadata>(
+                rawMetadata = YamlDeserializer.Deserialize<RawChatMetadata>(
                     match.Groups["yaml"].Value);
             }
             catch (YamlException exception)
@@ -73,25 +89,37 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     exception);
             }
 
-            if (metadata is null)
+            if (rawMetadata is null)
             {
                 throw new FormatException(
                     $"Не удалось прочитать YAML: {filePath}");
             }
 
-            if (metadata.CreateTime == default)
+            if (rawMetadata.CreateTime == default)
             {
                 throw new FormatException(
                     $"В YAML отсутствует или некорректен create_time: {filePath}");
             }
 
-            if (metadata.UpdateTime == default)
+            DateTimeOffset? updateTime = null;
+            if (DateTimeOffset.TryParse(
+                    rawMetadata.UpdateTime,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.RoundtripKind,
+                    out DateTimeOffset parsedUpdateTime))
             {
-                throw new FormatException(
-                    $"В YAML отсутствует или некорректен update_time: {filePath}");
+                updateTime = parsedUpdateTime;
             }
 
-            return metadata;
+            return new ChatMetadata
+            {
+                CreateTime = rawMetadata.CreateTime,
+                UpdateTime = updateTime,
+                DateExport = rawMetadata.DateExport,
+                ChatLink = rawMetadata.ChatLink,
+                Title = rawMetadata.Title,
+                Tags = rawMetadata.Tags ?? new List<string?>()
+            };
         }
     }
 }

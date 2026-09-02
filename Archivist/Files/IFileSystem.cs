@@ -26,6 +26,10 @@ internal interface IFileSystem
     /// <param name="overwrite">Разрешить перезапись.</param>
     void CopyFile(string sourcePath, string destinationPath, bool overwrite);
 
+    /// <summary>Удаляет файл.</summary>
+    /// <param name="path">Путь к файлу.</param>
+    void DeleteFile(string path);
+
     /// <summary>
     /// Пытается создать файл без перезаписи существующего файла.
     /// </summary>
@@ -94,6 +98,8 @@ internal sealed class LocalFileSystem : IFileSystem
 
     public void SetLastWriteTime(string path, DateTime lastWriteTime) =>
         File.SetLastWriteTime(path, lastWriteTime);
+
+    public void DeleteFile(string path) => File.Delete(path);
 
     public bool DirectoryExists(string path) => Directory.Exists(path);
 

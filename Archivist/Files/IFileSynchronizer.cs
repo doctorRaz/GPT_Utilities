@@ -85,6 +85,16 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 $"Не удалось определить каталог: {destinationFilePath}");
         _conversationIndex.EnsureIndexed(destinationDirectory);
 
+        if (sourceMetadata.ConversationId is Guid sourceConversationId)
+        {
+            return SynchronizeConversation(
+                sourceFilePath,
+                destinationFilePath,
+                sourceMetadata,
+                sourceConversationId,
+                destinationDirectory);
+        }
+
         FileOperationStatus status = GetOperationStatus(
             destinationFilePath,
             sourceMetadata);
@@ -146,6 +156,146 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
         WriteOperationResult(result);
         return result;
+    }
+
+    private FileOperationResult SynchronizeConversation(
+        string sourceFilePath,
+        string destinationFilePath,
+        ChatMetadata sourceMetadata,
+        Guid sourceConversationId,
+        string destinationDirectory)
+    {
+        DateTimeOffset sourceUpdateTime = sourceMetadata.UpdateTime ?? default;
+        List<string> stalePaths = new();
+        bool hasNewerVersion = false;
+
+        foreach (string path in _conversationIndex.FindPaths(
+            sourceConversationId,
+            destinationDirectory))
+        {
+            if (!_conversationIndex.TryGet(path, out ChatMetadata existingMetadata))
+            {
+                existingMetadata = _metadataReader.Read(path);
+                _conversationIndex.Track(path, existingMetadata);
+            }
+
+            DateTimeOffset existingUpdateTime = existingMetadata.UpdateTime ?? default;
+            if (existingUpdateTime <= sourceUpdateTime)
+            {
+                stalePaths.Add(path);
+            }
+            else
+            {
+                hasNewerVersion = true;
+            }
+        }
+
+        if (hasNewerVersion)
+        {
+            DeleteStaleVersions(stalePaths, preservedPath: null);
+
+            FileOperationResult skippedResult = new(
+                FileOperationStatus.Skipped,
+                sourceFilePath,
+                destinationFilePath,
+                "Существует более новая версия разговора.");
+            WriteOperationResult(skippedResult);
+            return skippedResult;
+        }
+
+        FileOperationResult? uniqueResult = null;
+        bool copied;
+        if (_fileSystem.FileExists(destinationFilePath))
+        {
+            if (_conversationIndex.TryGet(
+                    destinationFilePath,
+                    out ChatMetadata destinationMetadata) &&
+                destinationMetadata.ConversationId == sourceConversationId)
+            {
+                _fileSystem.CopyFile(
+                    sourceFilePath,
+                    destinationFilePath,
+                    overwrite: true);
+                copied = true;
+            }
+            else
+            {
+                uniqueResult = CopyToUniqueName(
+                    sourceFilePath,
+                    destinationFilePath,
+                    sourceMetadata);
+                copied = true;
+            }
+        }
+        else
+        {
+            copied = _fileSystem.TryCopyFile(
+                sourceFilePath,
+                destinationFilePath);
+            if (!copied)
+            {
+                ChatMetadata racedMetadata = _metadataReader.Read(destinationFilePath);
+                _conversationIndex.Track(destinationFilePath, racedMetadata);
+                if (racedMetadata.ConversationId == sourceConversationId)
+                {
+                    return SynchronizeConversation(
+                        sourceFilePath,
+                        destinationFilePath,
+                        sourceMetadata,
+                        sourceConversationId,
+                        destinationDirectory);
+                }
+
+                uniqueResult = CopyToUniqueName(
+                    sourceFilePath,
+                    destinationFilePath,
+                    sourceMetadata);
+                copied = true;
+            }
+        }
+
+        if (!copied)
+        {
+            throw new IOException(
+                $"Не удалось скопировать файл: {sourceFilePath}");
+        }
+
+        string actualDestinationPath = uniqueResult?.DestinationPath
+            ?? destinationFilePath;
+        SetLastWriteTimeIfPresent(actualDestinationPath, sourceMetadata);
+        _conversationIndex.Track(actualDestinationPath, sourceMetadata);
+        DeleteStaleVersions(stalePaths, actualDestinationPath);
+
+        FileOperationResult result = uniqueResult is not null
+            ? new FileOperationResult(
+                FileOperationStatus.Added,
+                sourceFilePath,
+                actualDestinationPath)
+            : new FileOperationResult(
+                stalePaths.Count == 0
+                    ? FileOperationStatus.Added
+                    : FileOperationStatus.Updated,
+                sourceFilePath,
+                actualDestinationPath);
+        WriteOperationResult(result);
+        return result;
+    }
+
+    private void DeleteStaleVersions(
+        IEnumerable<string> stalePaths,
+        string? preservedPath)
+    {
+        foreach (string path in stalePaths)
+        {
+            if (preservedPath is not null &&
+                string.Equals(path, preservedPath, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            _fileSystem.DeleteFile(path);
+            _conversationIndex.Remove(path);
+        }
     }
 
     /// <summary>

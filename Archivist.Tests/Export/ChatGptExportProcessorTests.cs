@@ -436,7 +436,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string monthDir = Path.Combine(dest.Path, year, month);
 
             string[] files = Directory.GetFiles(monthDir, "*.md");
-            Assert.That(files.Length, Is.EqualTo(3));
+            Assert.That(files.Length, Is.EqualTo(1));
         }
 
         [Test]
@@ -456,14 +456,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             ExportResult stats = _processor.Process(options);
 
-            Assert.That(stats.Added, Is.EqualTo(2));
+            Assert.That(stats.Added, Is.EqualTo(1));
             Assert.That(stats.Skipped, Is.EqualTo(0));
-            Assert.That(stats.Updated, Is.EqualTo(0));
+            Assert.That(stats.Updated, Is.EqualTo(1));
             Assert.That(stats.Total, Is.EqualTo(2));
         }
 
         [NUnit.Framework.TestCase("create_time")]
-        [NUnit.Framework.TestCase("update_time")]
         public void Process_ReportsInvalidMetadataDate_WithoutCrashing(string invalidField)
         {
             using TempDirectory source = new();

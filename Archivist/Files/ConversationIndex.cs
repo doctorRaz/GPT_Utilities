@@ -38,6 +38,12 @@ internal interface IConversationIndex
     /// <param name="path">Путь к файлу</param>
     /// <param name="metadata">Метаданные файла</param>
     void Track(string path, ChatMetadata metadata);
+
+    /// <summary>
+    /// Удаляет файл из индекса.
+    /// </summary>
+    /// <param name="path">Путь к файлу</param>
+    void Remove(string path);
 }
 
 /// <summary>
@@ -134,7 +140,29 @@ internal sealed class ConversationIndex : IConversationIndex
         string normalizedDirectory = Normalize(directory).TrimEnd(Path.DirectorySeparatorChar)
             + Path.DirectorySeparatorChar;
         return paths.Where(path => path.StartsWith(
-            normalizedDirectory, StringComparison.OrdinalIgnoreCase));
+                normalizedDirectory, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Удаляет файл и его метаданные из индекса.
+    /// </summary>
+    /// <param name="path">Путь к файлу.</param>
+    public void Remove(string path)
+    {
+        string normalizedPath = Normalize(path);
+        if (!_byPath.Remove(normalizedPath, out ChatMetadata? metadata) ||
+            metadata.ConversationId is not Guid conversationId ||
+            !_byConversation.TryGetValue(conversationId, out HashSet<string>? paths))
+        {
+            return;
+        }
+
+        _ = paths.Remove(normalizedPath);
+        if (paths.Count == 0)
+        {
+            _ = _byConversation.Remove(conversationId);
+        }
     }
 
     /// <summary>

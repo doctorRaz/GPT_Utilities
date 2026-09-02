@@ -113,10 +113,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         }
 
         /// <summary>
-        /// Тестирует выброс исключения, когда отсутствует обязательное поле update_time.
+        /// Тестирует принятие отсутствующего update_time как минимальной даты.
         /// </summary>
         [Test]
-        public void ReadMetadata_Throws_WhenUpdateTimeMissing()
+        public void ReadMetadata_UsesDefault_WhenUpdateTimeMissing()
         {
             using TempDirectory temp = new();
             string file = temp.Combine("chat.md");
@@ -128,10 +128,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 body
                 """);
 
-            FormatException ex = Assert.Throws<FormatException>(
-                () => new ChatMetadataReader(new LocalFileSystem()).Read(file));
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
 
-            Assert.That(ex.Message, Contains.Substring("update_time"));
+            Assert.That(metadata.UpdateTime, Is.Null);
         }
 
         #endregion
