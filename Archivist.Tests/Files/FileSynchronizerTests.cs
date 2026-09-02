@@ -497,6 +497,189 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         }
 
         [Test]
+        public void Synchronize_WhenSourceIsBetweenVersions_RemovesOlderAndSkips()
+        {
+            using TempDirectory temp = new();
+            string older = MarkdownFactory.Write(temp.Combine("dst", "Old.md"), CreateTime, CreateTime.AddHours(10), ConversationA);
+            string newer = MarkdownFactory.Write(temp.Combine("dst", "New.md"), CreateTime, CreateTime.AddHours(14), ConversationA, "newer");
+            string source = MarkdownFactory.Write(temp.Combine("src", "Source.md"), CreateTime, CreateTime.AddHours(12), ConversationA, "source");
+
+            FileOperationResult result = Synchronize(source, temp.Combine("dst", "Source.md"), Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
+            Assert.That(File.Exists(older), Is.False);
+            Assert.That(File.ReadAllText(newer), Does.Contain("newer"));
+            Assert.That(File.Exists(temp.Combine("dst", "Source.md")), Is.False);
+        }
+
+        [Test]
+        public void Synchronize_WhenSourceMatchesOneOfSeveralVersions_RemovesOnlyNotNewerVersions()
+        {
+            using TempDirectory temp = new();
+            string first = MarkdownFactory.Write(temp.Combine("dst", "First.md"), CreateTime, CreateTime.AddHours(10), ConversationA);
+            string equal = MarkdownFactory.Write(temp.Combine("dst", "Equal.md"), CreateTime, CreateTime.AddHours(12), ConversationA);
+            string newer = MarkdownFactory.Write(temp.Combine("dst", "Newer.md"), CreateTime, CreateTime.AddHours(14), ConversationA);
+            string source = MarkdownFactory.Write(temp.Combine("src", "Source.md"), CreateTime, CreateTime.AddHours(12), ConversationA);
+
+            FileOperationResult result = Synchronize(source, temp.Combine("dst", "Source.md"), Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
+            Assert.That(File.Exists(first), Is.False);
+            Assert.That(File.Exists(equal), Is.False);
+            Assert.That(File.Exists(newer), Is.True);
+        }
+
+        [Test]
+        public void Synchronize_WhenSourceIsNewerThanAllVersions_ReplacesAllVersions()
+        {
+            using TempDirectory temp = new();
+            string first = MarkdownFactory.Write(temp.Combine("dst", "First.md"), CreateTime, CreateTime.AddHours(10), ConversationA);
+            string second = MarkdownFactory.Write(temp.Combine("dst", "Second.md"), CreateTime, CreateTime.AddHours(12), ConversationA);
+            string source = MarkdownFactory.Write(temp.Combine("src", "Source.md"), CreateTime, CreateTime.AddHours(16), ConversationA, "source");
+            string destination = temp.Combine("dst", "Source.md");
+
+            FileOperationResult result = Synchronize(source, destination, Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(first), Is.False);
+            Assert.That(File.Exists(second), Is.False);
+            Assert.That(File.ReadAllText(destination), Does.Contain("source"));
+        }
+
+        [Test]
+        public void Synchronize_WhenTitleChanges_UsesSourceNameInsteadOfUniqueName()
+        {
+            using TempDirectory temp = new();
+            string oldPath = MarkdownFactory.Write(temp.Combine("dst", "Old title.md"), CreateTime, CreateTime.AddHours(10), ConversationA);
+            string source = MarkdownFactory.Write(temp.Combine("src", "New title.md"), CreateTime, CreateTime.AddHours(11), ConversationA, "source");
+            string destination = temp.Combine("dst", "New title.md");
+
+            FileOperationResult result = Synchronize(source, destination, Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(oldPath), Is.False);
+            Assert.That(File.Exists(destination), Is.True);
+            Assert.That(File.Exists(temp.Combine("dst", "New title (1).md")), Is.False);
+        }
+
+        [Test]
+        public void Synchronize_WhenSourceHasNoUpdateTime_KeepsDatedExistingVersion()
+        {
+            using TempDirectory temp = new();
+            string existing = MarkdownFactory.Write(temp.Combine("dst", "Existing.md"), CreateTime, CreateTime.AddHours(10), ConversationA, "existing");
+            string source = MarkdownFactory.Write(temp.Combine("src", "Source.md"), CreateTime, null, ConversationA, "source");
+
+            FileOperationResult result = Synchronize(source, temp.Combine("dst", "Source.md"), Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
+            Assert.That(File.Exists(existing), Is.True);
+            Assert.That(File.Exists(temp.Combine("dst", "Source.md")), Is.False);
+        }
+
+        [Test]
+        public void Synchronize_WhenBothUpdateTimesAreMissing_ReplacesExistingVersion()
+        {
+            using TempDirectory temp = new();
+            string existing = MarkdownFactory.Write(temp.Combine("dst", "Existing.md"), CreateTime, null, ConversationA, "existing");
+            string source = MarkdownFactory.Write(temp.Combine("src", "Source.md"), CreateTime, null, ConversationA, "source");
+            string destination = temp.Combine("dst", "Source.md");
+
+            FileOperationResult result = Synchronize(source, destination, Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(existing), Is.False);
+            Assert.That(File.ReadAllText(destination), Does.Contain("source"));
+        }
+
+        [Test]
+        public void Synchronize_WhenOtherConversationExists_LeavesItUntouched()
+        {
+            using TempDirectory temp = new();
+            string other = MarkdownFactory.Write(temp.Combine("dst", "Other.md"), CreateTime, CreateTime.AddHours(10), ConversationB, "other");
+            string old = MarkdownFactory.Write(temp.Combine("dst", "Old.md"), CreateTime, CreateTime.AddHours(10), ConversationA, "old");
+            string source = MarkdownFactory.Write(temp.Combine("src", "Source.md"), CreateTime, CreateTime.AddHours(12), ConversationA, "source");
+            string destination = temp.Combine("dst", "Source.md");
+            IFileSystem fileSystem = new LocalFileSystem();
+            IChatMetadataReader reader = new ChatMetadataReader(fileSystem);
+            IConversationIndex index = new ConversationIndex(fileSystem, reader, new ConsoleArchivistLogger());
+            IFileSynchronizer synchronizer = new FileSynchronizerService(
+                reader,
+                new ConsoleArchivistLogger(),
+                new UniqueFileNameProvider(fileSystem),
+                fileSystem,
+                index);
+
+            FileOperationResult result = synchronizer.Synchronize(source, destination, reader.Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(old), Is.False);
+            Assert.That(File.ReadAllText(other), Does.Contain("other"));
+            Assert.That(index.FindPaths(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), temp.Combine("dst")), Is.EqualTo(new[] { Path.GetFullPath(other) }));
+            Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Is.EqualTo(new[] { Path.GetFullPath(destination) }));
+        }
+
+        [Test]
+        public void Synchronize_WhenCopyFails_PreservesExistingVersionsAndIndex()
+        {
+            using TempDirectory temp = new();
+            string existing = MarkdownFactory.Write(temp.Combine("dst", "Old.md"), CreateTime, CreateTime.AddHours(10), ConversationA);
+            string source = MarkdownFactory.Write(temp.Combine("src", "New.md"), CreateTime, CreateTime.AddHours(11), ConversationA);
+            FailingFileSystem fileSystem = new(failCopy: true, failDelete: false);
+            IChatMetadataReader reader = new ChatMetadataReader(fileSystem);
+            IConversationIndex index = new ConversationIndex(fileSystem, reader, new ConsoleArchivistLogger());
+            IFileSynchronizer synchronizer = new FileSynchronizerService(
+                reader,
+                new ConsoleArchivistLogger(),
+                new UniqueFileNameProvider(fileSystem),
+                fileSystem,
+                index);
+
+            Assert.Throws<IOException>(() => synchronizer.Synchronize(source, temp.Combine("dst", "New.md"), reader.Read(source)));
+            Assert.That(File.Exists(existing), Is.True);
+            Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Is.EqualTo(new[] { Path.GetFullPath(existing) }));
+        }
+
+        [Test]
+        public void Synchronize_WhenDeleteFails_KeepsFailedDeletionInIndex()
+        {
+            using TempDirectory temp = new();
+            string existing = MarkdownFactory.Write(temp.Combine("dst", "Old.md"), CreateTime, CreateTime.AddHours(10), ConversationA);
+            string source = MarkdownFactory.Write(temp.Combine("src", "New.md"), CreateTime, CreateTime.AddHours(11), ConversationA);
+            FailingFileSystem fileSystem = new(failCopy: false, failDelete: true);
+            IChatMetadataReader reader = new ChatMetadataReader(fileSystem);
+            IConversationIndex index = new ConversationIndex(fileSystem, reader, new ConsoleArchivistLogger());
+            IFileSynchronizer synchronizer = new FileSynchronizerService(
+                reader,
+                new ConsoleArchivistLogger(),
+                new UniqueFileNameProvider(fileSystem),
+                fileSystem,
+                index);
+
+            Assert.Throws<IOException>(() => synchronizer.Synchronize(source, temp.Combine("dst", "New.md"), reader.Read(source)));
+            Assert.That(File.Exists(existing), Is.True);
+            Assert.That(File.Exists(temp.Combine("dst", "New.md")), Is.True);
+            Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Has.Count.EqualTo(2));
+        }
+
+        [Test]
+        public void Synchronize_WhenProcessedTwice_DoesNotCreateUniqueVersions()
+        {
+            using TempDirectory temp = new();
+            string source = MarkdownFactory.Write(temp.Combine("src", "Chat.md"), CreateTime, CreateTime.AddHours(12), ConversationA, "source");
+            string destination = temp.Combine("dst", "Chat.md");
+            _ = Directory.CreateDirectory(temp.Combine("dst"));
+            ChatMetadata metadata = Read(source);
+
+            FileOperationResult first = Synchronize(source, destination, metadata);
+            FileOperationResult second = Synchronize(source, destination, metadata);
+
+            Assert.That(first.Status, Is.EqualTo(FileOperationStatus.Added));
+            Assert.That(second.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(Directory.GetFiles(temp.Combine("dst"), "*.md"), Has.Length.EqualTo(1));
+            Assert.That(File.ReadAllText(destination), Does.Contain("source"));
+        }
+
+        [Test]
         public void Synchronize_WritesOperationToLogger()
         {
             using TempDirectory temp = new();
@@ -529,6 +712,71 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 global::NUnit.Framework.Has.Some.Contains("Добавлен"));
         }
 
+        private sealed class FailingFileSystem : IFileSystem
+        {
+            private readonly LocalFileSystem _inner = new();
+            private readonly bool _failCopy;
+            private readonly bool _failDelete;
+
+            public FailingFileSystem(bool failCopy, bool failDelete)
+            {
+                _failCopy = failCopy;
+                _failDelete = failDelete;
+            }
+
+            public bool FileExists(string path) => _inner.FileExists(path);
+
+            public string ReadAllText(string path) => _inner.ReadAllText(path);
+
+            public IEnumerable<string> ReadLines(string path) => _inner.ReadLines(path);
+
+            public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
+            {
+                if (_failCopy)
+                {
+                    throw new IOException("copy failed");
+                }
+
+                _inner.CopyFile(sourcePath, destinationPath, overwrite);
+            }
+
+            public bool TryCopyFile(string sourcePath, string destinationPath)
+            {
+                if (_failCopy)
+                {
+                    throw new IOException("copy failed");
+                }
+
+                return _inner.TryCopyFile(sourcePath, destinationPath);
+            }
+
+            public void DeleteFile(string path)
+            {
+                if (_failDelete)
+                {
+                    throw new IOException("delete failed");
+                }
+
+                _inner.DeleteFile(path);
+            }
+
+            public void SetLastWriteTime(string path, DateTime lastWriteTime) =>
+                _inner.SetLastWriteTime(path, lastWriteTime);
+
+            public bool DirectoryExists(string path) => _inner.DirectoryExists(path);
+
+            public void CreateDirectory(string path) => _inner.CreateDirectory(path);
+
+            public void DeleteDirectory(string path, bool recursive) =>
+                _inner.DeleteDirectory(path, recursive);
+
+            public IEnumerable<string> EnumerateFiles(
+                string path,
+                string searchPattern,
+                SearchOption searchOption) =>
+                _inner.EnumerateFiles(path, searchPattern, searchOption);
+        }
+
         private sealed class RecordingLogger : IArchivistLogger
         {
             public List<string> Messages { get; } = new();
@@ -544,6 +792,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             public void Error(string message, Exception? exception = null) =>
                 Messages.Add(message);
         }
+
+        private static ChatMetadata Read(string path) =>
+            new ChatMetadataReader(new LocalFileSystem()).Read(path);
 
         /// <summary>
         /// Сохраняет компактные проверки старого enum-контракта,
