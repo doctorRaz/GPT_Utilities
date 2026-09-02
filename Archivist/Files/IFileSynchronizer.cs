@@ -36,6 +36,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     private readonly IFileSystem _fileSystem;
     /// <summary>Индекс разговоров.</summary>
     private readonly IConversationIndex _conversationIndex;
+    private static readonly object SynchronizationLock = new();
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="FileSynchronizerService"/>.
@@ -74,6 +75,20 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     /// <param name="sourceMetadata">Метаданные исходного файла.</param>
     /// <returns>Результат операции синхронизации.</returns>
     public FileOperationResult Synchronize(
+        string sourceFilePath,
+        string destinationFilePath,
+        ChatMetadata sourceMetadata)
+    {
+        lock (SynchronizationLock)
+        {
+            return SynchronizeCore(
+                sourceFilePath,
+                destinationFilePath,
+                sourceMetadata);
+        }
+    }
+
+    private FileOperationResult SynchronizeCore(
         string sourceFilePath,
         string destinationFilePath,
         ChatMetadata sourceMetadata)

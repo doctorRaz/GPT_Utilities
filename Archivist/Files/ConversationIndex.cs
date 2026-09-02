@@ -139,9 +139,16 @@ internal sealed class ConversationIndex : IConversationIndex
 
         string normalizedDirectory = Normalize(directory).TrimEnd(Path.DirectorySeparatorChar)
             + Path.DirectorySeparatorChar;
-        return paths.Where(path => path.StartsWith(
+        List<string> result = paths.Where(path => path.StartsWith(
                 normalizedDirectory, StringComparison.OrdinalIgnoreCase))
             .ToList();
+
+        foreach (string path in result.Where(path => !_fileSystem.FileExists(path)).ToList())
+        {
+            Remove(path);
+        }
+
+        return result.Where(_fileSystem.FileExists).ToList();
     }
 
     /// <summary>
