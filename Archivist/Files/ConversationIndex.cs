@@ -4,17 +4,39 @@ using dRz.GPT_Utilities.Archivist.Infrastructure;
 namespace dRz.GPT_Utilities.Archivist.Files;
 
 /// <summary>
-/// Индекс Markdown-файлов по идентификатору разговора.
+/// Интерфейс для индекса Markdown-файлов по идентификатору разговора.
 /// Индекс строится лениво отдельно для каждого каталога и обновляется при записи файлов.
 /// </summary>
 internal interface IConversationIndex
 {
+    /// <summary>
+    /// Обеспечивает индексацию указанного каталога, если он еще не проиндексирован.
+    /// При индексации анализируются все Markdown-файлы в каталоге и их метаданные добавляются в индекс.
+    /// </summary>
+    /// <param name="directory">Каталог для индексации</param>
     void EnsureIndexed(string directory);
 
+    /// <summary>
+    /// Пытается получить метаданные для указанного файла.
+    /// </summary>
+    /// <param name="path">Путь к файлу</param>
+    /// <param name="metadata">Метаданные файла, если они найдены</param>
+    /// <returns>True, если метаданные найдены, иначе false</returns>
     bool TryGet(string path, out ChatMetadata metadata);
 
+    /// <summary>
+    /// Находит все пути к файлам для указанного идентификатора разговора в заданном каталоге.
+    /// </summary>
+    /// <param name="conversationId">Идентификатор разговора</param>
+    /// <param name="directory">Каталог для поиска</param>
+    /// <returns>Перечисление путей к файлам</returns>
     IEnumerable<string> FindPaths(Guid conversationId, string directory);
 
+    /// <summary>
+    /// Добавляет файл в индекс.
+    /// </summary>
+    /// <param name="path">Путь к файлу</param>
+    /// <param name="metadata">Метаданные файла</param>
     void Track(string path, ChatMetadata metadata);
 }
 
