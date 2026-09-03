@@ -86,9 +86,6 @@ namespace dRz.GPT_Utilities.Archivist
             ConsoleWriter.Success(
                 $"\tДобавлено {statistics.Added.Of(RussianWords.Files)}");
 
-            ConsoleWriter.Warn(
-                $"\tДобавлено уникальных {statistics.AddedUnique.Of(RussianWords.Files)}");
-
             ConsoleWriter.Update(
                 $"\tОбновлено {statistics.Updated.Of(RussianWords.Files)}");
 
@@ -103,7 +100,6 @@ namespace dRz.GPT_Utilities.Archivist
 
             int addedOrUpdated =
                 statistics.Added +
-                statistics.AddedUnique +
                 statistics.Updated;
 
             ConsoleWriter.Info(

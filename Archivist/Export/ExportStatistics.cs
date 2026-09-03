@@ -20,8 +20,6 @@ internal sealed class ExportStatistics
 
     public int Added { get; private set; }
 
-    public int AddedUnique { get; private set; }
-
     public int Updated { get; private set; }
 
     public int Failed { get; private set; }
@@ -62,7 +60,9 @@ internal sealed class ExportStatistics
                 Added++;
                 break;
             case FileOperationStatus.AddedUnique:
-                AddedUnique++;
+                // Альтернативное имя — техническая деталь разрешения
+                // конфликта пути, а не отдельный вид бизнес-операции.
+                Added++;
                 break;
             case FileOperationStatus.Updated:
                 Updated++;
@@ -114,7 +114,6 @@ internal sealed class ExportStatistics
         Total += statistics.Total;
         Skipped += statistics.Skipped;
         Added += statistics.Added;
-        AddedUnique += statistics.AddedUnique;
         Updated += statistics.Updated;
         Failed += statistics.Failed;
         ArchiveFailed += statistics.ArchiveFailed;
@@ -127,7 +126,6 @@ internal sealed class ExportStatistics
             Total,
             Skipped,
             Added,
-            AddedUnique,
             Updated,
             Failed,
             ArchiveFailed,
