@@ -34,8 +34,11 @@ internal sealed class FileNameNormalizer : IFileNameNormalizer
     {
         ArgumentNullException.ThrowIfNull(fileName);
 
-        // Символы подчёркивания в экспортных именах заменяются пробелами.
-        string normalized = fileName.Replace('_', ' ');
+        // Символы подчёркивания и # в экспортных именах заменяются пробелами.
+        // # в имени файла Obsidian трактует как начало block/heading-ссылки.
+        string normalized = fileName
+            .Replace('_', ' ')
+            .Replace('#', ' ');
         normalized = MultipleSpacesRegex.Replace(normalized, " ");
         return normalized.Trim();
     }

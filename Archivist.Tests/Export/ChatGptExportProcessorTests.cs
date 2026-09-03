@@ -352,7 +352,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
             string monthDir = Path.Combine(dest.Path, year, month);
 
-            string[] files = Directory.GetFiles(monthDir, "*.md");
+            string[] files = Directory.GetFiles(monthDir, "*.md")
+                .Where(path => !Path.GetFileName(path).Equals("_index.md", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
             Assert.That(files, Has.Length.EqualTo(1));
 
             string fileName = Path.GetFileNameWithoutExtension(files[0]);
@@ -379,7 +381,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
             string monthDir = Path.Combine(dest.Path, year, month);
 
-            string[] files = Directory.GetFiles(monthDir, "*.md");
+            string[] files = Directory.GetFiles(monthDir, "*.md")
+                .Where(path => !Path.GetFileName(path).Equals("_index.md", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
             Assert.That(files, Has.Length.EqualTo(1));
 
             string fileName = Path.GetFileNameWithoutExtension(files[0]);
@@ -406,7 +410,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
             string monthDir = Path.Combine(dest.Path, year, month);
 
-            string[] files = Directory.GetFiles(monthDir, "*.md");
+            string[] files = Directory.GetFiles(monthDir, "*.md")
+                .Where(path => !Path.GetFileName(path).Equals("_index.md", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
             Assert.That(files, Has.Length.EqualTo(1));
 
             string fileName = Path.GetFileNameWithoutExtension(files[0]);
@@ -435,7 +441,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string month = CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture);
             string monthDir = Path.Combine(dest.Path, year, month);
 
-            string[] files = Directory.GetFiles(monthDir, "*.md");
+            string[] files = Directory.GetFiles(monthDir, "*.md")
+                .Where(path => !Path.GetFileName(path).Equals("_index.md", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
             Assert.That(files.Length, Is.EqualTo(1));
         }
 

@@ -15,6 +15,11 @@ internal interface IFileSystem
     /// <returns>Содержимое файла.</returns>
     string ReadAllText(string path);
 
+    /// <summary>Записывает текст в файл.</summary>
+    /// <param name="path">Путь к файлу.</param>
+    /// <param name="contents">Содержимое файла.</param>
+    void WriteAllText(string path, string contents);
+
     /// <summary>Читает строки из файла.</summary>
     /// <param name="path">Путь к файлу.</param>
     /// <returns>Перечисление строк.</returns>
@@ -76,6 +81,8 @@ internal sealed class LocalFileSystem : IFileSystem
     public bool FileExists(string path) => File.Exists(path);
 
     public string ReadAllText(string path) => File.ReadAllText(path);
+
+    public void WriteAllText(string path, string contents) => File.WriteAllText(path, contents);
 
     public IEnumerable<string> ReadLines(string path) => File.ReadLines(path);
 

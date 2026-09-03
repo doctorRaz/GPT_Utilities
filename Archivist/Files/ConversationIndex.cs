@@ -125,6 +125,14 @@ internal sealed class ConversationIndex : IConversationIndex
             foreach (string path in _fileSystem.EnumerateFiles(
                 directory, "*.md", SearchOption.TopDirectoryOnly))
             {
+                if (string.Equals(
+                    Path.GetFileName(path),
+                    "_index.md",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 try
                 {
                     Track(path, _metadataReader.Read(path));

@@ -1,5 +1,6 @@
 using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
+using System.Text;
 
 namespace dRz.GPT_Utilities.Archivist.Files;
 
@@ -21,6 +22,53 @@ internal interface IFileSynchronizer
         ChatMetadata sourceMetadata);
 }
 
+/// <summary>Обновляет навигационный индекс каталога разговоров.</summary>
+internal interface IConversationIndexWriter
+{
+    void Refresh(string directory);
+}
+
+/// <summary>Создаёт файл <c>_index.md</c> по содержимому каталога.</summary>
+internal sealed class ConversationIndexWriter : IConversationIndexWriter
+{
+    private const string IndexFileName = "_index.md";
+    private readonly IFileSystem _fileSystem;
+
+    public ConversationIndexWriter(IFileSystem fileSystem)
+    {
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+    }
+
+    public void Refresh(string directory)
+    {
+        string year = Directory.GetParent(directory)?.Name ?? string.Empty;
+        string month = new DirectoryInfo(directory).Name;
+        int separator = month.IndexOf('-');
+        string monthName = separator >= 0 ? month[(separator + 1)..] : month;
+
+        IEnumerable<string> files = _fileSystem
+            .EnumerateFiles(directory, "*.md", SearchOption.TopDirectoryOnly)
+            .Where(path => !string.Equals(
+                Path.GetFileName(path), IndexFileName, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(path => Path.GetFileName(path), StringComparer.OrdinalIgnoreCase);
+
+        StringBuilder contents = new();
+        _ = contents.AppendLine($"# {monthName} {year}");
+        _ = contents.AppendLine();
+        _ = contents.AppendLine("## Conversations");
+        _ = contents.AppendLine();
+
+        foreach (string path in files)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(path);
+            string encodedFileName = Uri.EscapeDataString(Path.GetFileName(path));
+            _ = contents.AppendLine($"- [{fileName}]({encodedFileName})");
+        }
+
+        _fileSystem.WriteAllText(Path.Combine(directory, IndexFileName), contents.ToString());
+    }
+}
+
 /// <summary>
 /// Экземплярный сервис синхронизации Markdown-файлов.
 /// </summary>
@@ -36,6 +84,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     private readonly IFileSystem _fileSystem;
     /// <summary>Индекс разговоров.</summary>
     private readonly IConversationIndex _conversationIndex;
+    private readonly IConversationIndexWriter _conversationIndexWriter;
     private readonly List<ExportError> _operationErrors = new();
     private static readonly object SynchronizationLock = new();
 
@@ -52,7 +101,8 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         IArchivistLogger logger,
         IUniqueFileNameProvider uniqueFileNameProvider,
         IFileSystem fileSystem,
-        IConversationIndex? conversationIndex = null)
+        IConversationIndex? conversationIndex = null,
+        IConversationIndexWriter? conversationIndexWriter = null)
     {
         _metadataReader = metadataReader
             ?? throw new ArgumentNullException(nameof(metadataReader));
@@ -66,6 +116,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             fileSystem,
             metadataReader,
             logger);
+        _conversationIndexWriter = conversationIndexWriter ?? new ConversationIndexWriter(fileSystem);
     }
 
     /// <summary>
@@ -87,6 +138,16 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 sourceFilePath,
                 destinationFilePath,
                 sourceMetadata);
+
+            if (result.Status is FileOperationStatus.Added or FileOperationStatus.Updated)
+            {
+                string destinationPath = result.DestinationPath
+                    ?? throw new InvalidOperationException("Путь назначения отсутствует.");
+                string directory = Path.GetDirectoryName(destinationPath)
+                    ?? throw new InvalidOperationException(
+                        $"Не удалось определить каталог: {destinationPath}");
+                _conversationIndexWriter.Refresh(directory);
+            }
 
             return _operationErrors.Count == 0
                 ? result

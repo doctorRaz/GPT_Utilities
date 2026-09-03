@@ -702,7 +702,17 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             Assert.That(first.Status, Is.EqualTo(FileOperationStatus.Added));
             Assert.That(second.Status, Is.EqualTo(FileOperationStatus.Skipped));
-            Assert.That(Directory.GetFiles(temp.Combine("dst"), "*.md"), Has.Length.EqualTo(1));
+            string[] files = Directory.GetFiles(temp.Combine("dst"), "*.md");
+            int conversationFiles = 0;
+            foreach (string path in files)
+            {
+                if (!Path.GetFileName(path).Equals("_index.md", StringComparison.OrdinalIgnoreCase))
+                {
+                    conversationFiles++;
+                }
+            }
+
+            Assert.That(conversationFiles, Is.EqualTo(1));
             Assert.That(File.ReadAllText(destination), Does.Contain("source"));
         }
 
@@ -754,6 +764,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             public bool FileExists(string path) => _inner.FileExists(path);
 
             public string ReadAllText(string path) => _inner.ReadAllText(path);
+
+            public void WriteAllText(string path, string contents) =>
+                _inner.WriteAllText(path, contents);
 
             public IEnumerable<string> ReadLines(string path) => _inner.ReadLines(path);
 
