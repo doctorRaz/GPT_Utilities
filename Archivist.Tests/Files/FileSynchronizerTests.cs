@@ -307,6 +307,33 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         }
 
         [Test]
+        public void Synchronize_ReportsIndexReadError_WhenDestinationMetadataIsUnreadable()
+        {
+            using TempDirectory temp = new();
+            string destination = temp.Combine("dst", "Chat.md");
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            File.WriteAllText(destination, "not a chatgpt export");
+            string source = MarkdownFactory.Write(
+                temp.Combine("src", "Chat.md"),
+                CreateTime,
+                CreateTime.AddHours(1),
+                ConversationA,
+                "new");
+
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
+            FileOperationResult result = Synchronize(source, destination, metadata);
+            ExportStatistics statistics = new();
+            statistics.Add(result);
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Added));
+            Assert.That(result.IndexReadErrors, Is.EqualTo(1));
+            Assert.That(statistics.Total, Is.EqualTo(2));
+            Assert.That(statistics.Failed, Is.EqualTo(1));
+            Assert.That(File.ReadAllText(destination), Is.EqualTo("not a chatgpt export"));
+            Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
+        }
+
+        [Test]
         public void CopyIfNewer_SetsLastWriteTimeFromUpdateTime()
         {
             using TempDirectory temp = new();
