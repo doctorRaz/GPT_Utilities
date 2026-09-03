@@ -13,7 +13,8 @@ internal sealed record FileOperationResult(
     string SourcePath,
     string? DestinationPath = null,
     string? Reason = null,
-    Exception? Error = null);
+    Exception? Error = null,
+    int IndexReadErrors = 0);
 
 /// <summary>
 /// Возможные результаты обработки файла.

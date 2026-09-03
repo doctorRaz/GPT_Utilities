@@ -44,6 +44,11 @@ internal interface IConversationIndex
     /// </summary>
     /// <param name="path">Путь к файлу</param>
     void Remove(string path);
+
+    /// <summary>
+    /// Возвращает общее количество ошибок чтения при построении индекса.
+    /// </summary>
+    int ReadErrorCount { get; }
 }
 
 /// <summary>
@@ -64,6 +69,9 @@ internal sealed class ConversationIndex : IConversationIndex
     private readonly Dictionary<string, ChatMetadata> _byPath = new(StringComparer.OrdinalIgnoreCase);
     /// <summary>Словарь путей к файлам, индексируемый по идентификатору разговора.</summary>
     private readonly Dictionary<Guid, HashSet<string>> _byConversation = new();
+
+    /// <summary>Количество ошибок чтения файлов при построении индекса.</summary>
+    public int ReadErrorCount { get; private set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ConversationIndex"/>.
@@ -111,25 +119,30 @@ internal sealed class ConversationIndex : IConversationIndex
                 }
                 catch (FormatException exception)
                 {
+                    ReadErrorCount++;
                     _logger.Error($"Не удалось прочитать метаданные: {path}", exception);
                 }
                 catch (UnauthorizedAccessException exception)
                 {
+                    ReadErrorCount++;
                     _logger.Error($"Нет доступа к файлу: {path}", exception);
                 }
                 catch (IOException exception)
                 {
+                    ReadErrorCount++;
                     _logger.Error($"Не удалось прочитать файл: {path}", exception);
                 }
             }
         }
         catch (UnauthorizedAccessException exception)
         {
+            ReadErrorCount++;
             _logger.Error($"Нет доступа к каталогу: {directory}", exception);
             return;
         }
         catch (IOException exception)
         {
+            ReadErrorCount++;
             _logger.Error($"Не удалось перечислить файлы каталога: {directory}", exception);
             return;
         }

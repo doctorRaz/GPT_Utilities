@@ -98,16 +98,18 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         string destinationDirectory = Path.GetDirectoryName(destinationFilePath)
             ?? throw new InvalidOperationException(
                 $"Не удалось определить каталог: {destinationFilePath}");
+        int indexErrorsBefore = _conversationIndex.ReadErrorCount;
         _conversationIndex.EnsureIndexed(destinationDirectory);
+        int indexReadErrors = _conversationIndex.ReadErrorCount - indexErrorsBefore;
 
         if (sourceMetadata.ConversationId is Guid sourceConversationId)
         {
-            return SynchronizeConversation(
+            return AddIndexErrors(SynchronizeConversation(
                 sourceFilePath,
                 destinationFilePath,
                 sourceMetadata,
                 sourceConversationId,
-                destinationDirectory);
+                destinationDirectory), indexReadErrors);
         }
 
         FileOperationStatus status = GetOperationStatus(
@@ -127,7 +129,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                     destinationFilePath,
                     sourceMetadata);
                 WriteOperationResult(uniqueResult);
-                return uniqueResult;
+                return AddIndexErrors(uniqueResult, indexReadErrors);
             }
 
             else
@@ -148,7 +150,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                     destinationFilePath,
                     sourceMetadata);
                 WriteOperationResult(uniqueResult);
-                return uniqueResult;
+                return AddIndexErrors(uniqueResult, indexReadErrors);
             }
 
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
@@ -170,8 +172,15 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 : null);
 
         WriteOperationResult(result);
-        return result;
+        return AddIndexErrors(result, indexReadErrors);
     }
+
+    private static FileOperationResult AddIndexErrors(
+        FileOperationResult result,
+        int indexReadErrors) =>
+        indexReadErrors == 0
+            ? result
+            : result with { IndexReadErrors = indexReadErrors };
 
     private FileOperationResult SynchronizeConversation(
         string sourceFilePath,

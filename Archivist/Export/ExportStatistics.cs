@@ -45,10 +45,14 @@ internal sealed class ExportStatistics
         if (result.Status == FileOperationStatus.Failed)
         {
             AddFailure();
+            Total += result.IndexReadErrors;
+            Failed += result.IndexReadErrors;
             return;
         }
 
         Total++;
+        Total += result.IndexReadErrors;
+        Failed += result.IndexReadErrors;
         switch (result.Status)
         {
             case FileOperationStatus.Skipped:
