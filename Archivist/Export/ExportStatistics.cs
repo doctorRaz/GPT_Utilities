@@ -61,11 +61,6 @@ internal sealed class ExportStatistics
             case FileOperationStatus.Added:
                 Added++;
                 break;
-            case FileOperationStatus.AddedUnique:
-                // Альтернативное имя — техническая деталь разрешения
-                // конфликта пути, а не отдельный вид бизнес-операции.
-                Added++;
-                break;
             case FileOperationStatus.Updated:
                 Updated++;
                 break;

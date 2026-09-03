@@ -251,7 +251,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             string unique = temp.Combine("dst", "Chat (1).md");
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.AddedUnique));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Added));
             Assert.That(File.ReadAllText(destination), Does.Contain("old"));
             Assert.That(File.Exists(unique), Is.True);
             Assert.That(File.ReadAllText(unique), Does.Contain("new"));
@@ -279,7 +279,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.AddedUnique));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Added));
             Assert.That(File.ReadAllText(destination), Does.Contain("kept"));
             Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
         }

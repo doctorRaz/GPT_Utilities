@@ -122,7 +122,8 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             destinationFilePath,
             sourceMetadata);
 
-        if (status == FileOperationStatus.AddedUnique)
+        if (status == FileOperationStatus.Added &&
+            _fileSystem.FileExists(destinationFilePath))
         {
             string? matchingPath = FindMatchingDuplicate(
                 destinationFilePath,
@@ -397,7 +398,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             _conversationIndex.Track(candidate, sourceMetadata);
 
             return new FileOperationResult(
-                FileOperationStatus.AddedUnique,
+                FileOperationStatus.Added,
                 sourceFilePath,
                 candidate,
                 null);
@@ -417,9 +418,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 break;
             case FileOperationStatus.Added:
                 _logger.Success($"\tДобавлен: {description}");
-                break;
-            case FileOperationStatus.AddedUnique:
-                _logger.Warning($"\tДобавлен уникальный: {description}");
                 break;
             case FileOperationStatus.Updated:
                 _logger.Update($"\tОбновлён: {description}");
@@ -529,7 +527,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 destinationId is null ||
                 sourceId != destinationId)
             {
-                return FileOperationStatus.AddedUnique;
+                return FileOperationStatus.Added;
             }
 
             if (!destinationMetadata.UpdateTime.HasValue)
@@ -551,13 +549,13 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         {
             _logger.Error($"Не удалось прочитать метаданные: {destinationFilePath}", exception);
             AddDestinationErrorIfNew(destinationFilePath, exception);
-            return FileOperationStatus.AddedUnique;
+            return FileOperationStatus.Added;
         }
         catch (IOException exception)
         {
             _logger.Error($"Не удалось прочитать файл: {destinationFilePath}", exception);
             AddDestinationErrorIfNew(destinationFilePath, exception);
-            return FileOperationStatus.AddedUnique;
+            return FileOperationStatus.Added;
         }
     }
 

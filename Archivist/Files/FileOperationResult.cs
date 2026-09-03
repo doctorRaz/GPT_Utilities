@@ -26,7 +26,6 @@ internal enum FileOperationStatus
 {
     Skipped,
     Added,
-    AddedUnique,
     Updated,
     Failed
 }
