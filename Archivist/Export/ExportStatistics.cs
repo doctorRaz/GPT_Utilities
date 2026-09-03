@@ -45,12 +45,14 @@ internal sealed class ExportStatistics
             AddFailure();
             Total += result.IndexReadErrors;
             Failed += result.IndexReadErrors;
+            AddErrors(result.Errors);
             return;
         }
 
         Total++;
         Total += result.IndexReadErrors;
         Failed += result.IndexReadErrors;
+        AddErrors(result.Errors);
         switch (result.Status)
         {
             case FileOperationStatus.Skipped:
@@ -69,6 +71,19 @@ internal sealed class ExportStatistics
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(result), result.Status, null);
+        }
+    }
+
+    private void AddErrors(IReadOnlyList<ExportError>? errors)
+    {
+        if (errors is null)
+        {
+            return;
+        }
+
+        foreach (ExportError error in errors)
+        {
+            AddMarkdownError(error);
         }
     }
 

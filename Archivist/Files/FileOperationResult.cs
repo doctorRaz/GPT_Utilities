@@ -1,3 +1,5 @@
+using dRz.GPT_Utilities.Archivist.Export;
+
 namespace dRz.GPT_Utilities.Archivist.Files;
 
 /// <summary>
@@ -14,7 +16,8 @@ internal sealed record FileOperationResult(
     string? DestinationPath = null,
     string? Reason = null,
     Exception? Error = null,
-    int IndexReadErrors = 0);
+    int IndexReadErrors = 0,
+    IReadOnlyList<ExportError>? Errors = null);
 
 /// <summary>
 /// Возможные результаты обработки файла.

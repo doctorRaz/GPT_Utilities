@@ -36,6 +36,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     private readonly IFileSystem _fileSystem;
     /// <summary>Индекс разговоров.</summary>
     private readonly IConversationIndex _conversationIndex;
+    private readonly List<ExportError> _operationErrors = new();
     private static readonly object SynchronizationLock = new();
 
     /// <summary>
@@ -81,10 +82,15 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     {
         lock (SynchronizationLock)
         {
-            return SynchronizeCore(
+            _operationErrors.Clear();
+            FileOperationResult result = SynchronizeCore(
                 sourceFilePath,
                 destinationFilePath,
                 sourceMetadata);
+
+            return _operationErrors.Count == 0
+                ? result
+                : result with { Errors = _operationErrors.ToArray() };
         }
     }
 
@@ -544,11 +550,21 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         catch (FormatException exception)
         {
             _logger.Error($"Не удалось прочитать метаданные: {destinationFilePath}", exception);
+            _operationErrors.Add(new ExportError(
+                destinationFilePath,
+                exception.GetType().Name,
+                exception.Message,
+                "Destination"));
             return FileOperationStatus.AddedUnique;
         }
         catch (IOException exception)
         {
             _logger.Error($"Не удалось прочитать файл: {destinationFilePath}", exception);
+            _operationErrors.Add(new ExportError(
+                destinationFilePath,
+                exception.GetType().Name,
+                exception.Message,
+                "Destination"));
             return FileOperationStatus.AddedUnique;
         }
     }
