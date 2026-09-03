@@ -59,7 +59,9 @@ namespace dRz.GPT_Utilities.Archivist
 
             ConsoleWriter.PressAnyKey();
 
-            return SuccessExitCode;
+            return statistics.Failed > 0 || statistics.ArchiveFailed > 0
+                ? ErrorExitCode
+                : SuccessExitCode;
         }
 
         private void ValidateDirectories(CommandLineOptions options)
