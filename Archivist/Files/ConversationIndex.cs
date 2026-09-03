@@ -5,7 +5,7 @@ namespace dRz.GPT_Utilities.Archivist.Files;
 
 /// <summary>
 /// Интерфейс для индекса Markdown-файлов по идентификатору разговора.
-/// Индекс строится лениво отдельно для каждого каталога и обновляется при записи файлов.
+/// Индекс строится лениво отдельно для каждого каталога. Обновляется при добавлении или удалении файлов.
 /// </summary>
 internal interface IConversationIndex
 {
@@ -48,6 +48,7 @@ internal interface IConversationIndex
 
 /// <summary>
 /// Реализация индекса Markdown-файлов для быстрого поиска по идентификатору разговора.
+/// Индекс строится лениво, то есть только при необходимости, и поддерживает поиск файлов по ID разговора.
 /// </summary>
 internal sealed class ConversationIndex : IConversationIndex
 {
@@ -82,6 +83,8 @@ internal sealed class ConversationIndex : IConversationIndex
 
     /// <summary>
     /// Проверяет, проиндексирован ли каталог, и выполняет индексацию при необходимости.
+    /// Индексация происходит лениво — только при первом обращении к каталогу.
+    /// При индексации анализируются все Markdown-файлы в каталоге и их метаданные добавляются в индекс.
     /// </summary>
     /// <param name="directory">Путь к каталогу.</param>
     public void EnsureIndexed(string directory)
@@ -116,16 +119,18 @@ internal sealed class ConversationIndex : IConversationIndex
     }
 
     /// <summary>
-    /// Пытается извлечь метаданные для указанного пути.
+    /// Пытается получить метаданные для указанного файла.
+    /// Метод возвращает true, если метаданные найдены и были успешно прочитаны.
     /// </summary>
     /// <param name="path">Путь к файлу.</param>
-    /// <param name="metadata">Выходной параметр с метаданными.</param>
-    /// <returns>True, если метаданные найдены.</returns>
+    /// <param name="metadata">Метаданные файла, если они найдены.</param>
+    /// <returns>True, если метаданные найдены и были успешно прочитаны, иначе false.</returns>
     public bool TryGet(string path, out ChatMetadata metadata) =>
         _byPath.TryGetValue(Normalize(path), out metadata!);
 
     /// <summary>
     /// Находит все пути к файлам, принадлежащим указанному разговору, в пределах заданного каталога.
+    /// При поиске выполняется фильтрация по каталогу и очистка индекса от устаревших записей.
     /// </summary>
     /// <param name="conversationId">ID разговора.</param>
     /// <param name="directory">Каталог поиска.</param>
@@ -153,6 +158,7 @@ internal sealed class ConversationIndex : IConversationIndex
 
     /// <summary>
     /// Удаляет файл и его метаданные из индекса.
+    /// Если файл не найден в индексе, метод ничего не делает.
     /// </summary>
     /// <param name="path">Путь к файлу.</param>
     public void Remove(string path)
@@ -174,6 +180,7 @@ internal sealed class ConversationIndex : IConversationIndex
 
     /// <summary>
     /// Добавляет файл и его метаданные в индекс.
+    /// Если файл уже существует в индексе, старые данные заменяются новыми.
     /// </summary>
     /// <param name="path">Путь к файлу.</param>
     /// <param name="metadata">Метаданные файла.</param>
