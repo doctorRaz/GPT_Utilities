@@ -490,6 +490,39 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         }
 
         [Test]
+        public void Process_ReportsUnreadableDestinationMetadataInStatistics()
+        {
+            using TempDirectory source = new();
+            using TempDirectory dest = new();
+
+            _ = CreateTestZip(source.Path, new[]
+            {
+                new TestMarkdownFile("file1.md", CreateTime1, UpdateTime1)
+            });
+
+            string destinationDirectory = Path.Combine(
+                dest.Path,
+                CreateTime1.Year.ToString(CultureInfo.InvariantCulture),
+                CreateTime1.ToString("MM-MMMM", CultureInfo.InvariantCulture));
+            _ = Directory.CreateDirectory(destinationDirectory);
+            File.WriteAllText(Path.Combine(destinationDirectory, "file1.md"), "not a chatgpt export");
+
+            ExportResult result = _processor.Process(
+                CommandLineOptionsFactory.CreateOptions(
+                    sourceDirectory: source.Path,
+                    destinationDirectory: dest.Path));
+
+            Assert.That(result.Total, Is.EqualTo(2));
+            Assert.That(result.Failed, Is.EqualTo(1));
+            Assert.That(result.Added, Is.EqualTo(1));
+            Assert.That(File.Exists(Path.Combine(destinationDirectory, "file1 (1).md")), Is.True);
+            Assert.That(File.ReadAllText(Path.Combine(destinationDirectory, "file1.md")),
+                Is.EqualTo("not a chatgpt export"));
+        }
+
+
+
+        [Test]
         public void Process_FilesToDifferentMonths_WhenCreateTimeDiffers()
         {
             using TempDirectory source = new();
