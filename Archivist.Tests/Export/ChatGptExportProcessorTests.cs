@@ -457,8 +457,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             ExportResult stats = _processor.Process(options);
 
             Assert.That(stats.Added, Is.EqualTo(1));
-            Assert.That(stats.Skipped, Is.EqualTo(0));
-            Assert.That(stats.Updated, Is.EqualTo(1));
+            Assert.That(stats.Skipped, Is.EqualTo(1));
+            Assert.That(stats.Updated, Is.EqualTo(0));
             Assert.That(stats.Total, Is.EqualTo(2));
         }
 

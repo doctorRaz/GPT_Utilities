@@ -183,6 +183,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         DateTimeOffset sourceUpdateTime = NormalizeUpdateTime(sourceMetadata.UpdateTime);
         List<string> stalePaths = new();
         bool hasNewerVersion = false;
+        bool hasEqualVersion = false;
 
         foreach (string path in _conversationIndex.FindPaths(
             sourceConversationId,
@@ -195,7 +196,23 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             }
 
             DateTimeOffset existingUpdateTime = NormalizeUpdateTime(existingMetadata.UpdateTime);
-            if (existingUpdateTime <= sourceUpdateTime)
+            bool bothHaveUpdateTime =
+                existingMetadata.UpdateTime.HasValue && sourceMetadata.UpdateTime.HasValue;
+
+            if (!existingMetadata.UpdateTime.HasValue &&
+                !sourceMetadata.UpdateTime.HasValue)
+            {
+                // При отсутствии обеих дат сохраняем прежнюю политику:
+                // новая версия заменяет неопределённую старую.
+                stalePaths.Add(path);
+            }
+            else if (bothHaveUpdateTime && existingUpdateTime == sourceUpdateTime)
+            {
+                // Равная указанная дата не подтверждает изменение содержимого.
+                // Оставляем существующую версию для идемпотентной обработки.
+                hasEqualVersion = true;
+            }
+            else if (existingUpdateTime < sourceUpdateTime)
             {
                 stalePaths.Add(path);
             }
@@ -214,6 +231,19 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 sourceFilePath,
                 destinationFilePath,
                 "Существует более новая версия разговора.");
+            WriteOperationResult(skippedResult);
+            return skippedResult;
+        }
+
+        if (hasEqualVersion)
+        {
+            DeleteStaleVersions(stalePaths, preservedPath: null);
+
+            FileOperationResult skippedResult = new(
+                FileOperationStatus.Skipped,
+                sourceFilePath,
+                destinationFilePath,
+                "Существует версия разговора с той же датой обновления.");
             WriteOperationResult(skippedResult);
             return skippedResult;
         }

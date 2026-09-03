@@ -397,7 +397,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         }
 
         [Test]
-        public void Synchronize_ReplacesVersion_WhenUpdateTimesAreEqual()
+        public void Synchronize_SkipsVersion_WhenUpdateTimesAreEqual()
         {
             using TempDirectory temp = new();
             DateTimeOffset updateTime = CreateTime.AddHours(1);
@@ -417,8 +417,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(source);
             FileOperationResult result = Synchronize(source, destination, metadata);
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
-            Assert.That(File.ReadAllText(destination), Does.Contain("replacement"));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
+            Assert.That(File.ReadAllText(destination), Does.Contain("old"));
         }
 
         [Test]
@@ -443,8 +443,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
-            Assert.That(File.ReadAllText(destination), Does.Contain("replacement"));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
+            Assert.That(File.ReadAllText(destination), Does.Contain("old"));
         }
 
         [Test]
@@ -468,8 +468,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult result = Synchronize(source, destination, metadata);
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
-            Assert.That(File.ReadAllText(destination), Does.Contain("replacement"));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
+            Assert.That(File.ReadAllText(destination), Does.Contain("old"));
         }
 
         [Test]
@@ -525,7 +525,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Skipped));
             Assert.That(File.Exists(first), Is.False);
-            Assert.That(File.Exists(equal), Is.False);
+            Assert.That(File.Exists(equal), Is.True);
             Assert.That(File.Exists(newer), Is.True);
         }
 
@@ -674,7 +674,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             FileOperationResult second = Synchronize(source, destination, metadata);
 
             Assert.That(first.Status, Is.EqualTo(FileOperationStatus.Added));
-            Assert.That(second.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(second.Status, Is.EqualTo(FileOperationStatus.Skipped));
             Assert.That(Directory.GetFiles(temp.Combine("dst"), "*.md"), Has.Length.EqualTo(1));
             Assert.That(File.ReadAllText(destination), Does.Contain("source"));
         }

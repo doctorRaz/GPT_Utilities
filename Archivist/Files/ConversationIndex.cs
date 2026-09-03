@@ -95,27 +95,47 @@ internal sealed class ConversationIndex : IConversationIndex
         }
         directory = Path.GetFullPath(directory);
 
-        if (!_indexedDirectories.Add(directory))
+        if (_indexedDirectories.Contains(directory))
         {
             return;
         }
 
-        foreach (string path in _fileSystem.EnumerateFiles(
-            directory, "*.md", SearchOption.TopDirectoryOnly))
+        try
         {
-            try
+            foreach (string path in _fileSystem.EnumerateFiles(
+                directory, "*.md", SearchOption.TopDirectoryOnly))
             {
-                Track(path, _metadataReader.Read(path));
-            }
-            catch (FormatException exception)
-            {
-                _logger.Error($"Не удалось прочитать метаданные: {path}", exception);
-            }
-            catch (IOException exception)
-            {
-                _logger.Error($"Не удалось прочитать файл: {path}", exception);
+                try
+                {
+                    Track(path, _metadataReader.Read(path));
+                }
+                catch (FormatException exception)
+                {
+                    _logger.Error($"Не удалось прочитать метаданные: {path}", exception);
+                }
+                catch (UnauthorizedAccessException exception)
+                {
+                    _logger.Error($"Нет доступа к файлу: {path}", exception);
+                }
+                catch (IOException exception)
+                {
+                    _logger.Error($"Не удалось прочитать файл: {path}", exception);
+                }
             }
         }
+        catch (UnauthorizedAccessException exception)
+        {
+            _logger.Error($"Нет доступа к каталогу: {directory}", exception);
+            return;
+        }
+        catch (IOException exception)
+        {
+            _logger.Error($"Не удалось перечислить файлы каталога: {directory}", exception);
+            return;
+        }
+
+        // Помечаем каталог проиндексированным только после завершения перечисления.
+        _ = _indexedDirectories.Add(directory);
     }
 
     /// <summary>
@@ -194,6 +214,10 @@ internal sealed class ConversationIndex : IConversationIndex
             _byConversation.TryGetValue(previousId, out HashSet<string>? previousPaths))
         {
             _ = previousPaths.Remove(normalizedPath);
+            if (previousPaths.Count == 0)
+            {
+                _ = _byConversation.Remove(previousId);
+            }
         }
 
         _byPath[normalizedPath] = metadata;
