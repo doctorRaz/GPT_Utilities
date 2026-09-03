@@ -14,6 +14,11 @@
     "All EX": {
       "commandName": "Project",
       "commandLineArgs": "-s \"e:\\downloads\" -d \"d:\\@Developers\\В работе\\Reminder\\GPT-export\\Markdown\" -a "
+    },
+    "maintenance": {
+      "commandName": "Project",
+      "commandLineArgs": "-m  \"d:\\@Developers\\В работе\\Reminder\\GPT-export\\Markdown\""
     }
   }
+ 
 }

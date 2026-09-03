@@ -3,6 +3,7 @@ using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Localization;
+using dRz.GPT_Utilities.Archivist.Maintenance;
 
 namespace dRz.GPT_Utilities.Archivist
 {
@@ -11,6 +12,7 @@ namespace dRz.GPT_Utilities.Archivist
         private readonly CommandLineOptionsValidator _validator;
         private readonly IChatGptExportProcessor _processor;
         private readonly IFileSystem _fileSystem;
+        private readonly ArchiveMaintenance _maintenance;
 
         /// <summary>Initializes a new instance of the <see cref="ArchivistApplication"/> class.</summary>
         /// <param name="validator">The validator.</param>
@@ -31,6 +33,10 @@ namespace dRz.GPT_Utilities.Archivist
             _processor = processor;
             _fileSystem = fileSystem
                 ?? throw new ArgumentNullException(nameof(fileSystem));
+            _maintenance = new ArchiveMaintenance(
+                _fileSystem,
+                new FileNameNormalizer(),
+                new DirectoryIndexWriter(_fileSystem));
         }
 
         internal int Run(string[] args)
@@ -42,6 +48,13 @@ namespace dRz.GPT_Utilities.Archivist
                 ShowHelp();
 
                 return SuccessExitCode;
+            }
+
+            if (options.IsMaintenance)
+            {
+                ArchiveMaintenanceResult result = _maintenance.Run(options.MaintenanceDirectory);
+                PrintMaintenanceStatistics(result);
+                return result.Errors == 0 ? SuccessExitCode : ErrorExitCode;
             }
 
             options = _validator.Validate(options);
@@ -62,6 +75,17 @@ namespace dRz.GPT_Utilities.Archivist
             return statistics.Failed > 0 || statistics.ArchiveFailed > 0
                 ? ErrorExitCode
                 : SuccessExitCode;
+        }
+
+        private static void PrintMaintenanceStatistics(ArchiveMaintenanceResult result)
+        {
+            ConsoleWriter.Success("================ MAINTENANCE =========================");
+            ConsoleWriter.Trace($"Проверено файлов: {result.CheckedFiles}");
+            ConsoleWriter.Update($"Переименовано файлов: {result.RenamedFiles}");
+            ConsoleWriter.Warn($"Конфликтов: {result.Conflicts}");
+            ConsoleWriter.Trace($"Обновлено индексов: {result.UpdatedIndexes}");
+            ConsoleWriter.Error($"Ошибок: {result.Errors}");
+            ConsoleWriter.Success("=======================================================");
         }
 
         private void ValidateDirectories(CommandLineOptions options)

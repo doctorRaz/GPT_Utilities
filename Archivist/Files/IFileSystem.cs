@@ -31,6 +31,9 @@ internal interface IFileSystem
     /// <param name="overwrite">Разрешить перезапись.</param>
     void CopyFile(string sourcePath, string destinationPath, bool overwrite);
 
+    /// <summary>Перемещает файл.</summary>
+    void MoveFile(string sourcePath, string destinationPath);
+
     /// <summary>Удаляет файл.</summary>
     /// <param name="path">Путь к файлу.</param>
     void DeleteFile(string path);
@@ -71,6 +74,9 @@ internal interface IFileSystem
         string path,
         string searchPattern,
         SearchOption searchOption);
+
+    /// <summary>Перечисляет каталоги.</summary>
+    IEnumerable<string> EnumerateDirectories(string path, SearchOption searchOption);
 }
 
 /// <summary>
@@ -88,6 +94,9 @@ internal sealed class LocalFileSystem : IFileSystem
 
     public void CopyFile(string sourcePath, string destinationPath, bool overwrite) =>
         File.Copy(sourcePath, destinationPath, overwrite);
+
+    public void MoveFile(string sourcePath, string destinationPath) =>
+        File.Move(sourcePath, destinationPath);
 
     public bool TryCopyFile(string sourcePath, string destinationPath)
     {
@@ -120,4 +129,7 @@ internal sealed class LocalFileSystem : IFileSystem
         string searchPattern,
         SearchOption searchOption) =>
         Directory.EnumerateFiles(path, searchPattern, searchOption);
+
+    public IEnumerable<string> EnumerateDirectories(string path, SearchOption searchOption) =>
+        Directory.EnumerateDirectories(path, "*", searchOption);
 }

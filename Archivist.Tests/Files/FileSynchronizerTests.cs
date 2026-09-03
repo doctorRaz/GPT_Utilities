@@ -780,6 +780,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 _inner.CopyFile(sourcePath, destinationPath, overwrite);
             }
 
+            public void MoveFile(string sourcePath, string destinationPath) =>
+                _inner.MoveFile(sourcePath, destinationPath);
+
             public bool TryCopyFile(string sourcePath, string destinationPath)
             {
                 if (_failCopy)
@@ -815,6 +818,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
                 string searchPattern,
                 SearchOption searchOption) =>
                 _inner.EnumerateFiles(path, searchPattern, searchOption);
+
+            public IEnumerable<string> EnumerateDirectories(string path, SearchOption searchOption) =>
+                _inner.EnumerateDirectories(path, searchOption);
         }
 
         private sealed class RecordingLogger : IArchivistLogger

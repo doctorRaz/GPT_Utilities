@@ -16,6 +16,11 @@
         /// </summary>
         public string DestinationDirectory { get; init; } = string.Empty;
 
+        /// <summary>Каталог vault для обслуживания.</summary>
+        public string MaintenanceDirectory { get; init; } = string.Empty;
+
+        public bool IsMaintenance => !string.IsNullOrWhiteSpace(MaintenanceDirectory);
+
         /// <summary>
         /// Маска файлов ZIP-архивов, которые следует обрабатывать.
         ///

@@ -35,6 +35,7 @@
             string? sourceDirectory = null;
             string? destinationDirectory = null;
             string? zipFilePattern = null;
+            string? maintenanceDirectory = null;
 
             // Флаг по умолчанию выключен.
             // Его наличие в командной строке переключит значение в true.
@@ -70,6 +71,11 @@
                             ref i,
                             argument);
 
+                        break;
+
+                    case "--maintenance":
+                    case "-m":
+                        maintenanceDirectory = ReadValue(args, ref i, argument);
                         break;
 
                     // ---------------------------------------------------------
@@ -119,11 +125,26 @@
 
           
 
+            if (!string.IsNullOrWhiteSpace(maintenanceDirectory))
+            {
+                return new CommandLineOptions
+                {
+                    MaintenanceDirectory = maintenanceDirectory
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(sourceDirectory))
+                throw new ArgumentException("Не указан каталог с ZIP-архивами. Используй параметр -s или --source.");
+
+            if (string.IsNullOrWhiteSpace(destinationDirectory))
+                throw new ArgumentException("Не указан каталог назначения. Используй параметр -d или --destination.");
+
             return new CommandLineOptions
             {
                 SourceDirectory = sourceDirectory ?? string.Empty,
 
                 DestinationDirectory = destinationDirectory ?? string.Empty,
+                MaintenanceDirectory = maintenanceDirectory ?? string.Empty,
 
                 ExtractAll = extractAll,
 

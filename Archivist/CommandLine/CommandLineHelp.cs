@@ -30,6 +30,10 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
           По умолчанию: *.zip.
           Поддерживается стандартная маска Directory.EnumerateFiles.
 
+      -m, --maintenance <каталог>
+          Нормализовать существующий vault и перестроить _index.md.
+          Архивы не обрабатываются.
+
     Опции:
 
       -a, --all
@@ -48,6 +52,11 @@ namespace dRz.GPT_Utilities.Archivist.CommandLine
       GPT_Archivist --source "D:\GPT\Archives" --destination "D:\GPT\Unpacked" --all
 
       GPT_Archivist -s "D:\GPT\Archives" -d "D:\GPT\Unpacked" -p "*.zip"
+
+      GPT_Archivist --maintenance "D:\GPT\Unpacked"
+
+      GPT_Archivist -m "D:\GPT\Unpacked"
+
     """);
         }
     }
