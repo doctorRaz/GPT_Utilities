@@ -102,12 +102,18 @@ namespace dRz.GPT_Utilities.Archivist.Export
             }
 
             DateTimeOffset? updateTime = null;
-            if (DateTimeOffset.TryParse(
-                    rawMetadata.UpdateTime,
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.RoundtripKind,
-                    out DateTimeOffset parsedUpdateTime))
+            if (!string.IsNullOrWhiteSpace(rawMetadata.UpdateTime))
             {
+                if (!DateTimeOffset.TryParse(
+                        rawMetadata.UpdateTime,
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.RoundtripKind,
+                        out DateTimeOffset parsedUpdateTime))
+                {
+                    throw new FormatException(
+                        $"В YAML указана некорректная дата update_time: {filePath}");
+                }
+
                 updateTime = parsedUpdateTime;
             }
 

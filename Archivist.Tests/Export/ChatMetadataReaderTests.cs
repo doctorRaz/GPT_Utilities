@@ -133,6 +133,26 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.That(metadata.UpdateTime, Is.Null);
         }
 
+        [Test]
+        public void ReadMetadata_Throws_WhenUpdateTimeIsInvalid()
+        {
+            using TempDirectory temp = new();
+            string file = temp.Combine("chat.md");
+            File.WriteAllText(file, """
+                ---
+                create_time: 2026-08-24T15:23:56.473Z
+                update_time: not-a-date
+                ---
+
+                body
+                """);
+
+            FormatException ex = Assert.Throws<FormatException>(
+                () => new ChatMetadataReader(new LocalFileSystem()).Read(file));
+
+            Assert.That(ex.Message, Contains.Substring("update_time"));
+        }
+
         #endregion
 
         #region Тесты Regex для YAML front matter
