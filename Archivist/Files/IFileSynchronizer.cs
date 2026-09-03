@@ -550,22 +550,28 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         catch (FormatException exception)
         {
             _logger.Error($"Не удалось прочитать метаданные: {destinationFilePath}", exception);
-            _operationErrors.Add(new ExportError(
-                destinationFilePath,
-                exception.GetType().Name,
-                exception.Message,
-                "Destination"));
+            AddDestinationErrorIfNew(destinationFilePath, exception);
             return FileOperationStatus.AddedUnique;
         }
         catch (IOException exception)
         {
             _logger.Error($"Не удалось прочитать файл: {destinationFilePath}", exception);
-            _operationErrors.Add(new ExportError(
-                destinationFilePath,
-                exception.GetType().Name,
-                exception.Message,
-                "Destination"));
+            AddDestinationErrorIfNew(destinationFilePath, exception);
             return FileOperationStatus.AddedUnique;
         }
+    }
+
+    private void AddDestinationErrorIfNew(string path, Exception exception)
+    {
+        if (_conversationIndex.HasReadError(path))
+        {
+            return;
+        }
+
+        _operationErrors.Add(new ExportError(
+            path,
+            exception.GetType().Name,
+            exception.Message,
+            "Destination"));
     }
 }
