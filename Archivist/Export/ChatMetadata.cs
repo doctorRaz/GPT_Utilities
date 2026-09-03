@@ -75,19 +75,23 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     return null;
                 }
 
-                const string prefix = "https://chatgpt.com/c/";
-
-                if (!ChatLink.StartsWith(
-                        prefix,
-                        StringComparison.OrdinalIgnoreCase))
+                if (!Uri.TryCreate(ChatLink, UriKind.Absolute, out Uri? uri) ||
+                    !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(uri.Host, "chatgpt.com", StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }
 
-                string value = ChatLink[prefix.Length..]
-                    .TrimEnd('/');
+                string[] segments = uri.AbsolutePath.Split(
+                    '/',
+                    StringSplitOptions.RemoveEmptyEntries);
+                if (segments.Length != 2 ||
+                    !string.Equals(segments[0], "c", StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
 
-                return Guid.TryParse(value, out Guid id)
+                return Guid.TryParse(segments[1], out Guid id)
                     ? id
                     : null;
             }

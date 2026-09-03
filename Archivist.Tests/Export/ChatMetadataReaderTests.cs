@@ -42,6 +42,26 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.That(metadata.ConversationId, Is.EqualTo(Guid.Parse("11111111-1111-1111-1111-111111111111")));
         }
 
+        [Test]
+        public void ConversationId_ParsesChatLinkWithQueryAndFragment()
+        {
+            using TempDirectory temp = new();
+            string file = temp.Combine("chat.md");
+            File.WriteAllText(file, """
+                ---
+                create_time: 2026-08-24T15:23:56.473Z
+                chat_link: https://chatgpt.com/c/11111111-1111-1111-1111-111111111111?source=export#message
+                ---
+
+                body
+                """);
+
+            ChatMetadata metadata = new ChatMetadataReader(new LocalFileSystem()).Read(file);
+
+            Assert.That(metadata.ConversationId,
+                Is.EqualTo(Guid.Parse("11111111-1111-1111-1111-111111111111")));
+        }
+
         /// <summary>
         /// Тестирует игнорирование неизвестных полей YAML при десериализации.
         /// Парсер попеременно игнорирует поля, которые не определены в ChatMetadata.
