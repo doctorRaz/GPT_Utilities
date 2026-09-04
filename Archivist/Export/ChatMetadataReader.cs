@@ -34,22 +34,16 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
-        /// <summary>
-        /// Читает и проверяет metadata файла.
-        /// </summary>
+        /// <summary>Читает и проверяет metadata файла.</summary>
         private sealed class RawChatMetadata
         {
             public DateTimeOffset CreateTime { get; set; }
-
             public string? UpdateTime { get; set; }
-
             public string? DateExport { get; set; }
-
             public string? ChatLink { get; set; }
-
             public string? Title { get; set; }
-
             public List<string?>? Tags { get; set; }
+            public List<string?>? Aliases { get; set; }
         }
 
         public ChatMetadata Read(string filePath)
@@ -124,7 +118,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 DateExport = rawMetadata.DateExport,
                 ChatLink = rawMetadata.ChatLink,
                 Title = rawMetadata.Title,
-                Tags = rawMetadata.Tags ?? new List<string?>()
+                Tags = rawMetadata.Tags ?? new List<string?>(),
+                Aliases = rawMetadata.Aliases ?? new List<string?>()
             };
         }
     }
