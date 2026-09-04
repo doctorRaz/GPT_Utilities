@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
 using NUnit.Framework;
 
