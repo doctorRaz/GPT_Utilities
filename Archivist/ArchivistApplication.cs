@@ -33,10 +33,13 @@ namespace dRz.GPT_Utilities.Archivist
             _processor = processor;
             _fileSystem = fileSystem
                 ?? throw new ArgumentNullException(nameof(fileSystem));
+            ChatMetadataReader metadataReader = new(_fileSystem);
             _maintenance = new ArchiveMaintenance(
                 _fileSystem,
                 new FileNameNormalizer(),
-                new DirectoryIndexWriter(_fileSystem));
+                new DirectoryIndexWriter(
+                    _fileSystem,
+                    new ConversationDisplayNameProvider(metadataReader)));
         }
 
         internal int Run(string[] args)
