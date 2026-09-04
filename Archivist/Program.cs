@@ -38,7 +38,7 @@ namespace dRz.GPT_Utilities.Archivist
                     logger,
                     uniqueFileNameProvider,
                     fileSystem,
-                    conversationIndexWriter: new ConversationIndexWriter(fileSystem));
+                    conversationIndexWriter: new ConversationTitleIndexWriter(fileSystem, metadataReader));
                 IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
                     pathBuilder,
                     metadataReader,
