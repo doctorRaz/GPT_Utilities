@@ -1,8 +1,10 @@
 using dRz.GPT_Utilities.Archivist.CommandLine;
+using dRz.GPT_Utilities.Archivist.Export;
 using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Maintenance;
 using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using NUnit.Framework;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -10,6 +12,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Maintenance;
 
 public sealed class ArchiveMaintenanceTests
 {
+    private static readonly DateTimeOffset CreateTime =
+        new(2026, 1, 1, 12, 0, 0, TimeSpan.Zero);
+
     [Test]
     public void Run_NormalizesHashToSpace()
     {
@@ -46,6 +51,70 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(index, Does.Not.Contain("stale-link.md"));
         Assert.That(File.ReadAllText(temp.Combine("2026", "_index.md")), Does.Contain("08-August/_index.md"));
         Assert.That(File.ReadAllText(temp.Combine("_index.md")), Does.Contain("2026/_index.md"));
+    }
+
+    [Test]
+    public void Run_MaintenanceIndex_UsesFirstNonEmptyAliasBeforeTitle()
+    {
+        using TempDirectory temp = new();
+        string month = temp.Combine("2026", "09-September");
+        Directory.CreateDirectory(month);
+        string file = Path.Combine(month, "normalized-name.md");
+        File.WriteAllText(file,
+            "---\n" +
+            $"create_time: {CreateTime:O}\n" +
+            "title: Title\n" +
+            "aliases:\n" +
+            "  - \"\"\n" +
+            "  - \"Original conversation name\"\n" +
+            "---\n" +
+            "body\n");
+
+        _ = CreateMaintenance().Run(temp.Path);
+
+        string index = File.ReadAllText(Path.Combine(month, "_index.md"));
+        Assert.That(index, Does.Contain("- [Original conversation name](normalized-name.md)"));
+        Assert.That(index, Does.Not.Contain("- [Title](normalized-name.md)"));
+    }
+
+    [Test]
+    public void Run_MaintenanceIndex_UsesTitleWhenAliasIsMissing()
+    {
+        using TempDirectory temp = new();
+        string month = temp.Combine("2026", "09-September");
+        Directory.CreateDirectory(month);
+        string file = Path.Combine(month, "conversation.md");
+        File.WriteAllText(file,
+            "---\n" +
+            $"create_time: {CreateTime:O}\n" +
+            "title: Conversation title\n" +
+            "---\n" +
+            "body\n");
+
+        _ = CreateMaintenance().Run(temp.Path);
+
+        string index = File.ReadAllText(Path.Combine(month, "_index.md"));
+        Assert.That(index, Does.Contain("- [Conversation title](conversation.md)"));
+    }
+
+    [Test]
+    public void Run_MaintenanceIndex_UsesFileNameWhenYamlIsInvalid()
+    {
+        using TempDirectory temp = new();
+        string month = temp.Combine("2026", "09-September");
+        Directory.CreateDirectory(month);
+        string file = Path.Combine(month, "invalid-yaml.md");
+        File.WriteAllText(file,
+            "---\n" +
+            "create_time: [not valid\n" +
+            "title: Ignored title\n" +
+            "---\n" +
+            "body\n");
+
+        _ = CreateMaintenance().Run(temp.Path);
+
+        string index = File.ReadAllText(Path.Combine(month, "_index.md"));
+        Assert.That(index, Does.Contain("- [invalid-yaml](invalid-yaml.md)"));
     }
 
     [Test]
@@ -91,9 +160,15 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(options.MaintenanceDirectory, Is.EqualTo("C:\\Vault"));
     }
 
-    private static ArchiveMaintenance CreateMaintenance() =>
-        new(
-            new LocalFileSystem(),
+    private static ArchiveMaintenance CreateMaintenance()
+    {
+        LocalFileSystem fileSystem = new();
+        ChatMetadataReader metadataReader = new(fileSystem);
+        return new ArchiveMaintenance(
+            fileSystem,
             new FileNameNormalizer(),
-            new DirectoryIndexWriter(new LocalFileSystem()));
+            new DirectoryIndexWriter(
+                fileSystem,
+                new ConversationDisplayNameProvider(metadataReader)));
+    }
 }

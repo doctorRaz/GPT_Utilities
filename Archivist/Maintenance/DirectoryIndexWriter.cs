@@ -9,10 +9,14 @@ internal sealed class DirectoryIndexWriter
 {
     private const string IndexFileName = "_index.md";
     private readonly IFileSystem _fileSystem;
+    private readonly ConversationDisplayNameProvider _displayNameProvider;
 
-    public DirectoryIndexWriter(IFileSystem fileSystem)
+    public DirectoryIndexWriter(
+        IFileSystem fileSystem,
+        ConversationDisplayNameProvider displayNameProvider)
     {
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        _displayNameProvider = displayNameProvider ?? throw new ArgumentNullException(nameof(displayNameProvider));
     }
 
     public void Rebuild(string root, ArchiveMaintenanceResult result)
@@ -42,7 +46,7 @@ internal sealed class DirectoryIndexWriter
         .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
         .ToArray();
 
-    private static string BuildMonth(string monthDirectory, string yearDirectory, string[] files)
+    private string BuildMonth(string monthDirectory, string yearDirectory, string[] files)
     {
         string month = Path.GetFileName(monthDirectory);
         int separator = month.IndexOf('-');
@@ -53,7 +57,11 @@ internal sealed class DirectoryIndexWriter
         _ = text.AppendLine("## Conversations");
         _ = text.AppendLine();
         foreach (string file in files)
-            _ = text.AppendLine($"- [{Path.GetFileNameWithoutExtension(file)}]({Uri.EscapeDataString(Path.GetFileName(file))})");
+        {
+            string fallback = Path.GetFileNameWithoutExtension(file);
+            string visibleName = _displayNameProvider.Get(file, fallback);
+            _ = text.AppendLine($"- [{visibleName}]({Uri.EscapeDataString(Path.GetFileName(file))})");
+        }
         return text.ToString();
     }
 

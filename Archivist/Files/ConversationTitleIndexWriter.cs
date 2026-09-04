@@ -9,14 +9,14 @@ internal sealed class ConversationTitleIndexWriter : IConversationIndexWriter
 {
     private const string IndexFileName = "_index.md";
     private readonly IFileSystem _fileSystem;
-    private readonly IChatMetadataReader _metadataReader;
+    private readonly ConversationDisplayNameProvider _displayNameProvider;
 
     public ConversationTitleIndexWriter(
         IFileSystem fileSystem,
         IChatMetadataReader metadataReader)
     {
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-        _metadataReader = metadataReader ?? throw new ArgumentNullException(nameof(metadataReader));
+        _displayNameProvider = new ConversationDisplayNameProvider(metadataReader);
     }
 
     public void Refresh(string directory)
@@ -41,38 +41,11 @@ internal sealed class ConversationTitleIndexWriter : IConversationIndexWriter
         foreach (string path in files)
         {
             string fileName = Path.GetFileNameWithoutExtension(path);
-            string visibleName = GetVisibleName(path, fileName);
+            string visibleName = _displayNameProvider.Get(path, fileName);
             string encodedFileName = Uri.EscapeDataString(Path.GetFileName(path));
             _ = contents.AppendLine($"- [{visibleName}]({encodedFileName})");
         }
 
         _fileSystem.WriteAllText(Path.Combine(directory, IndexFileName), contents.ToString());
-    }
-
-    private string GetVisibleName(string path, string fallback)
-    {
-        try
-        {
-            ChatMetadata metadata = _metadataReader.Read(path);
-
-            string? alias = metadata.Aliases?
-                .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
-
-            if (!string.IsNullOrWhiteSpace(alias))
-            {
-                return alias.Trim();
-            }
-
-            if (!string.IsNullOrWhiteSpace(metadata.Title))
-            {
-                return metadata.Title.Trim();
-            }
-        }
-        catch (FormatException)
-        {
-            // При невалидном YAML используем имя файла.
-        }
-
-        return fallback;
     }
 }
