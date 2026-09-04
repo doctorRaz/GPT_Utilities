@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using dRz.GPT_Utilities.Archivist.Export;
+using dRz.GPT_Utilities.Archivist.Files;
 using dRz.GPT_Utilities.Archivist.Infrastructure;
+using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using NUnit.Framework;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Files
