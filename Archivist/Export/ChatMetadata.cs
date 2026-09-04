@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using YamlDotNet.Serialization;
 
 namespace dRz.GPT_Utilities.Archivist.Export
@@ -11,36 +11,27 @@ namespace dRz.GPT_Utilities.Archivist.Export
     /// </summary>
     internal sealed class ChatMetadata
     {
-        /// <summary>
-        /// Дата и время создания разговора.
-        ///
-        /// Пример:
-        /// 2026-08-24T15:23:56.473Z
-        /// </summary>
+        /// <summary>Дата и время создания разговора.</summary>
         public DateTimeOffset CreateTime { get; set; }
 
         /// <summary>Gets or sets the update time.</summary>
-        /// <value>The update time.</value>
         public DateTimeOffset? UpdateTime { get; set; }
 
         /// <summary>Gets or sets the date export.</summary>
-        /// <value>The date export.</value>
         public string? DateExport { get; set; }
 
         /// <summary>Gets or sets the chat link.</summary>
-        /// <value>The chat link.</value>
         public string? ChatLink { get; set; }
 
         /// <summary>Gets or sets the title.</summary>
-        /// <value>The title.</value>
         public string? Title { get; set; }
 
         /// <summary>Gets or sets the tags.</summary>
-        /// <value>The tags.</value>
         public List<string?> Tags { get; set; }
 
-        /// <summary>Gets the export date time.</summary>
-        /// <value>The export date time.</value>
+        /// <summary>Gets or sets the aliases.</summary>
+        public List<string?> Aliases { get; set; }
+
         [YamlIgnore]
         public DateTime? ExportDateTime
         {
@@ -58,12 +49,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
         /// <summary>
         /// Уникальный идентификатор conversation.
-        ///
-        /// Получается из ChatLink и не участвует
-        /// в сериализации YAML.
-        ///
-        /// Возвращает <see langword="null"/>, если ChatLink отсутствует
-        /// или не содержит корректный идентификатор.
+        /// Получается из ChatLink и не участвует в сериализации YAML.
         /// </summary>
         [YamlIgnore]
         public Guid? ConversationId
