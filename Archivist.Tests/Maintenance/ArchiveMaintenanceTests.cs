@@ -98,6 +98,28 @@ public sealed class ArchiveMaintenanceTests
     }
 
     [Test]
+    public void Run_MaintenanceIndex_UsesFileNameWhenTitleIsInvalid()
+    {
+        using TempDirectory temp = new();
+        string month = temp.Combine("2026", "09-September");
+        Directory.CreateDirectory(month);
+        string file = Path.Combine(month, "invalid-title.md");
+        File.WriteAllText(file,
+            "---\n" +
+            $"create_time: {CreateTime:O}\n" +
+            "title:\n" +
+            "  - not a string\n" +
+            "---\n" +
+            "body\n");
+
+        _ = CreateMaintenance().Run(temp.Path);
+
+        string index = File.ReadAllText(Path.Combine(month, "_index.md"));
+        Assert.That(index, Does.Contain("- [invalid-title](invalid-title.md)"));
+        Assert.That(index, Does.Not.Contain("not a string"));
+    }
+
+    [Test]
     public void Run_MaintenanceIndex_UsesFileNameWhenYamlIsInvalid()
     {
         using TempDirectory temp = new();
