@@ -15,6 +15,7 @@ public sealed class ArchiveMaintenanceTests
     private static readonly DateTimeOffset CreateTime =
         new(2026, 1, 1, 12, 0, 0, TimeSpan.Zero);
 
+    /// <summary>Проверяет замену символа # на пробел при нормализации имени файла.</summary>
     [Test]
     public void Run_NormalizesHashToSpace()
     {
@@ -28,6 +29,7 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(File.Exists(Path.Combine(month, "A B.md")), Is.True);
     }
 
+    /// <summary>Проверяет нормализацию файлов и перестроение индексов по фактическому содержимому диска.</summary>
     [Test]
     public void Run_NormalizesFiles_AndRebuildsIndexesFromDisk()
     {
@@ -53,6 +55,7 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(File.ReadAllText(temp.Combine("_index.md")), Does.Contain("2026/_index.md"));
     }
 
+    /// <summary>Проверяет выбор первого непустого alias вместо title при построении индекса обслуживания.</summary>
     [Test]
     public void Run_MaintenanceIndex_UsesFirstNonEmptyAliasBeforeTitle()
     {
@@ -77,6 +80,7 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(index, Does.Not.Contain("- [Title](normalized-name.md)"));
     }
 
+    /// <summary>Проверяет использование title при отсутствии alias.</summary>
     [Test]
     public void Run_MaintenanceIndex_UsesTitleWhenAliasIsMissing()
     {
@@ -97,6 +101,7 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(index, Does.Contain("- [Conversation title](conversation.md)"));
     }
 
+    /// <summary>Проверяет использование имени файла, если значение title имеет недопустимый тип.</summary>
     [Test]
     public void Run_MaintenanceIndex_UsesFileNameWhenTitleIsInvalid()
     {
@@ -119,6 +124,7 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(index, Does.Not.Contain("not a string"));
     }
 
+    /// <summary>Проверяет использование имени файла, если YAML метаданных невозможно прочитать.</summary>
     [Test]
     public void Run_MaintenanceIndex_UsesFileNameWhenYamlIsInvalid()
     {
@@ -139,6 +145,7 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(index, Does.Contain("- [invalid-yaml](invalid-yaml.md)"));
     }
 
+    /// <summary>Проверяет сохранение всех файлов при конфликте нормализованных имён и создание уникального суффикса.</summary>
     [Test]
     public void Run_DoesNotLoseFile_WhenNamesCollide()
     {
@@ -156,6 +163,7 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(result.Conflicts, Is.EqualTo(1));
     }
 
+    /// <summary>Проверяет идемпотентность обслуживания: повторный запуск не переименовывает и не обновляет уже актуальные данные.</summary>
     [Test]
     public void Run_IsIdempotent()
     {
@@ -173,6 +181,7 @@ public sealed class ArchiveMaintenanceTests
         Assert.That(second.UpdatedIndexes, Is.EqualTo(0));
     }
 
+    /// <summary>Проверяет разбор режима обслуживания без обязательного указания каталогов импорта.</summary>
     [Test]
     public void Parse_AcceptsMaintenanceWithoutImportDirectories()
     {
