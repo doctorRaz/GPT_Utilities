@@ -154,5 +154,26 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.That(result, Does.Contain("create_time: \"2026-09-03T05:21:01.317Z\"\r\n"));
             Assert.That(result, Does.Not.Contain("Z\"\r\r\n"));
         }
+
+        [Test]
+        public void Write_QuotesTitle_WhenYamlSpecialCharactersArePresent()
+        {
+            using TempDirectory temp = new();
+            string path = Path.Combine(temp.Path, "conversation.md");
+            File.WriteAllText(path, "---\ntitle: Test\n---\nBody\n");
+
+            const string title = "Test: YAML # title [special]";
+            ChatMetadata metadata = new()
+            {
+                CreateTime = CreateTime,
+                CreateTimeText = "2026-09-03T05:21:01.317Z",
+                Title = title
+            };
+
+            new ChatMetadataWriter(new LocalFileSystem()).Write(path, metadata);
+
+            string yaml = File.ReadAllText(path);
+            Assert.That(yaml, Does.Contain("title: \"Test: YAML # title [special]\""));
+        }
     }
 }
