@@ -19,6 +19,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         private const string ConversationB =
             "https://chatgpt.com/c/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 
+        /// <summary>Добавляет файл, если файл назначения отсутствует.</summary>
         [Test]
         public void CopyIfNewer_AddsFile_WhenDestinationDoesNotExist()
         {
@@ -35,6 +36,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(destination), Is.EqualTo(File.ReadAllText(source)));
         }
 
+        /// <summary>Заменяет файл назначения, если исходный файл новее.</summary>
         [Test]
         public void CopyIfNewer_ReplacesFile_WhenSourceIsNewer()
         {
@@ -49,6 +51,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(destination, Does.Not.Contain(" (1)"));
         }
 
+        /// <summary>Пропускает файл, если исходный файл не новее существующего.</summary>
         [Test]
         public void CopyIfNewer_SkipsFile_WhenSourceIsOlderOrEqual()
         {
@@ -62,6 +65,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(destination), Does.Contain("kept"));
         }
 
+        /// <summary>Создаёт уникальный файл, если идентификаторы диалогов различаются.</summary>
         [Test]
         public void CopyIfNewer_AddsUniqueFile_WhenConversationIdsDiffer()
         {
@@ -78,6 +82,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(unique), Does.Contain("second"));
         }
 
+        /// <summary>Заменяет существующую версию с тем же идентификатором диалога вместо создания дубликата.</summary>
         [Test]
         public void CopyIfNewer_ReplacesMatchingUniqueFile_InsteadOfAddingDuplicate()
         {
@@ -93,6 +98,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("new second"));
         }
 
+        /// <summary>Пропускает копирование, если самая новая существующая версия с тем же идентификатором новее исходного файла.</summary>
         [Test]
         public void CopyIfNewer_SkipsNewestMatchingUniqueFile_WhenSeveralExist()
         {
@@ -109,6 +115,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(newestMatch), Does.Contain("newest second"));
         }
 
+        /// <summary>Пропускает копирование, если существующая версия с тем же идентификатором новее исходного файла.</summary>
         [Test]
         public void CopyIfNewer_SkipsMatchingUniqueFile_WhenItIsNewer()
         {
@@ -124,6 +131,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(temp.Combine("dst", "Chat (2).md"), Does.Not.Exist);
         }
 
+        /// <summary>Создаёт уникальный файл, если идентификаторы диалогов отсутствуют у обоих файлов.</summary>
         [Test]
         public void CopyIfNewer_AddsUniqueFile_WhenBothConversationIdsAreMissing()
         {
@@ -140,6 +148,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(unique), Does.Contain("new"));
         }
 
+        /// <summary>Создаёт уникальный файл, если идентификатор диалога отсутствует у одного из файлов.</summary>
         [Test]
         public void CopyIfNewer_AddsUniqueFile_WhenOneConversationIdIsMissing()
         {
@@ -154,6 +163,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
         }
 
+        /// <summary>Устанавливает время последней записи файла назначения из времени обновления диалога.</summary>
         [Test]
         public void CopyIfNewer_SetsLastWriteTimeFromUpdateTime()
         {
