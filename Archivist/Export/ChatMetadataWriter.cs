@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 using dRz.GPT_Utilities.Archivist.Files;
 using YamlDotNet.Serialization;
@@ -17,6 +16,10 @@ internal interface IChatMetadataWriter
 
 internal sealed class ChatMetadataWriter : IChatMetadataWriter
 {
+    private static readonly Regex QuotedScalarRegex = new(
+        @"^(create_time|update_time|conversation_id): (.*)$",
+        RegexOptions.Compiled | RegexOptions.Multiline);
+
     private readonly IFileSystem _fileSystem;
 
     public ChatMetadataWriter(IFileSystem fileSystem)
@@ -70,6 +73,9 @@ internal sealed class ChatMetadataWriter : IChatMetadataWriter
         if (metadata.ConversationId is Guid conversationId)
             model["conversation_id"] = conversationId.ToString();
 
-        return serializer.Serialize(model).TrimEnd('\r', '\n') + Environment.NewLine;
+        string yaml = serializer.Serialize(model).TrimEnd('\r', '\n');
+        return QuotedScalarRegex.Replace(yaml, match =>
+            $"{match.Groups[1].Value}: \"{match.Groups[2].Value.Trim('\\"')}\"") +
+            Environment.NewLine;
     }
 }
