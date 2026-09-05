@@ -12,12 +12,12 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         private static IUniqueFileNameProvider CreateProvider() =>
             new UniqueFileNameProvider(new LocalFileSystem());
 
-        [TestCase("Моя_тема", "Моя тема")]
-        [TestCase("Проверка___Staged__Diff", "Проверка Staged Diff")]
+        [TestCase("Моя_тема", "Моя_тема")]
+        [TestCase("Проверка___Staged__Diff", "Проверка___Staged__Diff")]
         [TestCase("  Тема  ", "Тема")]
         [TestCase("Тема\tс\tтабами", "Тема с табами")]
         [TestCase("Один пробел", "Один пробел")]
-        public void Normalize_CollapsesUnderscoresAndWhitespace(
+        public void Normalize_PreservesUnderscoresAndCollapsesWhitespace(
             string input,
             string expected)
         {
