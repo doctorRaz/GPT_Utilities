@@ -16,6 +16,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         private const string ConversationA =
             "https://chatgpt.com/c/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 
+        /// <summary>Удаляет все не более новые версии, когда исходный файл является самым новым.</summary>
         [Test]
         public void Synchronize_RemovesAllVersionsNotNewer_WhenSourceIsNewest()
         {
@@ -33,6 +34,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.Exists(staleVersion), Is.False);
         }
 
+        /// <summary>Удаляет устаревшие версии и пропускает исходный файл, когда уже существует более новая версия.</summary>
         [Test]
         public void Synchronize_RemovesStaleVersionsAndSkips_WhenNewerVersionExists()
         {
@@ -48,6 +50,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(newestVersion), Does.Contain("newest"));
         }
 
+        /// <summary>Пропускает файл, когда время обновления совпадает с существующей версией.</summary>
         [Test]
         public void Synchronize_SkipsVersion_WhenUpdateTimesAreEqual()
         {
@@ -62,6 +65,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(destination), Does.Contain("old"));
         }
 
+        /// <summary>Сравнивает время обновления после усечения долей секунды.</summary>
         [Test]
         public void Synchronize_TruncatesFractionalSecondsBeforeComparing()
         {
@@ -78,6 +82,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(destination), Does.Contain("old"));
         }
 
+        /// <summary>Сравнивает время обновления после приведения часовых поясов к UTC.</summary>
         [Test]
         public void Synchronize_ConvertsOffsetsToUtcBeforeComparing()
         {
@@ -92,6 +97,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(destination), Does.Contain("old"));
         }
 
+        /// <summary>Заменяет существующую версию, когда у исходного файла отсутствует время обновления.</summary>
         [Test]
         public void Synchronize_ReplacesVersion_WhenSourceUpdateTimeIsMissing()
         {
@@ -105,6 +111,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(destination), Does.Contain("replacement"));
         }
 
+        /// <summary>Удаляет более старую версию и пропускает исходный файл, когда его время находится между существующими версиями.</summary>
         [Test]
         public void Synchronize_WhenSourceIsBetweenVersions_RemovesOlderAndSkips()
         {
@@ -121,6 +128,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.Exists(temp.Combine("dst", "Source.md")), Is.False);
         }
 
+        /// <summary>Удаляет версии, которые старше исходного файла, сохраняя версию с равным и более новым временем.</summary>
         [Test]
         public void Synchronize_WhenSourceMatchesOneOfSeveralVersions_RemovesOnlyNotNewerVersions()
         {
@@ -138,6 +146,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.Exists(newer), Is.True);
         }
 
+        /// <summary>Заменяет все существующие версии, когда исходный файл новее их всех.</summary>
         [Test]
         public void Synchronize_WhenSourceIsNewerThanAllVersions_ReplacesAllVersions()
         {
@@ -155,6 +164,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(destination), Does.Contain("source"));
         }
 
+        /// <summary>Использует имя исходного файла при изменении заголовка вместо добавления уникального суффикса.</summary>
         [Test]
         public void Synchronize_WhenTitleChanges_UsesSourceNameInsteadOfUniqueName()
         {
@@ -171,6 +181,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.Exists(temp.Combine("dst", "New title (1).md")), Is.False);
         }
 
+        /// <summary>Сохраняет существующую версию с заданным временем обновления, если у исходного файла оно отсутствует.</summary>
         [Test]
         public void Synchronize_WhenSourceHasNoUpdateTime_KeepsDatedExistingVersion()
         {
@@ -185,6 +196,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.Exists(temp.Combine("dst", "Source.md")), Is.False);
         }
 
+        /// <summary>Заменяет существующую версию, когда время обновления отсутствует у обоих файлов.</summary>
         [Test]
         public void Synchronize_WhenBothUpdateTimesAreMissing_ReplacesExistingVersion()
         {
@@ -200,6 +212,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(destination), Does.Contain("source"));
         }
 
+        /// <summary>Не изменяет файл другого диалога при синхронизации текущего диалога.</summary>
         [Test]
         public void Synchronize_WhenOtherConversationExists_LeavesItUntouched()
         {
@@ -223,6 +236,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Is.EqualTo(new[] { Path.GetFullPath(destination) }));
         }
 
+        /// <summary>Не создаёт дополнительные уникальные версии при повторной обработке того же файла.</summary>
         [Test]
         public void Synchronize_WhenProcessedTwice_DoesNotCreateUniqueVersions()
         {
