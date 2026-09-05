@@ -85,9 +85,10 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     $"Не удалось прочитать YAML: {filePath}");
             }
 
-            if (string.IsNullOrWhiteSpace(rawMetadata.CreateTime) ||
+            string? createTimeText = rawMetadata.CreateTime?.Trim();
+            if (string.IsNullOrWhiteSpace(createTimeText) ||
                 !DateTimeOffset.TryParse(
-                    rawMetadata.CreateTime,
+                    createTimeText,
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.RoundtripKind,
                     out DateTimeOffset createTime))
@@ -96,11 +97,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     $"В YAML отсутствует или некорректен create_time: {filePath}");
             }
 
+            string? updateTimeText = rawMetadata.UpdateTime?.Trim();
             DateTimeOffset? updateTime = null;
-            if (!string.IsNullOrWhiteSpace(rawMetadata.UpdateTime))
+            if (!string.IsNullOrWhiteSpace(updateTimeText))
             {
                 if (!DateTimeOffset.TryParse(
-                        rawMetadata.UpdateTime,
+                        updateTimeText,
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.RoundtripKind,
                         out DateTimeOffset parsedUpdateTime))
@@ -115,9 +117,9 @@ namespace dRz.GPT_Utilities.Archivist.Export
             return new ChatMetadata
             {
                 CreateTime = createTime,
-                CreateTimeText = rawMetadata.CreateTime,
+                CreateTimeText = createTimeText,
                 UpdateTime = updateTime,
-                UpdateTimeText = rawMetadata.UpdateTime,
+                UpdateTimeText = updateTimeText,
                 HasUpdateTime = rawMetadata.UpdateTime is not null,
                 DateExport = rawMetadata.DateExport,
                 ChatLink = rawMetadata.ChatLink,
