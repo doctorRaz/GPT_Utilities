@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using dRz.GPT_Utilities.Archivist.Files;
 using YamlDotNet.Serialization;
@@ -26,7 +28,7 @@ internal sealed class ChatMetadataWriter : IChatMetadataWriter
     {
         ArgumentNullException.ThrowIfNull(metadata);
 
-        string content = string.Join(Environment.NewLine, _fileSystem.ReadLines(filePath));
+        string content = _fileSystem.ReadAllText(filePath);
         Match match = ChatMetadataReader.FrontMatterRegex.Match(content);
         if (!match.Success)
             throw new FormatException($"В файле отсутствует YAML front matter: {filePath}");
@@ -45,31 +47,29 @@ internal sealed class ChatMetadataWriter : IChatMetadataWriter
             .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull)
             .Build();
 
-        var model = new SerializableChatMetadata
-        {
-            Title = metadata.Title,
-            Aliases = metadata.Aliases,
-            Tags = metadata.Tags,
-            CreateTime = metadata.CreateTime,
-            UpdateTime = metadata.UpdateTime,
-            DateExport = metadata.DateExport,
-            ChatLink = metadata.ChatLink,
-            ConversationId = metadata.ConversationId
-        };
+        var model = new Dictionary<string, object?>();
+
+        if (metadata.Title is not null)
+            model["title"] = metadata.Title;
+        if (metadata.HasAliases)
+            model["aliases"] = metadata.Aliases;
+        if (metadata.HasTags)
+            model["tags"] = metadata.Tags;
+
+        model["create_time"] = metadata.CreateTimeText ??
+            metadata.CreateTime.ToString("O", CultureInfo.InvariantCulture);
+
+        if (metadata.HasUpdateTime && metadata.UpdateTime is not null)
+            model["update_time"] = metadata.UpdateTimeText ??
+                metadata.UpdateTime.Value.ToString("O", CultureInfo.InvariantCulture);
+
+        if (metadata.DateExport is not null)
+            model["date_export"] = metadata.DateExport;
+        if (metadata.ChatLink is not null)
+            model["chat_link"] = metadata.ChatLink;
+        if (metadata.ConversationId is Guid conversationId)
+            model["conversation_id"] = conversationId.ToString();
 
         return serializer.Serialize(model).TrimEnd('\r', '\n') + Environment.NewLine;
-    }
-
-    private sealed class SerializableChatMetadata
-    {
-        public string? Title { get; set; }
-        public List<string?>? Aliases { get; set; }
-        public List<string?>? Tags { get; set; }
-        public DateTimeOffset CreateTime { get; set; }
-        public DateTimeOffset? UpdateTime { get; set; }
-        public string? DateExport { get; set; }
-        public string? ChatLink { get; set; }
-        [YamlMember(Alias = "conversation_ID")]
-        public Guid? ConversationId { get; set; }
     }
 }
