@@ -555,8 +555,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             string month2 = CreateTime2.ToString("MM-MMMM", CultureInfo.InvariantCulture);
             string monthDir2 = Path.Combine(dest.Path, year, month2);
 
-            Assert.That(File.Exists(Path.Combine(monthDir1, "jan file.md")), Is.True);
-            Assert.That(File.Exists(Path.Combine(monthDir2, "mar file.md")), Is.True);
+            Assert.That(File.Exists(Path.Combine(monthDir1, "jan_file.md")), Is.True);
+            Assert.That(File.Exists(Path.Combine(monthDir2, "mar_file.md")), Is.True);
         }
 
 
