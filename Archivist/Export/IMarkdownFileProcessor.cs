@@ -19,6 +19,7 @@ internal sealed class MarkdownFileProcessor : IMarkdownFileProcessor
     private readonly IExportPathBuilder _pathBuilder;
     private readonly IChatMetadataReader _metadataReader;
     private readonly IFileSynchronizer _fileSynchronizer;
+    private readonly IChatMetadataWriter _metadataWriter;
     private readonly IArchivistLogger _logger;
     private readonly IFileNameNormalizer _fileNameNormalizer;
 
@@ -27,11 +28,13 @@ internal sealed class MarkdownFileProcessor : IMarkdownFileProcessor
         IChatMetadataReader metadataReader,
         IFileSynchronizer fileSynchronizer,
         IArchivistLogger logger,
-        IFileNameNormalizer fileNameNormalizer)
+        IFileNameNormalizer fileNameNormalizer,
+        IChatMetadataWriter metadataWriter)
     {
         _pathBuilder = pathBuilder ?? throw new ArgumentNullException(nameof(pathBuilder));
         _metadataReader = metadataReader ?? throw new ArgumentNullException(nameof(metadataReader));
         _fileSynchronizer = fileSynchronizer ?? throw new ArgumentNullException(nameof(fileSynchronizer));
+        _metadataWriter = metadataWriter ?? throw new ArgumentNullException(nameof(metadataWriter));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _fileNameNormalizer = fileNameNormalizer
             ?? throw new ArgumentNullException(nameof(fileNameNormalizer));
@@ -55,9 +58,18 @@ internal sealed class MarkdownFileProcessor : IMarkdownFileProcessor
             metadata,
             normalizedName + extension);
 
-        return _fileSynchronizer.Synchronize(
+        FileOperationResult result = _fileSynchronizer.Synchronize(
             sourceFile,
             destinationFile,
             metadata);
+
+        if (result.Status is FileOperationStatus.Added or FileOperationStatus.Updated)
+        {
+            string actualDestination = result.DestinationPath
+                ?? throw new InvalidOperationException("Путь назначения отсутствует.");
+            _metadataWriter.Write(actualDestination, metadata);
+        }
+
+        return result;
     }
 }
