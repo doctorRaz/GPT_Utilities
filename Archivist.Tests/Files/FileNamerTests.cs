@@ -12,6 +12,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         private static IUniqueFileNameProvider CreateProvider() =>
             new UniqueFileNameProvider(new LocalFileSystem());
 
+        /// <summary>Проверяет сохранение подчёркиваний и сведение последовательностей пробельных символов к одному пробелу.</summary>
         [TestCase("Моя_тема", "Моя_тема")]
         [TestCase("Проверка___Staged__Diff", "Проверка___Staged__Diff")]
         [TestCase("  Тема  ", "Тема")]
@@ -24,6 +25,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(_normalizer.Normalize(input), Is.EqualTo(expected));
         }
 
+        /// <summary>Проверяет возврат исходного пути, если файл с таким именем не существует.</summary>
         [Test]
         public void GetUnique_ReturnsOriginalPath_WhenFileDoesNotExist()
         {
@@ -33,6 +35,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(CreateProvider().GetUnique(path), Is.EqualTo(path));
         }
 
+        /// <summary>Проверяет добавление суффикса (1) при наличии файла с исходным именем.</summary>
         [Test]
         public void GetUnique_AppendsNumber_WhenFileExists()
         {
@@ -45,6 +48,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(unique, Is.EqualTo(temp.Combine("Test (1).md")));
         }
 
+        /// <summary>Проверяет пропуск занятых числовых суффиксов при подборе уникального имени.</summary>
         [Test]
         public void GetUnique_SkipsOccupiedSuffixes()
         {
@@ -58,6 +62,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(unique, Is.EqualTo(temp.Combine("Test (3).md")));
         }
 
+        /// <summary>Проверяет выброс исключения, когда заняты исходное имя и все допустимые числовые суффиксы.</summary>
         [Test]
         public void GetUnique_Throws_WhenAllSuffixesAreTaken()
         {
