@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using dRz.GPT_Utilities.Archivist.Files;
+using dRz.GPT_Utilities.Archivist.Tests.Infrastructure;
 using NUnit.Framework;
 
 namespace dRz.GPT_Utilities.Archivist.Tests.Export
@@ -20,11 +21,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             using TempDirectory temp = new();
             string path = Path.Combine(temp.Path, "conversation.md");
             const string conversationId = "6a990386-7394-83eb-b0c4-0fb5b6215713";
-            File.WriteAllText(path, "---\n" +
-                "title: Test\n" +
-                "create_time: \"2026-09-03T05:21:01.317Z\"\n" +
-                "chat_link: \"https://chatgpt.com/c/6a990386-7394-83eb-b0c4-0fb5b6215713\"\n" +
-                "---\nBody\n");
+            File.WriteAllText(path, "---\n" + "title: Test\n" + "create_time: \"2026-09-03T05:21:01.317Z\"\n" + "chat_link: \"https://chatgpt.com/c/6a990386-7394-83eb-b0c4-0fb5b6215713\"\n" + "---\nBody\n");
 
             ChatMetadata metadata = new()
             {
@@ -36,8 +33,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             new ChatMetadataWriter(new LocalFileSystem()).Write(path, metadata);
 
-            string result = File.ReadAllText(path);
-            Assert.That(result, Does.Contain($"conversation_id: \"{conversationId}\""));
+            Assert.That(File.ReadAllText(path), Does.Contain($"conversation_id: \"{conversationId}\""));
         }
 
         [Test]
@@ -134,8 +130,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 
             new ChatMetadataWriter(new LocalFileSystem()).Write(path, metadata);
 
-            string result = File.ReadAllText(path);
-            Assert.That(result, Does.EndWith(body));
+            Assert.That(File.ReadAllText(path), Does.EndWith(body));
         }
 
         [Test]
