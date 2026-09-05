@@ -10,6 +10,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests;
 
 public sealed class ArchivistApplicationTests
 {
+    /// <summary>Проверяет успешный код завершения приложения при успешной обработке экспорта.</summary>
     [Test]
     public void Run_ReturnsSuccessExitCode_WhenProcessingSucceeds()
     {
@@ -30,6 +31,7 @@ public sealed class ArchivistApplicationTests
         Assert.That(exitCode, Is.EqualTo(0));
     }
 
+    /// <summary>Проверяет код завершения с ошибкой при наличии ошибок обработки Markdown-файлов.</summary>
     [Test]
     public void Run_ReturnsErrorExitCode_WhenMarkdownProcessingFails()
     {
@@ -50,6 +52,7 @@ public sealed class ArchivistApplicationTests
         Assert.That(exitCode, Is.EqualTo(1));
     }
 
+    /// <summary>Проверяет код завершения с ошибкой при наличии ошибок обработки архивов.</summary>
     [Test]
     public void Run_ReturnsErrorExitCode_WhenArchiveProcessingFails()
     {
