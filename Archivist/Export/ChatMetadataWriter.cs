@@ -75,7 +75,7 @@ internal sealed class ChatMetadataWriter : IChatMetadataWriter
 
         string yaml = serializer.Serialize(model).TrimEnd('\r', '\n');
         return QuotedScalarRegex.Replace(yaml, match =>
-            $"{match.Groups[1].Value}: \"{match.Groups[2].Value.Trim('"')}\"") +
+            $"{match.Groups[1].Value}: \"{match.Groups[2].Value.Trim().Trim('"')}\"") +
             Environment.NewLine;
     }
 }
