@@ -17,6 +17,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         private const string ConversationA =
             "https://chatgpt.com/c/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 
+        /// <summary>Создаёт уникальный файл, если метаданные существующего файла назначения невозможно прочитать.</summary>
         [Test]
         public void CopyIfNewer_AddsUniqueFile_WhenDestinationMetadataIsUnreadable()
         {
@@ -33,6 +34,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
         }
 
+        /// <summary>Фиксирует ошибку чтения индекса, когда метаданные существующего файла назначения некорректны.</summary>
         [Test]
         public void Synchronize_ReportsIndexReadError_WhenDestinationMetadataIsUnreadable()
         {
@@ -54,6 +56,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
         }
 
+        /// <summary>Сохраняет существующие версии и индекс, если копирование исходного файла завершается ошибкой.</summary>
         [Test]
         public void Synchronize_WhenCopyFails_PreservesExistingVersionsAndIndex()
         {
@@ -70,6 +73,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Is.EqualTo(new[] { Path.GetFullPath(existing) }));
         }
 
+        /// <summary>Сохраняет в индексе файл, удаление которого завершилось ошибкой.</summary>
         [Test]
         public void Synchronize_WhenDeleteFails_KeepsFailedDeletionInIndex()
         {
@@ -87,6 +91,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Has.Count.EqualTo(2));
         }
 
+        /// <summary>Записывает результат операции синхронизации в журнал.</summary>
         [Test]
         public void Synchronize_WritesOperationToLogger()
         {
