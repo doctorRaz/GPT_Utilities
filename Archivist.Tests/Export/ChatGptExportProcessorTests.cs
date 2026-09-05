@@ -489,7 +489,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 global::NUnit.Framework.Has.Count.EqualTo(1));
             global::NUnit.Framework.Assert.That(
                 result.MarkdownErrors[0].Message,
-                global::NUnit.Framework.Does.Contain("Некорректный YAML или дата"));
+                global::NUnit.Framework.Does.Contain("В YAML отсутствует или некорректен create_time"));
             global::NUnit.Framework.Assert.That(result.ArchiveErrors, global::NUnit.Framework.Is.Empty);
             global::NUnit.Framework.Assert.That(result.Errors, global::NUnit.Framework.Has.Count.EqualTo(1));
             global::NUnit.Framework.Assert.That(result.Errors[0], global::NUnit.Framework.Is.EqualTo(result.MarkdownErrors[0]));
