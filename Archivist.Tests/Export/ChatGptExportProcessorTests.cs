@@ -333,7 +333,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
         }
 
         [Test]
-        public void Process_NormalizesFileName_ReplacingUnderscoresWithSpaces()
+        public void Process_PreservesUnderscoresInFileName()
         {
             using TempDirectory source = new();
             using TempDirectory dest = new();
@@ -358,7 +358,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             Assert.That(files, Has.Length.EqualTo(1));
 
             string fileName = Path.GetFileNameWithoutExtension(files[0]);
-            Assert.That(fileName, Does.Contain(" "));
+            Assert.That(fileName, Is.EqualTo("file_with_underscores"));
         }
 
         [Test]
