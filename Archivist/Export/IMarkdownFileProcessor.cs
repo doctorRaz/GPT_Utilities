@@ -29,12 +29,12 @@ internal sealed class MarkdownFileProcessor : IMarkdownFileProcessor
         IFileSynchronizer fileSynchronizer,
         IArchivistLogger logger,
         IFileNameNormalizer fileNameNormalizer,
-        IChatMetadataWriter metadataWriter)
+        IChatMetadataWriter? metadataWriter = null)
     {
         _pathBuilder = pathBuilder ?? throw new ArgumentNullException(nameof(pathBuilder));
         _metadataReader = metadataReader ?? throw new ArgumentNullException(nameof(metadataReader));
         _fileSynchronizer = fileSynchronizer ?? throw new ArgumentNullException(nameof(fileSynchronizer));
-        _metadataWriter = metadataWriter ?? throw new ArgumentNullException(nameof(metadataWriter));
+        _metadataWriter = metadataWriter ?? new ChatMetadataWriter(new LocalFileSystem());
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _fileNameNormalizer = fileNameNormalizer
             ?? throw new ArgumentNullException(nameof(fileNameNormalizer));
