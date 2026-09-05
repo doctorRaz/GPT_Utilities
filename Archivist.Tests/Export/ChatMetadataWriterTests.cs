@@ -173,7 +173,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
             new ChatMetadataWriter(new LocalFileSystem()).Write(path, metadata);
 
             string yaml = File.ReadAllText(path);
-            Assert.That(yaml, Does.Contain("title: \"Test: YAML # title [special]\""));
+            Assert.That(yaml, Does.Contain("title: 'Test: YAML # title [special]'"));
         }
     }
 }
