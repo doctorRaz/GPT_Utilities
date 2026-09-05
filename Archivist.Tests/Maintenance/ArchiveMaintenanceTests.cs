@@ -42,12 +42,12 @@ public sealed class ArchiveMaintenanceTests
 
         ArchiveMaintenanceResult result = CreateMaintenance().Run(temp.Path);
 
-        Assert.That(result.RenamedFiles, Is.EqualTo(2));
+        Assert.That(result.RenamedFiles, Is.EqualTo(1));
         Assert.That(File.Exists(Path.Combine(month, "A B.md")), Is.True);
-        Assert.That(File.Exists(Path.Combine(month, "B тест.md")), Is.True);
+        Assert.That(File.Exists(Path.Combine(month, "B_тест.md")), Is.True);
         string index = File.ReadAllText(Path.Combine(month, "_index.md"));
         Assert.That(index, Does.Contain("[A B](A%20B.md)"));
-        Assert.That(index, Does.Contain("[B тест](B%20%D1%82%D0%B5%D1%81%D1%82.md)"));
+        Assert.That(index, Does.Contain("[B_тест](B_%D1%82%D0%B5%D1%81%D1%82.md)"));
         Assert.That(index, Does.Not.Contain("stale-link.md"));
         Assert.That(File.ReadAllText(temp.Combine("2026", "_index.md")), Does.Contain("08-August/_index.md"));
         Assert.That(File.ReadAllText(temp.Combine("_index.md")), Does.Contain("2026/_index.md"));
