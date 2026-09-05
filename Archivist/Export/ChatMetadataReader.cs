@@ -19,9 +19,6 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 .IgnoreUnmatchedProperties()
                 .Build();
 
-        /// <summary>
-        /// Regex для поиска front matter только в начале Markdown-файла.
-        /// </summary>
         internal static readonly Regex FrontMatterRegex = new(
             @"\A---\s*\r?\n(?<yaml>.*?)\r?\n---\s*(?:\r?\n|$)",
             RegexOptions.Compiled | RegexOptions.Singleline);
@@ -34,10 +31,9 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
-        /// <summary>Читает и проверяет metadata файла.</summary>
         private sealed class RawChatMetadata
         {
-            public DateTimeOffset CreateTime { get; set; }
+            public string? CreateTime { get; set; }
             public string? UpdateTime { get; set; }
             public string? DateExport { get; set; }
             public string? ChatLink { get; set; }
@@ -89,7 +85,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
                     $"Не удалось прочитать YAML: {filePath}");
             }
 
-            if (rawMetadata.CreateTime == default)
+            if (string.IsNullOrWhiteSpace(rawMetadata.CreateTime) ||
+                !DateTimeOffset.TryParse(
+                    rawMetadata.CreateTime,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.RoundtripKind,
+                    out DateTimeOffset createTime))
             {
                 throw new FormatException(
                     $"В YAML отсутствует или некорректен create_time: {filePath}");
@@ -113,13 +114,18 @@ namespace dRz.GPT_Utilities.Archivist.Export
 
             return new ChatMetadata
             {
-                CreateTime = rawMetadata.CreateTime,
+                CreateTime = createTime,
+                CreateTimeText = rawMetadata.CreateTime,
                 UpdateTime = updateTime,
+                UpdateTimeText = rawMetadata.UpdateTime,
+                HasUpdateTime = rawMetadata.UpdateTime is not null,
                 DateExport = rawMetadata.DateExport,
                 ChatLink = rawMetadata.ChatLink,
                 Title = rawMetadata.Title,
                 Tags = rawMetadata.Tags ?? new List<string?>(),
-                Aliases = rawMetadata.Aliases ?? new List<string?>()
+                HasTags = rawMetadata.Tags is not null,
+                Aliases = rawMetadata.Aliases ?? new List<string?>(),
+                HasAliases = rawMetadata.Aliases is not null
             };
         }
     }
