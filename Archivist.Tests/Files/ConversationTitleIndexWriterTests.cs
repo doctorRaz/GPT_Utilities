@@ -13,6 +13,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         private static readonly DateTimeOffset CreateTime =
             new(2026, 1, 1, 12, 0, 0, TimeSpan.Zero);
 
+        /// <summary>Проверяет выбор первого непустого alias вместо title и сохранение имени файла как цели ссылки.</summary>
         [Test]
         public void Refresh_UsesFirstNonEmptyAliasBeforeTitle_AndKeepsFileNameAsTarget()
         {
@@ -38,6 +39,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(index, Does.Not.Contain("- [Title](normalized-name.md)"));
         }
 
+        /// <summary>Проверяет использование title в индексе, если aliases отсутствуют.</summary>
         [Test]
         public void Refresh_UsesTitle_WhenAliasesAreMissing()
         {
@@ -58,6 +60,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(index, Does.Contain("- [Conversation title](conversation.md)"));
         }
 
+        /// <summary>Проверяет использование имени файла, если title и aliases отсутствуют.</summary>
         [Test]
         public void Refresh_UsesFileName_WhenTitleAndAliasesAreMissing()
         {
@@ -77,6 +80,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(index, Does.Contain("- [fallback-name](fallback-name.md)"));
         }
 
+        /// <summary>Проверяет использование имени файла, если YAML файла не удаётся прочитать.</summary>
         [Test]
         public void Refresh_UsesFileName_WhenYamlIsInvalid()
         {
