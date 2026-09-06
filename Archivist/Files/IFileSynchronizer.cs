@@ -259,7 +259,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     {
         DateTimeOffset sourceUpdateTime = NormalizeUpdateTime(sourceMetadata.UpdateTime);
         List<string> stalePaths = new();
-        string? existingPathToUpdate = null;
         bool hasNewerVersion = false;
         bool hasEqualVersion = false;
 
@@ -283,7 +282,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 // При отсутствии обеих дат сохраняем прежнюю политику:
                 // новая версия заменяет неопределённую старую.
                 stalePaths.Add(path);
-                existingPathToUpdate ??= path;
             }
             else if (bothHaveUpdateTime && existingUpdateTime == sourceUpdateTime)
             {
@@ -294,7 +292,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             else if (existingUpdateTime < sourceUpdateTime)
             {
                 stalePaths.Add(path);
-                existingPathToUpdate ??= path;
             }
             else
             {
@@ -326,14 +323,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 "Существует версия разговора с той же датой обновления.");
             WriteOperationResult(skippedResult);
             return skippedResult;
-        }
-
-        // Если у разговора уже есть устаревшая версия под уникальным именем,
-        // обновляем именно её. Это сохраняет выбранное имя Chat (N).md
-        // и не создаёт следующий дубликат.
-        if (existingPathToUpdate is not null)
-        {
-            destinationFilePath = existingPathToUpdate;
         }
 
         FileOperationResult? uniqueResult = null;
@@ -522,6 +511,12 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         }
     }
 
+    /// <summary>
+    /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
+    /// </summary>
+    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
+    /// <param name="sourceId">ID разговора.</param>
+    /// <returns>Путь к найденному дубликату или null, если не найден.</returns>
     /// <summary>
     /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
     /// </summary>
