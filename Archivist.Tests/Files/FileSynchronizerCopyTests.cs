@@ -101,10 +101,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult secondResult = Synchronize(secondImport, destination, Read(secondImport));
 
-            Assert.That(secondResult.Status, Is.EqualTo(FileOperationStatus.Added));
-            Assert.That(File.Exists(unique), Is.False);
-            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.True);
-            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("second updated"));
+            Assert.That(secondResult.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(unique), Is.True);
+            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.False);
+            Assert.That(File.ReadAllText(unique), Does.Contain("second updated"));
         }
 
         /// <summary>Заменяет существующую версию с тем же идентификатором диалога вместо создания дубликата.</summary>
@@ -118,9 +118,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), Read(source));
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Added));
-            Assert.That(File.Exists(matchingDestination), Is.False);
-            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("new second"));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(matchingDestination), Is.True);
+            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.False);
+            Assert.That(File.ReadAllText(matchingDestination), Does.Contain("new second"));
         }
 
         /// <summary>Пропускает копирование, если самая новая существующая версия с тем же идентификатором новее исходного файла.</summary>
@@ -203,6 +204,64 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             DateTime expected = updateTime.LocalDateTime;
             DateTime actual = File.GetLastWriteTime(destination);
             Assert.That(actual, Is.EqualTo(expected).Within(TimeSpan.FromSeconds(2)));
+        }
+
+        /// <summary>Освобождает старое имя до выделения уникального имени и повторно использует его без лишнего суффикса.</summary>
+        [Test]
+        public void CopyIfNewer_ReusesFreedStaleName_WithoutCreatingAnotherDuplicate()
+        {
+            using TempDirectory temp = new();
+            string oldPath = MarkdownFactory.Write(temp.Combine("dst", "Chat.md"), CreateTime, CreateTime.AddHours(1), ConversationA, "old");
+            string staleUniquePath = MarkdownFactory.Write(temp.Combine("dst", "Chat (1).md"), CreateTime, CreateTime.AddHours(2), ConversationA, "stale unique");
+            string source = MarkdownFactory.Write(temp.Combine("src", "Chat.md"), CreateTime, CreateTime.AddHours(3), ConversationA, "new");
+
+            FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(result.DestinationPath, Is.EqualTo(oldPath));
+            Assert.That(File.Exists(oldPath), Is.True);
+            Assert.That(File.Exists(staleUniquePath), Is.False);
+            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.False);
+            Assert.That(Directory.GetFiles(temp.Combine("dst"), ".archivist-stale-*.bak"), Is.Empty);
+            Assert.That(File.ReadAllText(oldPath), Does.Contain("new"));
+        }
+
+        /// <summary>Освобождает все устаревшие версии до выделения уникального имени.</summary>
+        [Test]
+        public void CopyIfNewer_StagesAllStaleVersions_BeforeUniqueNameAllocation()
+        {
+            using TempDirectory temp = new();
+            string staleOne = MarkdownFactory.Write(temp.Combine("dst", "Chat.md"), CreateTime, CreateTime.AddHours(1), ConversationA, "stale one");
+            string staleTwo = MarkdownFactory.Write(temp.Combine("dst", "Chat (1).md"), CreateTime, CreateTime.AddHours(2), ConversationA, "stale two");
+            string source = MarkdownFactory.Write(temp.Combine("src", "Chat.md"), CreateTime, CreateTime.AddHours(3), ConversationA, "new");
+
+            FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(result.DestinationPath, Is.EqualTo(staleOne));
+            Assert.That(File.Exists(staleOne), Is.True);
+            Assert.That(File.Exists(staleTwo), Is.False);
+            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.False);
+            Assert.That(Directory.GetFiles(temp.Combine("dst"), ".archivist-stale-*.bak"), Is.Empty);
+            Assert.That(File.ReadAllText(staleOne), Does.Contain("new"));
+        }
+
+        /// <summary>Определяет статус как обновление существующего разговора до выделения конфликтующего имени файла.</summary>
+        [Test]
+        public void CopyIfNewer_DeterminesStatusBeforeUniqueNameAllocation()
+        {
+            using TempDirectory temp = new();
+            string existingConversation = MarkdownFactory.Write(temp.Combine("dst", "Other.md"), CreateTime, CreateTime.AddHours(1), ConversationA, "old");
+            _ = MarkdownFactory.Write(temp.Combine("dst", "Chat.md"), CreateTime, CreateTime.AddHours(1), ConversationB, "other conversation");
+            string source = MarkdownFactory.Write(temp.Combine("src", "Chat.md"), CreateTime, CreateTime.AddHours(2), ConversationA, "updated");
+
+            FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(result.DestinationPath, Is.EqualTo(temp.Combine("dst", "Chat (1).md")));
+            Assert.That(File.Exists(existingConversation), Is.False);
+            Assert.That(File.Exists(temp.Combine("dst", "Chat.md")), Is.True);
+            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (1).md")), Does.Contain("updated"));
         }
 
         private static ChatMetadata Read(string path) =>
