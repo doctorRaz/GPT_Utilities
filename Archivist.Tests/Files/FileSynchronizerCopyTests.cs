@@ -101,10 +101,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult secondResult = Synchronize(secondImport, destination, Read(secondImport));
 
-            Assert.That(secondResult.Status, Is.EqualTo(FileOperationStatus.Added));
-            Assert.That(File.Exists(unique), Is.False);
-            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.True);
-            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("second updated"));
+            Assert.That(secondResult.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(unique), Is.True);
+            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.False);
+            Assert.That(File.ReadAllText(unique), Does.Contain("second updated"));
         }
 
         /// <summary>Заменяет существующую версию с тем же идентификатором диалога вместо создания дубликата.</summary>
@@ -118,9 +118,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), Read(source));
 
-            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Added));
-            Assert.That(File.Exists(matchingDestination), Is.False);
-            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("new second"));
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(matchingDestination), Is.True);
+            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.False);
+            Assert.That(File.ReadAllText(matchingDestination), Does.Contain("new second"));
         }
 
         /// <summary>Пропускает копирование, если самая новая существующая версия с тем же идентификатором новее исходного файла.</summary>
