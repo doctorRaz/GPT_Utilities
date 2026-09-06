@@ -32,6 +32,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
         {
             public string? CreateTime { get; set; }
             public string? UpdateTime { get; set; }
+            public string? Model { get; set; }
+            public string? ModelName { get; set; }
             public string? DateExport { get; set; }
             public string? ChatLink { get; set; }
             public Guid? ConversationId { get; set; }
@@ -119,6 +121,8 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 UpdateTime = updateTime,
                 UpdateTimeText = updateTimeText,
                 HasUpdateTime = rawMetadata.UpdateTime is not null,
+                Model = rawMetadata.Model,
+                ModelName = rawMetadata.ModelName,
                 DateExport = rawMetadata.DateExport,
                 ChatLink = rawMetadata.ChatLink,
                 ConversationId = rawMetadata.ConversationId,
