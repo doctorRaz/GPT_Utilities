@@ -51,7 +51,6 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(temp.Combine("dst", "Chat (1).md"), Does.Exist);
         }
 
-        /// <summary>Восстанавливает существующие версии и индекс, если копирование новой версии завершается ошибкой.</summary>
         [Test]
         public void Synchronize_WhenCopyFails_PreservesExistingVersionsAndIndex()
         {
@@ -70,7 +69,6 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.Exists(temp.Combine("dst", "New.md")), Is.False);
         }
 
-        /// <summary>Не публикует новую версию и сохраняет индекс, если перенос старой версии или финализация завершилась ошибкой.</summary>
         [Test]
         public void Synchronize_WhenDeleteFails_KeepsFailedDeletionInIndex()
         {
@@ -85,8 +83,8 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.Throws<IOException>(() => synchronizer.Synchronize(source, temp.Combine("dst", "New.md"), reader.Read(source)));
             Assert.That(File.Exists(existing), Is.True);
             Assert.That(File.Exists(temp.Combine("dst", "New.md")), Is.False);
-            Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Has.Count.EqualTo(1));
             Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Is.EqualTo(new[] { Path.GetFullPath(existing) }));
+            Assert.That(Directory.GetFiles(temp.Combine("dst"), "*.bak"), Is.Empty);
         }
 
         [Test]
@@ -111,7 +109,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
         {
             private readonly LocalFileSystem _inner = new();
             private readonly bool _failCopy;
-            private readonly bool _failDelete;
+            private bool _failDelete;
 
             public FailingFileSystem(bool failCopy, bool failDelete)
             {
@@ -136,7 +134,11 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             }
             public void DeleteFile(string path)
             {
-                if (_failDelete) throw new IOException("delete failed");
+                if (_failDelete)
+                {
+                    _failDelete = false;
+                    throw new IOException("delete failed");
+                }
                 _inner.DeleteFile(path);
             }
             public void SetLastWriteTime(string path, DateTime lastWriteTime) => _inner.SetLastWriteTime(path, lastWriteTime);
