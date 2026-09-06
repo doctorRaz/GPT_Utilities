@@ -139,21 +139,30 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 destinationFilePath,
                 sourceMetadata);
 
-            if (result.Status is FileOperationStatus.Added or FileOperationStatus.Updated)
-            {
-                string destinationPath = result.DestinationPath
-                    ?? throw new InvalidOperationException("Путь назначения отсутствует.");
-                string directory = Path.GetDirectoryName(destinationPath)
-                    ?? throw new InvalidOperationException(
-                        $"Не удалось определить каталог: {destinationPath}");
-                _conversationIndexWriter.Refresh(directory);
-            }
-
-            return _operationErrors.Count == 0
-                ? result
-                : result with { Errors = _operationErrors.ToArray() };
+            RefreshConversationIndex(result);
+            return AttachOperationErrors(result);
         }
     }
+
+    private void RefreshConversationIndex(FileOperationResult result)
+    {
+        if (result.Status is not (FileOperationStatus.Added or FileOperationStatus.Updated))
+        {
+            return;
+        }
+
+        string destinationPath = result.DestinationPath
+            ?? throw new InvalidOperationException("Путь назначения отсутствует.");
+        string directory = Path.GetDirectoryName(destinationPath)
+            ?? throw new InvalidOperationException(
+                $"Не удалось определить каталог: {destinationPath}");
+        _conversationIndexWriter.Refresh(directory);
+    }
+
+    private FileOperationResult AttachOperationErrors(FileOperationResult result) =>
+        _operationErrors.Count == 0
+            ? result
+            : result with { Errors = _operationErrors.ToArray() };
 
     private FileOperationResult SynchronizeCore(
         string sourceFilePath,
@@ -162,23 +171,43 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     {
         ArgumentNullException.ThrowIfNull(sourceMetadata);
 
+        string destinationDirectory = PrepareDestinationIndex(
+            destinationFilePath,
+            out int indexReadErrors);
+
+        FileOperationResult result = sourceMetadata.ConversationId is Guid sourceConversationId
+            ? SynchronizeConversation(
+                sourceFilePath,
+                destinationFilePath,
+                sourceMetadata,
+                sourceConversationId,
+                destinationDirectory)
+            : SynchronizeWithoutConversationId(
+                sourceFilePath,
+                destinationFilePath,
+                sourceMetadata);
+
+        return AddIndexErrors(result, indexReadErrors);
+    }
+
+    private string PrepareDestinationIndex(
+        string destinationFilePath,
+        out int indexReadErrors)
+    {
         string destinationDirectory = Path.GetDirectoryName(destinationFilePath)
             ?? throw new InvalidOperationException(
                 $"Не удалось определить каталог: {destinationFilePath}");
         int indexErrorsBefore = _conversationIndex.ReadErrorCount;
         _conversationIndex.EnsureIndexed(destinationDirectory);
-        int indexReadErrors = _conversationIndex.ReadErrorCount - indexErrorsBefore;
+        indexReadErrors = _conversationIndex.ReadErrorCount - indexErrorsBefore;
+        return destinationDirectory;
+    }
 
-        if (sourceMetadata.ConversationId is Guid sourceConversationId)
-        {
-            return AddIndexErrors(SynchronizeConversation(
-                sourceFilePath,
-                destinationFilePath,
-                sourceMetadata,
-                sourceConversationId,
-                destinationDirectory), indexReadErrors);
-        }
-
+    private FileOperationResult SynchronizeWithoutConversationId(
+        string sourceFilePath,
+        string destinationFilePath,
+        ChatMetadata sourceMetadata)
+    {
         FileOperationStatus status = GetOperationStatus(
             destinationFilePath,
             sourceMetadata);
@@ -197,14 +226,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                     destinationFilePath,
                     sourceMetadata);
                 WriteOperationResult(uniqueResult);
-                return AddIndexErrors(uniqueResult, indexReadErrors);
+                return uniqueResult;
             }
 
-            else
-            {
-                destinationFilePath = matchingPath;
-                status = GetOperationStatus(destinationFilePath, sourceMetadata);
-            }
+            destinationFilePath = matchingPath;
+            status = GetOperationStatus(destinationFilePath, sourceMetadata);
         }
 
         if (status == FileOperationStatus.Added)
@@ -218,7 +244,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                     destinationFilePath,
                     sourceMetadata);
                 WriteOperationResult(uniqueResult);
-                return AddIndexErrors(uniqueResult, indexReadErrors);
+                return uniqueResult;
             }
 
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
@@ -240,7 +266,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 : null);
 
         WriteOperationResult(result);
-        return AddIndexErrors(result, indexReadErrors);
+        return result;
     }
 
     private static FileOperationResult AddIndexErrors(
@@ -259,6 +285,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     {
         DateTimeOffset sourceUpdateTime = NormalizeUpdateTime(sourceMetadata.UpdateTime);
         List<string> stalePaths = new();
+        bool conversationExists = false;
         bool hasNewerVersion = false;
         bool hasEqualVersion = false;
 
@@ -266,6 +293,8 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             sourceConversationId,
             destinationDirectory))
         {
+            conversationExists = true;
+
             if (!_conversationIndex.TryGet(path, out ChatMetadata existingMetadata))
             {
                 existingMetadata = _metadataReader.Read(path);
@@ -279,14 +308,10 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             if (!existingMetadata.UpdateTime.HasValue &&
                 !sourceMetadata.UpdateTime.HasValue)
             {
-                // При отсутствии обеих дат сохраняем прежнюю политику:
-                // новая версия заменяет неопределённую старую.
                 stalePaths.Add(path);
             }
             else if (bothHaveUpdateTime && existingUpdateTime == sourceUpdateTime)
             {
-                // Равная указанная дата не подтверждает изменение содержимого.
-                // Оставляем существующую версию для идемпотентной обработки.
                 hasEqualVersion = true;
             }
             else if (existingUpdateTime < sourceUpdateTime)
@@ -325,8 +350,61 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             return skippedResult;
         }
 
-        FileOperationResult? uniqueResult = null;
-        bool copied;
+        List<StagedFile> stagedFiles = new();
+        string? actualDestinationPath = null;
+        bool committed = false;
+
+        try
+        {
+            if (conversationExists)
+            {
+                StageStaleVersions(stalePaths, stagedFiles);
+            }
+
+            actualDestinationPath = CopyConversationToDestination(
+                sourceFilePath,
+                destinationFilePath,
+                sourceConversationId,
+                sourceMetadata);
+
+            SetLastWriteTimeIfPresent(actualDestinationPath, sourceMetadata);
+
+            foreach (string path in stalePaths)
+            {
+                _conversationIndex.Remove(path);
+            }
+
+            _conversationIndex.Track(actualDestinationPath, sourceMetadata);
+            committed = true;
+
+            FileOperationResult result = new(
+                conversationExists
+                    ? FileOperationStatus.Updated
+                    : FileOperationStatus.Added,
+                sourceFilePath,
+                actualDestinationPath);
+            WriteOperationResult(result);
+
+            CleanupStagedFiles(stagedFiles);
+            return result;
+        }
+        catch
+        {
+            if (!committed)
+            {
+                RollbackStagedFiles(stagedFiles, actualDestinationPath);
+            }
+
+            throw;
+        }
+    }
+
+    private string CopyConversationToDestination(
+        string sourceFilePath,
+        string destinationFilePath,
+        Guid sourceConversationId,
+        ChatMetadata sourceMetadata)
+    {
         if (_fileSystem.FileExists(destinationFilePath))
         {
             if (_conversationIndex.TryGet(
@@ -338,70 +416,108 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                     sourceFilePath,
                     destinationFilePath,
                     overwrite: true);
-                copied = true;
+                return destinationFilePath;
             }
-            else
-            {
-                uniqueResult = CopyToUniqueName(
-                    sourceFilePath,
-                    destinationFilePath,
-                    sourceMetadata);
-                copied = true;
-            }
+
+            return CopyToUniqueNamePath(sourceFilePath, destinationFilePath);
         }
-        else
+
+        if (_fileSystem.TryCopyFile(sourceFilePath, destinationFilePath))
         {
-            copied = _fileSystem.TryCopyFile(
-                sourceFilePath,
-                destinationFilePath);
-            if (!copied)
-            {
-                ChatMetadata racedMetadata = _metadataReader.Read(destinationFilePath);
-                _conversationIndex.Track(destinationFilePath, racedMetadata);
-                if (racedMetadata.ConversationId == sourceConversationId)
-                {
-                    return SynchronizeConversation(
-                        sourceFilePath,
-                        destinationFilePath,
-                        sourceMetadata,
-                        sourceConversationId,
-                        destinationDirectory);
-                }
-
-                uniqueResult = CopyToUniqueName(
-                    sourceFilePath,
-                    destinationFilePath,
-                    sourceMetadata);
-                copied = true;
-            }
+            return destinationFilePath;
         }
 
-        if (!copied)
+        ChatMetadata racedMetadata = _metadataReader.Read(destinationFilePath);
+        _conversationIndex.Track(destinationFilePath, racedMetadata);
+        if (racedMetadata.ConversationId == sourceConversationId)
         {
-            throw new IOException(
-                $"Не удалось скопировать файл: {sourceFilePath}");
+            _fileSystem.CopyFile(
+                sourceFilePath,
+                destinationFilePath,
+                overwrite: true);
+            return destinationFilePath;
         }
 
-        string actualDestinationPath = uniqueResult?.DestinationPath
-            ?? destinationFilePath;
-        SetLastWriteTimeIfPresent(actualDestinationPath, sourceMetadata);
-        _conversationIndex.Track(actualDestinationPath, sourceMetadata);
-        DeleteStaleVersions(stalePaths, actualDestinationPath);
-
-        FileOperationResult result = uniqueResult is not null
-            ? new FileOperationResult(
-                FileOperationStatus.Added,
-                sourceFilePath,
-                actualDestinationPath)
-            : new FileOperationResult(
-                stalePaths.Count == 0
-                    ? FileOperationStatus.Added
-                    : FileOperationStatus.Updated,
-                sourceFilePath,
-                actualDestinationPath);
-        WriteOperationResult(result);
-        return result;
+        return CopyToUniqueNamePath(sourceFilePath, destinationFilePath);
     }
+
+    private string CopyToUniqueNamePath(
+        string sourceFilePath,
+        string destinationFilePath)
+    {
+        HashSet<string> attemptedPaths = new(StringComparer.OrdinalIgnoreCase);
+
+        while (true)
+        {
+            string candidate = _uniqueFileNameProvider.GetUnique(
+                destinationFilePath,
+                attemptedPaths);
+
+            attemptedPaths.Add(candidate);
+
+            if (_fileSystem.TryCopyFile(sourceFilePath, candidate))
+            {
+                return candidate;
+            }
+        }
+    }
+
+    private void StageStaleVersions(
+        IEnumerable<string> stalePaths,
+        ICollection<StagedFile> stagedFiles)
+    {
+        foreach (string path in stalePaths)
+        {
+            string directory = Path.GetDirectoryName(path)
+                ?? throw new InvalidOperationException(
+                    $"Не удалось определить каталог: {path}");
+            string backupPath = Path.Combine(
+                directory,
+                $".archivist-stale-{Guid.NewGuid():N}-{Path.GetFileName(path)}.bak");
+
+            _fileSystem.MoveFile(path, backupPath);
+            stagedFiles.Add(new StagedFile(path, backupPath));
+        }
+    }
+
+    private void RollbackStagedFiles(
+        IEnumerable<StagedFile> stagedFiles,
+        string? newFilePath)
+    {
+        if (newFilePath is not null && _fileSystem.FileExists(newFilePath))
+        {
+            _fileSystem.DeleteFile(newFilePath);
+        }
+
+        foreach (StagedFile staged in stagedFiles.Reverse())
+        {
+            if (_fileSystem.FileExists(staged.BackupPath))
+            {
+                _fileSystem.MoveFile(staged.BackupPath, staged.OriginalPath);
+            }
+        }
+    }
+
+    private void CleanupStagedFiles(IEnumerable<StagedFile> stagedFiles)
+    {
+        foreach (StagedFile staged in stagedFiles)
+        {
+            try
+            {
+                _fileSystem.DeleteFile(staged.BackupPath);
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                _logger.Error(
+                    $"Не удалось удалить временный файл: {staged.BackupPath}",
+                    exception);
+                break;
+            }
+        }
+    }
+
+    private sealed record StagedFile(string OriginalPath, string BackupPath);
 
     private static DateTimeOffset NormalizeUpdateTime(DateTimeOffset? updateTime)
     {
@@ -511,12 +627,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         }
     }
 
-    /// <summary>
-    /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
-    /// </summary>
-    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
-    /// <param name="sourceId">ID разговора.</param>
-    /// <returns>Путь к найденному дубликату или null, если не найден.</returns>
     /// <summary>
     /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
     /// </summary>

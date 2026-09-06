@@ -73,9 +73,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Is.EqualTo(new[] { Path.GetFullPath(existing) }));
         }
 
-        /// <summary>Сохраняет в индексе файл, удаление которого завершилось ошибкой.</summary>
+        /// <summary>Не откатывает успешную операцию, если post-commit очистка временного файла завершается ошибкой.</summary>
         [Test]
-        public void Synchronize_WhenDeleteFails_KeepsFailedDeletionInIndex()
+        public void Synchronize_WhenCleanupFails_KeepsCommittedResultAndIndex()
         {
             using TempDirectory temp = new();
             string existing = MarkdownFactory.Write(temp.Combine("dst", "Old.md"), CreateTime, CreateTime.AddHours(10), ConversationA);
@@ -85,10 +85,13 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             IConversationIndex index = new ConversationIndex(fileSystem, reader, new ConsoleArchivistLogger());
             IFileSynchronizer synchronizer = new FileSynchronizerService(reader, new ConsoleArchivistLogger(), new UniqueFileNameProvider(fileSystem), fileSystem, index);
 
-            Assert.Throws<IOException>(() => synchronizer.Synchronize(source, temp.Combine("dst", "New.md"), reader.Read(source)));
-            Assert.That(File.Exists(existing), Is.True);
+            FileOperationResult result = synchronizer.Synchronize(source, temp.Combine("dst", "New.md"), reader.Read(source));
+
+            Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(existing), Is.False);
             Assert.That(File.Exists(temp.Combine("dst", "New.md")), Is.True);
-            Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Has.Count.EqualTo(2));
+            Assert.That(index.FindPaths(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), temp.Combine("dst")), Is.EqualTo(new[] { Path.GetFullPath(temp.Combine("dst", "New.md")) }));
+            Assert.That(Directory.GetFiles(temp.Combine("dst"), ".archivist-stale-*.bak"), Has.Length.EqualTo(1));
         }
 
         /// <summary>Записывает результат операции синхронизации в журнал.</summary>
