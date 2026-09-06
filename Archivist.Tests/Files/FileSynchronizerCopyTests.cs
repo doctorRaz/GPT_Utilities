@@ -222,6 +222,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.Exists(oldPath), Is.True);
             Assert.That(File.Exists(staleUniquePath), Is.False);
             Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.False);
+            Assert.That(Directory.GetFiles(temp.Combine("dst"), ".archivist-stale-*.bak"), Is.Empty);
             Assert.That(File.ReadAllText(oldPath), Does.Contain("new"));
         }
 
@@ -257,10 +258,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             FileOperationResult result = Synchronize(source, temp.Combine("dst", "Chat.md"), Read(source));
 
             Assert.That(result.Status, Is.EqualTo(FileOperationStatus.Updated));
-            Assert.That(result.DestinationPath, Is.EqualTo(temp.Combine("dst", "Chat.md")));
+            Assert.That(result.DestinationPath, Is.EqualTo(temp.Combine("dst", "Chat (1).md")));
             Assert.That(File.Exists(existingConversation), Is.False);
-            Assert.That(File.Exists(temp.Combine("dst", "Chat (1).md")), Is.False);
-            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat.md")), Does.Contain("updated"));
+            Assert.That(File.Exists(temp.Combine("dst", "Chat.md")), Is.True);
+            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (1).md")), Does.Contain("updated"));
         }
 
         private static ChatMetadata Read(string path) =>
