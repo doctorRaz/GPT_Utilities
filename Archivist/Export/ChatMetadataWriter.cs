@@ -66,6 +66,10 @@ internal sealed class ChatMetadataWriter : IChatMetadataWriter
             model["update_time"] = metadata.UpdateTimeText ??
                 metadata.UpdateTime.Value.ToString("O", CultureInfo.InvariantCulture);
 
+        if (metadata.Model is not null)
+            model["model"] = metadata.Model;
+        if (metadata.ModelName is not null)
+            model["model_name"] = metadata.ModelName;
         if (metadata.DateExport is not null)
             model["date_export"] = metadata.DateExport;
         if (metadata.ChatLink is not null)
