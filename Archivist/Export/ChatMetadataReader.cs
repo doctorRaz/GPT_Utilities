@@ -8,9 +8,6 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace dRz.GPT_Utilities.Archivist.Export
 {
-    /// <summary>
-    /// Читает YAML front matter из Markdown-файла экспорта ChatGPT.
-    /// </summary>
     internal sealed class ChatMetadataReader : IChatMetadataReader
     {
         private static readonly IDeserializer YamlDeserializer =
@@ -37,6 +34,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
             public string? UpdateTime { get; set; }
             public string? DateExport { get; set; }
             public string? ChatLink { get; set; }
+            public Guid? ConversationId { get; set; }
             public string? Title { get; set; }
             public List<string?>? Tags { get; set; }
             public List<string?>? Aliases { get; set; }
@@ -123,6 +121,7 @@ namespace dRz.GPT_Utilities.Archivist.Export
                 HasUpdateTime = rawMetadata.UpdateTime is not null,
                 DateExport = rawMetadata.DateExport,
                 ChatLink = rawMetadata.ChatLink,
+                ConversationId = rawMetadata.ConversationId,
                 Title = rawMetadata.Title,
                 Tags = rawMetadata.Tags ?? new List<string?>(),
                 HasTags = rawMetadata.Tags is not null,
