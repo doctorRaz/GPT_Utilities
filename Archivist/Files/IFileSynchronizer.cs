@@ -139,21 +139,30 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 destinationFilePath,
                 sourceMetadata);
 
-            if (result.Status is FileOperationStatus.Added or FileOperationStatus.Updated)
-            {
-                string destinationPath = result.DestinationPath
-                    ?? throw new InvalidOperationException("Путь назначения отсутствует.");
-                string directory = Path.GetDirectoryName(destinationPath)
-                    ?? throw new InvalidOperationException(
-                        $"Не удалось определить каталог: {destinationPath}");
-                _conversationIndexWriter.Refresh(directory);
-            }
-
-            return _operationErrors.Count == 0
-                ? result
-                : result with { Errors = _operationErrors.ToArray() };
+            RefreshConversationIndex(result);
+            return AttachOperationErrors(result);
         }
     }
+
+    private void RefreshConversationIndex(FileOperationResult result)
+    {
+        if (result.Status is not (FileOperationStatus.Added or FileOperationStatus.Updated))
+        {
+            return;
+        }
+
+        string destinationPath = result.DestinationPath
+            ?? throw new InvalidOperationException("Путь назначения отсутствует.");
+        string directory = Path.GetDirectoryName(destinationPath)
+            ?? throw new InvalidOperationException(
+                $"Не удалось определить каталог: {destinationPath}");
+        _conversationIndexWriter.Refresh(directory);
+    }
+
+    private FileOperationResult AttachOperationErrors(FileOperationResult result) =>
+        _operationErrors.Count == 0
+            ? result
+            : result with { Errors = _operationErrors.ToArray() };
 
     private FileOperationResult SynchronizeCore(
         string sourceFilePath,
@@ -162,23 +171,43 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     {
         ArgumentNullException.ThrowIfNull(sourceMetadata);
 
+        string destinationDirectory = PrepareDestinationIndex(
+            destinationFilePath,
+            out int indexReadErrors);
+
+        FileOperationResult result = sourceMetadata.ConversationId is Guid sourceConversationId
+            ? SynchronizeConversation(
+                sourceFilePath,
+                destinationFilePath,
+                sourceMetadata,
+                sourceConversationId,
+                destinationDirectory)
+            : SynchronizeWithoutConversationId(
+                sourceFilePath,
+                destinationFilePath,
+                sourceMetadata);
+
+        return AddIndexErrors(result, indexReadErrors);
+    }
+
+    private string PrepareDestinationIndex(
+        string destinationFilePath,
+        out int indexReadErrors)
+    {
         string destinationDirectory = Path.GetDirectoryName(destinationFilePath)
             ?? throw new InvalidOperationException(
                 $"Не удалось определить каталог: {destinationFilePath}");
         int indexErrorsBefore = _conversationIndex.ReadErrorCount;
         _conversationIndex.EnsureIndexed(destinationDirectory);
-        int indexReadErrors = _conversationIndex.ReadErrorCount - indexErrorsBefore;
+        indexReadErrors = _conversationIndex.ReadErrorCount - indexErrorsBefore;
+        return destinationDirectory;
+    }
 
-        if (sourceMetadata.ConversationId is Guid sourceConversationId)
-        {
-            return AddIndexErrors(SynchronizeConversation(
-                sourceFilePath,
-                destinationFilePath,
-                sourceMetadata,
-                sourceConversationId,
-                destinationDirectory), indexReadErrors);
-        }
-
+    private FileOperationResult SynchronizeWithoutConversationId(
+        string sourceFilePath,
+        string destinationFilePath,
+        ChatMetadata sourceMetadata)
+    {
         FileOperationStatus status = GetOperationStatus(
             destinationFilePath,
             sourceMetadata);
@@ -197,14 +226,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                     destinationFilePath,
                     sourceMetadata);
                 WriteOperationResult(uniqueResult);
-                return AddIndexErrors(uniqueResult, indexReadErrors);
+                return uniqueResult;
             }
 
-            else
-            {
-                destinationFilePath = matchingPath;
-                status = GetOperationStatus(destinationFilePath, sourceMetadata);
-            }
+            destinationFilePath = matchingPath;
+            status = GetOperationStatus(destinationFilePath, sourceMetadata);
         }
 
         if (status == FileOperationStatus.Added)
@@ -218,7 +244,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                     destinationFilePath,
                     sourceMetadata);
                 WriteOperationResult(uniqueResult);
-                return AddIndexErrors(uniqueResult, indexReadErrors);
+                return uniqueResult;
             }
 
             SetLastWriteTimeIfPresent(destinationFilePath, sourceMetadata);
@@ -240,7 +266,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 : null);
 
         WriteOperationResult(result);
-        return AddIndexErrors(result, indexReadErrors);
+        return result;
     }
 
     private static FileOperationResult AddIndexErrors(
@@ -511,12 +537,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         }
     }
 
-    /// <summary>
-    /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
-    /// </summary>
-    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
-    /// <param name="sourceId">ID разговора.</param>
-    /// <returns>Путь к найденному дубликату или null, если не найден.</returns>
     /// <summary>
     /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
     /// </summary>
