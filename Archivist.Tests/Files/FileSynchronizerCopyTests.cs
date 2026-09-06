@@ -82,9 +82,9 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(unique), Does.Contain("second"));
         }
 
-        /// <summary>Повторный импорт разговора с тем же идентификатором обновляет его уникальный файл, а не создаёт следующий дубликат.</summary>
+        /// <summary>Повторный импорт того же разговора обновляет существующий уникальный файл вместо создания следующего дубликата.</summary>
         [Test]
-        public void CopyIfNewer_ReimportOfSameConversation_UpdatesUniqueFileWithoutCreatingAnotherDuplicate()
+        public void CopyIfNewer_ReimportOfSameConversation_UpdatesExistingUniqueFile()
         {
             using TempDirectory temp = new();
             string destination = MarkdownFactory.Write(temp.Combine("dst", "Chat.md"), CreateTime, CreateTime.AddHours(1), ConversationA, "first");
@@ -101,10 +101,10 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
 
             FileOperationResult secondResult = Synchronize(secondImport, destination, Read(secondImport));
 
-            Assert.That(secondResult.Status, Is.EqualTo(FileOperationStatus.Added));
-            Assert.That(File.Exists(unique), Is.False);
-            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.True);
-            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("second updated"));
+            Assert.That(secondResult.Status, Is.EqualTo(FileOperationStatus.Updated));
+            Assert.That(File.Exists(unique), Is.True);
+            Assert.That(File.ReadAllText(unique), Does.Contain("second updated"));
+            Assert.That(temp.Combine("dst", "Chat (2).md"), Does.Not.Exist);
         }
 
         /// <summary>Заменяет существующую версию с тем же идентификатором диалога вместо создания дубликата.</summary>
@@ -123,7 +123,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("new second"));
         }
 
-        /// <summary>Пропускает копирование, если самая новая существующая версия с тем же идентификатором новее исходного файла.</summary>
+        /// <summary>Пропускает копирование, если самая новая существующая версия с тем же идентификатором новее исходного.</summary>
         [Test]
         public void CopyIfNewer_SkipsNewestMatchingUniqueFile_WhenSeveralExist()
         {
