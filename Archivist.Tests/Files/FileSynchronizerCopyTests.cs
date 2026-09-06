@@ -82,6 +82,31 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Files
             Assert.That(File.ReadAllText(unique), Does.Contain("second"));
         }
 
+        /// <summary>Повторный импорт разговора с тем же идентификатором обновляет его уникальный файл, а не создаёт следующий дубликат.</summary>
+        [Test]
+        public void CopyIfNewer_ReimportOfSameConversation_UpdatesUniqueFileWithoutCreatingAnotherDuplicate()
+        {
+            using TempDirectory temp = new();
+            string destination = MarkdownFactory.Write(temp.Combine("dst", "Chat.md"), CreateTime, CreateTime.AddHours(1), ConversationA, "first");
+            string firstImport = MarkdownFactory.Write(temp.Combine("src", "Chat.md"), CreateTime, CreateTime.AddHours(2), ConversationB, "second");
+            string unique = temp.Combine("dst", "Chat (1).md");
+
+            FileOperationResult firstResult = Synchronize(firstImport, destination, Read(firstImport));
+
+            Assert.That(firstResult.Status, Is.EqualTo(FileOperationStatus.Added));
+            Assert.That(File.Exists(unique), Is.True);
+            Assert.That(File.ReadAllText(unique), Does.Contain("second"));
+
+            string secondImport = MarkdownFactory.Write(temp.Combine("src2", "Chat.md"), CreateTime, CreateTime.AddHours(3), ConversationB, "second updated");
+
+            FileOperationResult secondResult = Synchronize(secondImport, destination, Read(secondImport));
+
+            Assert.That(secondResult.Status, Is.EqualTo(FileOperationStatus.Added));
+            Assert.That(File.Exists(unique), Is.False);
+            Assert.That(File.Exists(temp.Combine("dst", "Chat (2).md")), Is.True);
+            Assert.That(File.ReadAllText(temp.Combine("dst", "Chat (2).md")), Does.Contain("second updated"));
+        }
+
         /// <summary>Заменяет существующую версию с тем же идентификатором диалога вместо создания дубликата.</summary>
         [Test]
         public void CopyIfNewer_ReplacesMatchingUniqueFile_InsteadOfAddingDuplicate()
