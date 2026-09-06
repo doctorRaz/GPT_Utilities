@@ -14,6 +14,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export;
 [TestFixture]
 public sealed class ExportArchitectureNUnitTests
 {
+    /// <summary>Проверяет выбор самого нового ZIP-архива, когда обработка всех архивов отключена.</summary>
     [Test]
     public void ArchiveSelector_ReturnsNewestArchive_WhenProcessAllIsFalse()
     {
@@ -32,6 +33,7 @@ public sealed class ExportArchitectureNUnitTests
         Assert.That(result[0].FullName, Is.EqualTo(newer));
     }
 
+    /// <summary>Проверяет построение пути к файлу с каталогами года и месяца.</summary>
     [Test]
     public void PathBuilder_CreatesYearAndMonthDirectory()
     {
@@ -51,13 +53,13 @@ public sealed class ExportArchitectureNUnitTests
         Assert.That(Directory.Exists(expectedDirectory), Is.True);
     }
 
+    /// <summary>Проверяет использование UTC и инвариантного английского имени месяца при построении пути.</summary>
     [Test]
     public void PathBuilder_UsesUtcAndInvariantEnglishMonthName()
     {
         using TempDirectory destination = new();
         ChatMetadata metadata = new()
         {
-            // Локальное смещение +02:00 соответствует марту в UTC.
             CreateTime = new DateTimeOffset(2024, 4, 1, 0, 30, 0, TimeSpan.FromHours(2))
         };
 

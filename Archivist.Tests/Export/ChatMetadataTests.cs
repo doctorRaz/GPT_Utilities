@@ -6,6 +6,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
 {
     public sealed class ChatMetadataTests
     {
+        /// <summary>Проверяет извлечение идентификатора разговора из корректной ссылки ChatGPT.</summary>
         [Test]
         public void ConversationId_ParsesGuidFromChatLink()
         {
@@ -19,6 +20,7 @@ namespace dRz.GPT_Utilities.Archivist.Tests.Export
                 Is.EqualTo(Guid.Parse("11111111-1111-1111-1111-111111111111")));
         }
 
+        /// <summary>Проверяет возврат null для отсутствующей или некорректной ссылки на разговор.</summary>
         [Test]
         [TestCase(null)]
         [TestCase("")]

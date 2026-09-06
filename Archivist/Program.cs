@@ -39,12 +39,14 @@ namespace dRz.GPT_Utilities.Archivist
                     uniqueFileNameProvider,
                     fileSystem,
                     conversationIndexWriter: new ConversationTitleIndexWriter(fileSystem, metadataReader));
+                IChatMetadataWriter metadataWriter = new ChatMetadataWriter(fileSystem);
                 IMarkdownFileProcessor markdownProcessor = new MarkdownFileProcessor(
                     pathBuilder,
                     metadataReader,
                     fileSynchronizer,
                     logger,
-                    new FileNameNormalizer());
+                    new FileNameNormalizer(),
+                    metadataWriter);
 
                 IChatGptExportProcessor processor = new ChatGptExportProcessor(
                     new FileSystemArchiveSelector(fileSystem),
