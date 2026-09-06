@@ -26,6 +26,12 @@ namespace dRz.GPT_Utilities.Archivist.Export
         [YamlIgnore]
         internal bool HasUpdateTime { get; set; }
 
+        /// <summary>Модель ChatGPT.</summary>
+        public string? Model { get; set; }
+
+        /// <summary>Имя модели ChatGPT.</summary>
+        public string? ModelName { get; set; }
+
         /// <summary>Дата экспорта.</summary>
         public string? DateExport { get; set; }
 
