@@ -4,31 +4,19 @@ using System.Text;
 
 namespace dRz.GPT_Utilities.Archivist.Files;
 
-/// <summary>
-/// Применяет политику добавления, обновления и пропуска файла.
-/// </summary>
 internal interface IFileSynchronizer
 {
-    /// <summary>
-    /// Синхронизирует исходный файл с целевым, применяя соответствующую политику (добавление, обновление или пропуск).
-    /// </summary>
-    /// <param name="sourceFilePath">Путь к исходному файлу.</param>
-    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
-    /// <param name="sourceMetadata">Метаданные исходного файла.</param>
-    /// <returns>Результат операции синхронизации.</returns>
     FileOperationResult Synchronize(
         string sourceFilePath,
         string destinationFilePath,
         ChatMetadata sourceMetadata);
 }
 
-/// <summary>Обновляет навигационный индекс каталога разговоров.</summary>
 internal interface IConversationIndexWriter
 {
     void Refresh(string directory);
 }
 
-/// <summary>Создаёт файл <c>_index.md</c> по содержимому каталога.</summary>
 internal sealed class ConversationIndexWriter : IConversationIndexWriter
 {
     private const string IndexFileName = "_index.md";
@@ -69,33 +57,17 @@ internal sealed class ConversationIndexWriter : IConversationIndexWriter
     }
 }
 
-/// <summary>
-/// Экземплярный сервис синхронизации Markdown-файлов.
-/// </summary>
 internal sealed class FileSynchronizerService : IFileSynchronizer
 {
-    /// <summary>Средство чтения метаданных.</summary>
     private readonly IChatMetadataReader _metadataReader;
-    /// <summary>Журналировщик.</summary>
     private readonly IArchivistLogger _logger;
-    /// <summary>Провайдер уникальных имен.</summary>
     private readonly IUniqueFileNameProvider _uniqueFileNameProvider;
-    /// <summary>Система файловых операций.</summary>
     private readonly IFileSystem _fileSystem;
-    /// <summary>Индекс разговоров.</summary>
     private readonly IConversationIndex _conversationIndex;
     private readonly IConversationIndexWriter _conversationIndexWriter;
     private readonly List<ExportError> _operationErrors = new();
     private static readonly object SynchronizationLock = new();
 
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="FileSynchronizerService"/>.
-    /// </summary>
-    /// <param name="metadataReader">Средство чтения метаданных.</param>
-    /// <param name="logger">Журналировщик.</param>
-    /// <param name="uniqueFileNameProvider">Провайдер уникальных имен.</param>
-    /// <param name="fileSystem">Система файловых операций.</param>
-    /// <param name="conversationIndex">Индекс разговоров (необязательно).</param>
     public FileSynchronizerService(
         IChatMetadataReader metadataReader,
         IArchivistLogger logger,
@@ -104,28 +76,14 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         IConversationIndex? conversationIndex = null,
         IConversationIndexWriter? conversationIndexWriter = null)
     {
-        _metadataReader = metadataReader
-            ?? throw new ArgumentNullException(nameof(metadataReader));
-        _logger = logger
-            ?? throw new ArgumentNullException(nameof(logger));
-        _uniqueFileNameProvider = uniqueFileNameProvider
-            ?? throw new ArgumentNullException(nameof(uniqueFileNameProvider));
-        _fileSystem = fileSystem
-            ?? throw new ArgumentNullException(nameof(fileSystem));
-        _conversationIndex = conversationIndex ?? new ConversationIndex(
-            fileSystem,
-            metadataReader,
-            logger);
+        _metadataReader = metadataReader ?? throw new ArgumentNullException(nameof(metadataReader));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _uniqueFileNameProvider = uniqueFileNameProvider ?? throw new ArgumentNullException(nameof(uniqueFileNameProvider));
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        _conversationIndex = conversationIndex ?? new ConversationIndex(fileSystem, metadataReader, logger);
         _conversationIndexWriter = conversationIndexWriter ?? new ConversationIndexWriter(fileSystem);
     }
 
-    /// <summary>
-    /// Синхронизирует исходный файл с целевым, обрабатывая конфликты имен и обеспечивая консистентность индекса.
-    /// </summary>
-    /// <param name="sourceFilePath">Путь к исходному файлу.</param>
-    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
-    /// <param name="sourceMetadata">Метаданные исходного файла.</param>
-    /// <returns>Результат операции синхронизации.</returns>
     public FileOperationResult Synchronize(
         string sourceFilePath,
         string destinationFilePath,
@@ -134,18 +92,14 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         lock (SynchronizationLock)
         {
             _operationErrors.Clear();
-            FileOperationResult result = SynchronizeCore(
-                sourceFilePath,
-                destinationFilePath,
-                sourceMetadata);
+            FileOperationResult result = SynchronizeCore(sourceFilePath, destinationFilePath, sourceMetadata);
 
             if (result.Status is FileOperationStatus.Added or FileOperationStatus.Updated)
             {
                 string destinationPath = result.DestinationPath
                     ?? throw new InvalidOperationException("Путь назначения отсутствует.");
                 string directory = Path.GetDirectoryName(destinationPath)
-                    ?? throw new InvalidOperationException(
-                        $"Не удалось определить каталог: {destinationPath}");
+                    ?? throw new InvalidOperationException($"Не удалось определить каталог: {destinationPath}");
                 _conversationIndexWriter.Refresh(directory);
             }
 
@@ -163,60 +117,44 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         ArgumentNullException.ThrowIfNull(sourceMetadata);
 
         string destinationDirectory = Path.GetDirectoryName(destinationFilePath)
-            ?? throw new InvalidOperationException(
-                $"Не удалось определить каталог: {destinationFilePath}");
+            ?? throw new InvalidOperationException($"Не удалось определить каталог: {destinationFilePath}");
         int indexErrorsBefore = _conversationIndex.ReadErrorCount;
         _conversationIndex.EnsureIndexed(destinationDirectory);
         int indexReadErrors = _conversationIndex.ReadErrorCount - indexErrorsBefore;
 
         if (sourceMetadata.ConversationId is Guid sourceConversationId)
         {
-            return AddIndexErrors(SynchronizeConversation(
-                sourceFilePath,
-                destinationFilePath,
-                sourceMetadata,
-                sourceConversationId,
-                destinationDirectory), indexReadErrors);
-        }
-
-        FileOperationStatus status = GetOperationStatus(
-            destinationFilePath,
-            sourceMetadata);
-
-        if (status == FileOperationStatus.Added &&
-            _fileSystem.FileExists(destinationFilePath))
-        {
-            string? matchingPath = FindMatchingDuplicate(
-                destinationFilePath,
-                sourceMetadata.ConversationId);
-
-            if (matchingPath is null)
-            {
-                FileOperationResult uniqueResult = CopyToUniqueName(
+            return AddIndexErrors(
+                SynchronizeConversation(
                     sourceFilePath,
                     destinationFilePath,
-                    sourceMetadata);
+                    sourceMetadata,
+                    sourceConversationId,
+                    destinationDirectory),
+                indexReadErrors);
+        }
+
+        FileOperationStatus status = GetOperationStatus(destinationFilePath, sourceMetadata);
+
+        if (status == FileOperationStatus.Added && _fileSystem.FileExists(destinationFilePath))
+        {
+            string? matchingPath = FindMatchingDuplicate(destinationFilePath, sourceMetadata.ConversationId);
+            if (matchingPath is null)
+            {
+                FileOperationResult uniqueResult = CopyToUniqueName(sourceFilePath, destinationFilePath, sourceMetadata);
                 WriteOperationResult(uniqueResult);
                 return AddIndexErrors(uniqueResult, indexReadErrors);
             }
 
-            else
-            {
-                destinationFilePath = matchingPath;
-                status = GetOperationStatus(destinationFilePath, sourceMetadata);
-            }
+            destinationFilePath = matchingPath;
+            status = GetOperationStatus(destinationFilePath, sourceMetadata);
         }
 
         if (status == FileOperationStatus.Added)
         {
             if (!_fileSystem.TryCopyFile(sourceFilePath, destinationFilePath))
             {
-                // Файл появился после проверки. Не перезаписываем его,
-                // а продолжаем обработку как конфликт имён.
-                FileOperationResult uniqueResult = CopyToUniqueName(
-                    sourceFilePath,
-                    destinationFilePath,
-                    sourceMetadata);
+                FileOperationResult uniqueResult = CopyToUniqueName(sourceFilePath, destinationFilePath, sourceMetadata);
                 WriteOperationResult(uniqueResult);
                 return AddIndexErrors(uniqueResult, indexReadErrors);
             }
@@ -235,20 +173,14 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             status,
             sourceFilePath,
             destinationFilePath,
-            status == FileOperationStatus.Skipped
-                ? "Файл не требует обновления."
-                : null);
+            status == FileOperationStatus.Skipped ? "Файл не требует обновления." : null);
 
         WriteOperationResult(result);
         return AddIndexErrors(result, indexReadErrors);
     }
 
-    private static FileOperationResult AddIndexErrors(
-        FileOperationResult result,
-        int indexReadErrors) =>
-        indexReadErrors == 0
-            ? result
-            : result with { IndexReadErrors = indexReadErrors };
+    private static FileOperationResult AddIndexErrors(FileOperationResult result, int indexReadErrors) =>
+        indexReadErrors == 0 ? result : result with { IndexReadErrors = indexReadErrors };
 
     private FileOperationResult SynchronizeConversation(
         string sourceFilePath,
@@ -262,9 +194,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         bool hasNewerVersion = false;
         bool hasEqualVersion = false;
 
-        foreach (string path in _conversationIndex.FindPaths(
-            sourceConversationId,
-            destinationDirectory))
+        foreach (string path in _conversationIndex.FindPaths(sourceConversationId, destinationDirectory))
         {
             if (!_conversationIndex.TryGet(path, out ChatMetadata existingMetadata))
             {
@@ -273,20 +203,14 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             }
 
             DateTimeOffset existingUpdateTime = NormalizeUpdateTime(existingMetadata.UpdateTime);
-            bool bothHaveUpdateTime =
-                existingMetadata.UpdateTime.HasValue && sourceMetadata.UpdateTime.HasValue;
+            bool bothHaveUpdateTime = existingMetadata.UpdateTime.HasValue && sourceMetadata.UpdateTime.HasValue;
 
-            if (!existingMetadata.UpdateTime.HasValue &&
-                !sourceMetadata.UpdateTime.HasValue)
+            if (!existingMetadata.UpdateTime.HasValue && !sourceMetadata.UpdateTime.HasValue)
             {
-                // При отсутствии обеих дат сохраняем прежнюю политику:
-                // новая версия заменяет неопределённую старую.
                 stalePaths.Add(path);
             }
             else if (bothHaveUpdateTime && existingUpdateTime == sourceUpdateTime)
             {
-                // Равная указанная дата не подтверждает изменение содержимого.
-                // Оставляем существующую версию для идемпотентной обработки.
                 hasEqualVersion = true;
             }
             else if (existingUpdateTime < sourceUpdateTime)
@@ -302,7 +226,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         if (hasNewerVersion)
         {
             DeleteStaleVersions(stalePaths, preservedPath: null);
-
             FileOperationResult skippedResult = new(
                 FileOperationStatus.Skipped,
                 sourceFilePath,
@@ -315,7 +238,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         if (hasEqualVersion)
         {
             DeleteStaleVersions(stalePaths, preservedPath: null);
-
             FileOperationResult skippedResult = new(
                 FileOperationStatus.Skipped,
                 sourceFilePath,
@@ -325,35 +247,31 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
             return skippedResult;
         }
 
+        // Наличие stalePaths означает, что этот conversation_id уже существовал.
+        // Сначала удаляем все устаревшие версии, и только после этого выбираем имя.
+        bool isUpdate = stalePaths.Count > 0;
+        DeleteStaleVersions(stalePaths, preservedPath: null);
+
         FileOperationResult? uniqueResult = null;
         bool copied;
+
         if (_fileSystem.FileExists(destinationFilePath))
         {
-            if (_conversationIndex.TryGet(
-                    destinationFilePath,
-                    out ChatMetadata destinationMetadata) &&
+            if (_conversationIndex.TryGet(destinationFilePath, out ChatMetadata destinationMetadata) &&
                 destinationMetadata.ConversationId == sourceConversationId)
             {
-                _fileSystem.CopyFile(
-                    sourceFilePath,
-                    destinationFilePath,
-                    overwrite: true);
+                _fileSystem.CopyFile(sourceFilePath, destinationFilePath, overwrite: true);
                 copied = true;
             }
             else
             {
-                uniqueResult = CopyToUniqueName(
-                    sourceFilePath,
-                    destinationFilePath,
-                    sourceMetadata);
+                uniqueResult = CopyToUniqueName(sourceFilePath, destinationFilePath, sourceMetadata);
                 copied = true;
             }
         }
         else
         {
-            copied = _fileSystem.TryCopyFile(
-                sourceFilePath,
-                destinationFilePath);
+            copied = _fileSystem.TryCopyFile(sourceFilePath, destinationFilePath);
             if (!copied)
             {
                 ChatMetadata racedMetadata = _metadataReader.Read(destinationFilePath);
@@ -368,37 +286,26 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                         destinationDirectory);
                 }
 
-                uniqueResult = CopyToUniqueName(
-                    sourceFilePath,
-                    destinationFilePath,
-                    sourceMetadata);
+                uniqueResult = CopyToUniqueName(sourceFilePath, destinationFilePath, sourceMetadata);
                 copied = true;
             }
         }
 
         if (!copied)
         {
-            throw new IOException(
-                $"Не удалось скопировать файл: {sourceFilePath}");
+            throw new IOException($"Не удалось скопировать файл: {sourceFilePath}");
         }
 
-        string actualDestinationPath = uniqueResult?.DestinationPath
-            ?? destinationFilePath;
+        string actualDestinationPath = uniqueResult?.DestinationPath ?? destinationFilePath;
         SetLastWriteTimeIfPresent(actualDestinationPath, sourceMetadata);
         _conversationIndex.Track(actualDestinationPath, sourceMetadata);
-        DeleteStaleVersions(stalePaths, actualDestinationPath);
 
-        FileOperationResult result = uniqueResult is not null
-            ? new FileOperationResult(
-                FileOperationStatus.Added,
-                sourceFilePath,
-                actualDestinationPath)
-            : new FileOperationResult(
-                stalePaths.Count == 0
-                    ? FileOperationStatus.Added
-                    : FileOperationStatus.Updated,
-                sourceFilePath,
-                actualDestinationPath);
+        FileOperationResult result = new(
+            isUpdate ? FileOperationStatus.Updated : FileOperationStatus.Added,
+            sourceFilePath,
+            actualDestinationPath,
+            null);
+
         WriteOperationResult(result);
         return result;
     }
@@ -410,14 +317,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         return new DateTimeOffset(ticks, TimeSpan.Zero);
     }
 
-    private void DeleteStaleVersions(
-        IEnumerable<string> stalePaths,
-        string? preservedPath)
+    private void DeleteStaleVersions(IEnumerable<string> stalePaths, string? preservedPath)
     {
         foreach (string path in stalePaths)
         {
-            if (preservedPath is not null &&
-                string.Equals(path, preservedPath, StringComparison.OrdinalIgnoreCase))
+            if (preservedPath is not null && string.Equals(path, preservedPath, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -427,13 +331,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         }
     }
 
-    /// <summary>
-    /// Копирует файл, пытаясь подобрать уникальное имя, если целевое занято или приводит к дубликату.
-    /// </summary>
-    /// <param name="sourceFilePath">Путь к исходному файлу.</param>
-    /// <param name="destinationFilePath">Базовый путь назначения.</param>
-    /// <param name="sourceMetadata">Метаданные исходного файла.</param>
-    /// <returns>Результат операции с уникальным путем.</returns>
     private FileOperationResult CopyToUniqueName(
         string sourceFilePath,
         string destinationFilePath,
@@ -443,15 +340,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
         while (true)
         {
-            string candidate = _uniqueFileNameProvider.GetUnique(
-                destinationFilePath,
-                attemptedPaths);
-
+            string candidate = _uniqueFileNameProvider.GetUnique(destinationFilePath, attemptedPaths);
             attemptedPaths.Add(candidate);
 
             if (!_fileSystem.TryCopyFile(sourceFilePath, candidate))
             {
-                // Имя заняли после проверки. Выбираем следующий кандидат.
                 continue;
             }
 
@@ -469,8 +362,7 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
     private void WriteOperationResult(FileOperationResult result)
     {
         string sourceFileName = Path.GetFileName(result.SourcePath);
-        string description =
-            $"{sourceFileName}\n\t\tto->{result.DestinationPath}";
+        string description = $"{sourceFileName}\t\tto->{result.DestinationPath}";
 
         switch (result.Status)
         {
@@ -487,45 +379,19 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 _logger.Error($"\tОшибка: {description}", result.Error);
                 break;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(result.Status),
-                    result.Status,
-                    null);
+                throw new ArgumentOutOfRangeException(nameof(result.Status), result.Status, null);
         }
     }
 
-    /// <summary>
-    /// Устанавливает время последней записи файла, если в метаданных указана дата создания.
-    /// </summary>
-    /// <param name="destinationFilePath">Путь к файлу.</param>
-    /// <param name="sourceMetadata">Метаданные файла.</param>
-    private void SetLastWriteTimeIfPresent(
-        string destinationFilePath,
-        ChatMetadata sourceMetadata)
+    private void SetLastWriteTimeIfPresent(string destinationFilePath, ChatMetadata sourceMetadata)
     {
         if (sourceMetadata.UpdateTime.HasValue)
         {
-            _fileSystem.SetLastWriteTime(
-                destinationFilePath,
-                sourceMetadata.UpdateTime.Value.LocalDateTime);
+            _fileSystem.SetLastWriteTime(destinationFilePath, sourceMetadata.UpdateTime.Value.LocalDateTime);
         }
     }
 
-    /// <summary>
-    /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
-    /// </summary>
-    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
-    /// <param name="sourceId">ID разговора.</param>
-    /// <returns>Путь к найденному дубликату или null, если не найден.</returns>
-    /// <summary>
-    /// Ищет файл с тем же идентификатором разговора, который может конфликтовать с текущим путем.
-    /// </summary>
-    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
-    /// <param name="sourceId">ID разговора.</param>
-    /// <returns>Путь к найденному дубликату или null, если не найден.</returns>
-    private string? FindMatchingDuplicate(
-        string destinationFilePath,
-        Guid? sourceId)
+    private string? FindMatchingDuplicate(string destinationFilePath, Guid? sourceId)
     {
         if (sourceId is null)
         {
@@ -534,14 +400,10 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
 
         string? matchingPath = null;
         DateTimeOffset? matchingUpdateTime = null;
-
         string directory = Path.GetDirectoryName(destinationFilePath)
-            ?? throw new InvalidOperationException(
-                $"Не удалось определить каталог: {destinationFilePath}");
+            ?? throw new InvalidOperationException($"Не удалось определить каталог: {destinationFilePath}");
 
-        foreach (string duplicatePath in _conversationIndex.FindPaths(
-            sourceId.Value,
-            directory))
+        foreach (string duplicatePath in _conversationIndex.FindPaths(sourceId.Value, directory))
         {
             if (!_conversationIndex.TryGet(duplicatePath, out ChatMetadata metadata))
             {
@@ -558,12 +420,6 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
         return matchingPath;
     }
 
-    /// <summary>
-    /// Определяет статус операции на основе состояния целевого файла и метаданных.
-    /// </summary>
-    /// <param name="destinationFilePath">Путь к целевому файлу.</param>
-    /// <param name="sourceMetadata">Метаданные исходного файла.</param>
-    /// <returns>Статус операции.</returns>
     private FileOperationStatus GetOperationStatus(
         string destinationFilePath,
         ChatMetadata sourceMetadata)
@@ -581,12 +437,11 @@ internal sealed class FileSynchronizerService : IFileSynchronizer
                 destinationMetadata = _metadataReader.Read(destinationFilePath);
                 _conversationIndex.Track(destinationFilePath, destinationMetadata);
             }
+
             Guid? sourceId = sourceMetadata.ConversationId;
             Guid? destinationId = destinationMetadata.ConversationId;
 
-            if (sourceId is null ||
-                destinationId is null ||
-                sourceId != destinationId)
+            if (sourceId is null || destinationId is null || sourceId != destinationId)
             {
                 return FileOperationStatus.Added;
             }
