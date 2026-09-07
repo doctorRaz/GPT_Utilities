@@ -1,0 +1,41 @@
+name: Archivist Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Test, build and release Archivist
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Restore
+        run: dotnet restore GPT_Utilities.sln
+
+      - name: Test
+        run: dotnet test GPT_Utilities.sln --configuration Release --no-restore --verbosity normal
+
+      - name: Publish Archivist
+        run: dotnet publish Archivist/Archivist.csproj --configuration Release --no-restore --output publish/Archivist --self-contained false
+
+      - name: Create release archive
+        shell: pwsh
+        run: Compress-Archive -Path publish/Archivist/* -DestinationPath "Archivist-${env:GITHUB_REF_NAME}.zip"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" "Archivist-${{ github.ref_name }}.zip" --title "Archivist ${{ github.ref_name }}" --generate-notes
