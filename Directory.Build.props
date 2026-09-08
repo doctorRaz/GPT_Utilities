@@ -28,8 +28,8 @@
 			Build  = количество дней от 01.01.2000
 			Revision = секунды от начала суток / 2
 		-->
-		<Build>$([System.DateTime]::Now.Subtract($([System.DateTime]::Parse('2000-01-01'))).Days)</Build>
-		<Revision>$([MSBuild]::Divide($([System.DateTime]::Now.TimeOfDay.TotalSeconds), 2).ToString("F0"))</Revision>
+		<Build>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse('2000-01-01'))).Days)</Build>
+		<Revision>$([MSBuild]::Divide($([System.DateTime]::UtcNow.TimeOfDay.TotalSeconds), 2).ToString("F0"))</Revision>
 
 		<!-- Не генерировать второй AssemblyFileVersion -->
 		<!--<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>-->
