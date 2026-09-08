@@ -25,6 +25,11 @@ jobs:
       - name: Restore
         run: dotnet restore GPT_Utilities.sln
 
+      - name: Verify shared build configuration
+        shell: pwsh
+        run: |
+          dotnet msbuild Archivist/Archivist.csproj -getProperty:Version -getProperty:AssemblyVersion -getProperty:FileVersion -getProperty:InformationalVersion -getProperty:OutputPath
+
       - name: Test
         run: dotnet test GPT_Utilities.sln --configuration Release --no-restore --verbosity normal
 
@@ -35,7 +40,28 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path publish/Archivist/* -DestinationPath "Archivist-${env:GITHUB_REF_NAME}.zip"
 
+      - name: Generate release notes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tagRef = gh api "repos/$env:GITHUB_REPOSITORY/git/ref/tags/$env:GITHUB_REF_NAME" | ConvertFrom-Json
+          $tagMessage = ''
+          if ($tagRef.object.type -eq 'tag') {
+            $tagMessage = (gh api "repos/$env:GITHUB_REPOSITORY/git/tags/$($tagRef.object.sha)" | ConvertFrom-Json).message.Trim()
+          } else {
+            $tagMessage = (gh api "repos/$env:GITHUB_REPOSITORY/commits/$($tagRef.object.sha)" | ConvertFrom-Json).commit.message.Trim()
+          }
+
+          $generated = gh api --method POST "repos/$env:GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$env:GITHUB_REF_NAME" | ConvertFrom-Json
+          $body = $tagMessage
+          if ($generated.body) {
+            if ($body) { $body += "`r`n`r`n" }
+            $body += $generated.body
+          }
+          $body | Set-Content -Path release-notes.md -Encoding utf8NoBOM
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" "Archivist-${{ github.ref_name }}.zip" --title "Archivist ${{ github.ref_name }}" --notes-from-tag --generate-notes
+        run: gh release create "${{ github.ref_name }}" "Archivist-${{ github.ref_name }}.zip" --title "Archivist ${{ github.ref_name }}" --notes-file release-notes.md --verify-tag
